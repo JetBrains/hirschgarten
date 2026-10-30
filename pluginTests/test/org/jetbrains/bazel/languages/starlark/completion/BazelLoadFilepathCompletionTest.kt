@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import io.kotest.matchers.collections.shouldContainAll
-import org.jetbrains.bazel.languages.starlark.references.getCanonicalRepoNameToBzlFiles
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
@@ -30,8 +29,6 @@ class BazelLoadFilepathCompletionTest {
     testBazel.writeFile("defs_one.bzl")
     testBazel.writeFile("defs_dir/defs_two.bzl")
 
-    getCanonicalRepoNameToBzlFiles(myFixture.project)
-
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("d")
 
@@ -48,7 +45,6 @@ class BazelLoadFilepathCompletionTest {
     for (relativePath in listOf("MODULE.bazel", "BUILD.bazel", "kt_jvm_library.bzl", "package/kt_jvm_binary.bzl")) {
       testBazel.writeFile(repository.resolve(relativePath))
     }
-    getCanonicalRepoNameToBzlFiles(myFixture.project)
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("kt")
@@ -69,7 +65,6 @@ class BazelLoadFilepathCompletionTest {
     for (relativePath in listOf("MODULE.bazel", "BUILD.bazel", "defs.bzl", "extensions.bzl")) {
       testBazel.writeFile(repository.resolve(relativePath))
     }
-    getCanonicalRepoNameToBzlFiles(myFixture.project)
 
     myFixture.configureByText("MODULE.bazel", """maven = use_extension("<caret>)""")
     myFixture.type("@ru")

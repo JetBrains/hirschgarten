@@ -1,49 +1,34 @@
 package org.jetbrains.bazel.python.completion
 
 import com.intellij.bazel.python.backend.updateBazelPythonResolveIndex
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.util.QualifiedName
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.jetbrains.bazel.test.framework.testBazel
+import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
 @BazelTestApplication
 class BazelPythonImportCompletionTest {
   private val myFixture by bazelCodeInsightFixture()
 
   private val project get() = myFixture.project
-
-  private lateinit var lib: Path
-  private lateinit var things: Path
-  private lateinit var widgets: Path
-  private lateinit var libExtra: Path
+  private val testBazel get() = myFixture.testBazel
 
   private fun setUpLibIndex() {
-    val root = project.rootDir
-    WriteCommandAction.runWriteCommandAction(project) {
-      val libDir = root.createChildDirectory(this, "lib")
-      val thingsDir = libDir.createChildDirectory(this, "things")
-      val places = thingsDir.createChildDirectory(this, "places")
-      places.createChildData(this, "rivers.py")
-      lib = libDir.toNioPath()
-      things = thingsDir.toNioPath()
-      val widgetsDir = libDir.createChildDirectory(this, "widgets")
-      widgetsDir.createChildData(this, "models.py")
-      widgets = widgetsDir.toNioPath()
-      // A second "li"-prefixed name so "li<caret>" isn't auto-inserted as the sole match.
-      val libExtraDir = root.createChildDirectory(this, "libExtra")
-      libExtra = libExtraDir.toNioPath()
-    }
+    testBazel.writeFile("lib/things/places/rivers.py")
+    testBazel.writeFile("lib/widgets/models.py")
     project.updateBazelPythonResolveIndex(
       mapOf(
-        QualifiedName.fromDottedString("lib") to lib,
-        QualifiedName.fromDottedString("lib.things") to things,
-        QualifiedName.fromDottedString("lib.widgets") to widgets,
-        QualifiedName.fromDottedString("libExtra") to libExtra,
+        QualifiedName.fromDottedString("lib") to testBazel.createDirectory("lib").toNioPath(),
+        QualifiedName.fromDottedString("lib.things") to testBazel.createDirectory("lib/things").toNioPath(),
+        QualifiedName.fromDottedString("lib.widgets") to testBazel.createDirectory("lib/widgets").toNioPath(),
+        // A second "li"-prefixed name so "li<caret>" isn't auto-inserted as the sole match.
+        QualifiedName.fromDottedString("libExtra") to testBazel.createDirectory("libExtra").toNioPath(),
       ),
     )
   }
@@ -53,7 +38,7 @@ class BazelPythonImportCompletionTest {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "from lib.<caret>")
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
@@ -65,7 +50,7 @@ class BazelPythonImportCompletionTest {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "from li<caret>")
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContain "lib"
     lookups shouldContain "libExtra"
@@ -76,7 +61,7 @@ class BazelPythonImportCompletionTest {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "import li<caret>")
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContain "lib"
     lookups shouldContain "libExtra"
@@ -87,7 +72,7 @@ class BazelPythonImportCompletionTest {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "import lib.<caret>")
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
@@ -99,7 +84,7 @@ class BazelPythonImportCompletionTest {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "from lib.<caret> import x")
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
@@ -111,12 +96,10 @@ class BazelPythonImportCompletionTest {
     setUpLibIndex()
 
     myFixture.configureByText("main.py", "import lib.<caret>\nx = 1\n")
-    val lookups = completeBasic()
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContain "things"
     lookups shouldContain "widgets"
     lookups shouldNotContain "places"
   }
-
-  private fun completeBasic(): List<String> = myFixture.completeBasic().orEmpty().flatMap { it.allLookupStrings }
 }

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.injection
 
 import com.intellij.lang.injection.InjectedLanguageManager
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.sh.ShLanguage
@@ -9,15 +10,14 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
 /**
  * BUILD file contents are written as Kotlin raw strings, which have no escape sequences of their own. Since `"""`
  * cannot appear in a Kotlin raw string, Starlark triple-quoted strings use `'''`.
  */
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
   @Test
   fun `should inject shell script into a triple quoted genrule cmd`() {
@@ -132,7 +132,7 @@ class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
 
     // then
     literals.size shouldBe 5
-    literals.first().text shouldBe """" && """"
+    runReadActionBlocking { literals.first().text } shouldBe """" && """"
     injectedFiles(literals.first()).shouldBeEmpty()
     for (literal in literals.drop(1)) {
       val injected = injectedFiles(literal)
@@ -192,8 +192,9 @@ class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
     )
 
     // when & then
-    PsiTreeUtil.findChildrenOfType(myFixture.file, StarlarkStringLiteralExpression::class.java).forEach {
-      injectedFiles(it).shouldBeEmpty()
+    val literals = runReadActionBlocking { PsiTreeUtil.findChildrenOfType(myFixture.file, StarlarkStringLiteralExpression::class.java) }
+    for (literal in literals) {
+      injectedFiles(literal).shouldBeEmpty()
     }
   }
 
@@ -223,24 +224,30 @@ class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
   private fun injectedFiles(argumentName: String): List<PsiFile> = injectedFiles(stringLiterals(argumentName).first())
 
   private fun injectedFiles(host: StarlarkStringLiteralExpression): List<PsiFile> =
-    InjectedLanguageManager
-      .getInstance(project)
-      .getInjectedPsiFiles(host)
-      .orEmpty()
-      .map { it.first as PsiFile }
+    runReadActionBlocking {
+      InjectedLanguageManager
+        .getInstance(myFixture.project)
+        .getInjectedPsiFiles(host)
+        .orEmpty()
+        .map { it.first as PsiFile }
+    }
 
   private fun getUnescapedText(psiFile: PsiFile): String =
-    InjectedLanguageManager
-      .getInstance(project)
-      .getUnescapedText(psiFile)
+    runReadActionBlocking {
+      InjectedLanguageManager
+        .getInstance(myFixture.project)
+        .getUnescapedText(psiFile)
+    }
 
   /** All string literals in the value of the named argument, in source order. */
   private fun stringLiterals(argumentName: String): List<StarlarkStringLiteralExpression> {
-    val argument =
-      PsiTreeUtil
-        .findChildrenOfType(myFixture.file, StarlarkNamedArgumentExpression::class.java)
-        .single { it.name == argumentName }
-    val literals = PsiTreeUtil.findChildrenOfType(argument, StarlarkStringLiteralExpression::class.java).toList()
+    val literals = runReadActionBlocking {
+      val argument =
+        PsiTreeUtil
+          .findChildrenOfType(myFixture.file, StarlarkNamedArgumentExpression::class.java)
+          .single { it.name == argumentName }
+      PsiTreeUtil.findChildrenOfType(argument, StarlarkStringLiteralExpression::class.java).toList()
+    }
     check(literals.isNotEmpty()) { "No string literal found for argument $argumentName" }
     return literals
   }

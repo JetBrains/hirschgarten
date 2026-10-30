@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.completion
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
@@ -23,7 +24,7 @@ class StarlarkStructFieldCompletionTest {
       """.trimIndent(),
     )
 
-    completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("alpha", "beta")
+    myFixture.completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("alpha", "beta")
   }
 
   @Test
@@ -43,12 +44,11 @@ class StarlarkStructFieldCompletionTest {
       """.trimIndent(),
     )
 
-    completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("delta", "gamma")
+    myFixture.completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("delta", "gamma")
   }
 
   @Test
   fun `should complete loaded struct fields`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "defs.bzl",
@@ -68,12 +68,11 @@ class StarlarkStructFieldCompletionTest {
       """.trimIndent(),
     )
 
-    completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("alpha", "beta")
+    myFixture.completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("alpha", "beta")
   }
 
   @Test
   fun `should complete nested struct fields defined in different files`() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     myFixture.addFileToProject(
       "inner.bzl",
@@ -104,8 +103,6 @@ class StarlarkStructFieldCompletionTest {
       """.trimIndent(),
     )
 
-    completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("delta", "gamma")
+    myFixture.completeBasicLookupStrings() shouldContainExactlyInAnyOrder listOf("delta", "gamma")
   }
-
-  private fun completeBasicLookupStrings(): List<String> = myFixture.completeBasic().flatMap { it.allLookupStrings }
 }

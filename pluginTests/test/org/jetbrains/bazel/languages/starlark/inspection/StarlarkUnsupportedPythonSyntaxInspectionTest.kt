@@ -1,20 +1,21 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldBeEmpty
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkUnsupportedPythonSyntaxInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkUnsupportedPythonSyntaxInspectionTest : StarlarkInspectionTestCase() {
   private val unsupportedPower = StarlarkBundle.message("inspection.description.unsupported.binary.operator", "**")
   private val chainedComparison = StarlarkBundle.message("inspection.description.unsupported.chained.comparison")
   private val generatorExpression = StarlarkBundle.message("inspection.description.unsupported.generator.expression")
   private val unpackingExpression = StarlarkBundle.message("inspection.description.unsupported.unpacking.expression")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkUnsupportedPythonSyntaxInspection())
   }
@@ -274,9 +275,8 @@ class StarlarkUnsupportedPythonSyntaxInspectionTest : BasePlatformTestCase() {
   private fun assertHasErrors(vararg descriptions: String) {
     val actualDescriptions = myFixture.doHighlighting().mapNotNull { it.description }
     val missingDescriptions = descriptions.filterNot { it in actualDescriptions }
-    assertTrue(
-      "Expected errors:\n${descriptions.joinToString("\n")}\n\nActual highlights:\n${actualDescriptions.joinToString("\n")}",
-      missingDescriptions.isEmpty(),
-    )
+    withClue("Expected errors:\n${descriptions.joinToString("\n")}\n\nActual highlights:\n${actualDescriptions.joinToString("\n")}") {
+      missingDescriptions.shouldBeEmpty()
+    }
   }
 }

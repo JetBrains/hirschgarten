@@ -1,32 +1,20 @@
 package org.jetbrains.bazel.languages.projectview.annotator
 
 import com.intellij.openapi.application.EDT
-import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.testFramework.DumbModeTestUtils
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl
-import com.intellij.testFramework.junit5.fixture.moduleFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.languages.projectview.BazelProjectViewBundle
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.junit.jupiter.api.BeforeEach
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
 @BazelTestApplication
 class ProjectViewProblemsAnnotatorTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  private val tempDirFixture = tempPathFixture()
-  private val moduleFixture = projectFixture.moduleFixture(tempDirFixture, addPathToSourceRoot = true)
-  private val codeInsightFixture by codeInsightFixture(projectFixture, tempDirFixture)
-
-  @BeforeEach
-  fun setUp() {
-    moduleFixture.get()
-  }
+  private val codeInsightFixture by bazelCodeInsightFixture()
 
   @Test
   fun `should warn about unsupported sections`() {

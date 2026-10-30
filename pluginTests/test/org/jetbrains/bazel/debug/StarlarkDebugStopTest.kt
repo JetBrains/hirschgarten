@@ -2,6 +2,7 @@ package org.jetbrains.bazel.debug
 
 import com.intellij.execution.ui.ExecutionConsole
 import com.intellij.openapi.util.Disposer
+import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.booleans.shouldBeFalse
 import kotlinx.coroutines.Job
 import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
@@ -14,6 +15,8 @@ import javax.swing.JPanel
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
 class StarlarkDebugStopTest : StarlarkDebugClientTestBase() {
+  private val project by projectFixture(openAfterCreation = false)
+
   @Test
   fun `stop button pressed should stop debugging`() {
     val conn = establishMockConnection()

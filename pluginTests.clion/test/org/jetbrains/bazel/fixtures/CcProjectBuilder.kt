@@ -18,6 +18,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
+import org.jetbrains.bazel.test.framework.testproject.TestSnapshotBuilder
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bazel.test.framework.testproject.testWorkspaceSnapshot
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
@@ -51,7 +52,12 @@ import java.nio.file.Path
  * ```
  */
 internal fun ccProject(bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO, declare: CcProjectBuilder.() -> Unit): WorkspaceSnapshot {
-  return CcProjectBuilder().apply(declare).build(bazelInfo)
+  return testWorkspaceSnapshot(bazelInfo) { ccTargets(declare) }
+}
+
+/** Adds the targets of a [CcProjectBuilder] declaration to the snapshot. */
+internal fun TestSnapshotBuilder.ccTargets(declare: CcProjectBuilder.() -> Unit) {
+  targets(CcProjectBuilder().apply(declare).targets)
 }
 
 internal val CC_TEST_BAZEL_INFO: BazelInfo =
@@ -59,7 +65,7 @@ internal val CC_TEST_BAZEL_INFO: BazelInfo =
 
 internal class CcProjectBuilder {
 
-  private val targets = mutableListOf<BuildTarget>()
+  internal val targets = mutableListOf<BuildTarget>()
 
   private val defaultToolchain: BuildTarget by lazy { ccToolchain { } }
 
@@ -80,8 +86,6 @@ internal class CcProjectBuilder {
   fun plainTarget(declare: PlainTargetBuilder.() -> Unit): BuildTarget {
     return PlainTargetBuilder().apply(declare).build().also(targets::add)
   }
-
-  fun build(bazelInfo: BazelInfo): WorkspaceSnapshot = testWorkspaceSnapshot(bazelInfo) { targets(targets) }
 }
 
 internal class CcTargetBuilder(private val kind: String, private val ruleType: RuleType) {

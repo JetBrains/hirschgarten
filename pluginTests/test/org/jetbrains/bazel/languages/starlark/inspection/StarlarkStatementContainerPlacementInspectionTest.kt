@@ -1,14 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-internal class StarlarkStatementContainerPlacementInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+internal class StarlarkStatementContainerPlacementInspectionTest : StarlarkInspectionTestCase() {
   val ifDescription = StarlarkBundle.message("inspection.description.if.placement")
   val ifDescriptionInBuild = StarlarkBundle.message("inspection.description.if.placement.build")
   val ifDescriptionInWorkspace = StarlarkBundle.message("inspection.description.if.placement.workspace")
@@ -16,7 +15,7 @@ internal class StarlarkStatementContainerPlacementInspectionTest : BasePlatformT
   val forDescriptionInBuild = StarlarkBundle.message("inspection.description.for.placement.build")
   val forDescriptionInWorkspace = StarlarkBundle.message("inspection.description.for.placement.workspace")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkStatementContainerPlacementInspection())
   }

@@ -8,30 +8,23 @@ import com.intellij.lang.LanguageStructureViewBuilder
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.Disposer
-import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.moduleFixture
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.workspace.setRepoMapping
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 
-@TestApplication
+@BazelTestApplication
 class StarlarkStructureViewTest {
-  private val projectFixture = projectFixture(openAfterCreation = true)
-  @Suppress("unused") private val moduleFixture = projectFixture.moduleFixture()
-  private val codeInsightFixture by codeInsightFixture(projectFixture, tempPathFixture())
+  private val codeInsightFixture by bazelCodeInsightFixture()
 
   @Test
   fun `outline shows top-level declarations in source order`(): Unit = timeoutRunBlocking {
@@ -149,9 +142,9 @@ class StarlarkStructureViewTest {
       withModel("VALUE = 1\n") { model ->
         val originalEntry = model.root.children.single() as StructureViewTreeElement
         val document = codeInsightFixture.editor.document
-        WriteCommandAction.runWriteCommandAction(projectFixture.get()) {
+        WriteCommandAction.runWriteCommandAction(codeInsightFixture.project) {
           document.insertString(document.textLength, "def helper():\n    pass\n")
-          PsiDocumentManager.getInstance(projectFixture.get()).commitDocument(document)
+          PsiDocumentManager.getInstance(codeInsightFixture.project).commitDocument(document)
         }
         assertEquals(listOf("VALUE", "helper"), names(model))
         assertEquals(originalEntry, model.root.children.first())
@@ -176,8 +169,6 @@ class StarlarkStructureViewTest {
         """.trimIndent(),
       )
     }
-    val repoRoot = buildFile.virtualFile.parent.parent.parent
-    projectFixture.get().setRepoMapping { mainRepo(Path.of(repoRoot.path)) }
     withContext(Dispatchers.EDT) {
       codeInsightFixture.configureFromExistingVirtualFile(buildFile.virtualFile)
       val editor = codeInsightFixture.editor

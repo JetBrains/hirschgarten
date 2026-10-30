@@ -1,12 +1,17 @@
 package org.jetbrains.bazel.languages.projectview.documentation
 
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkDocumentationTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.string.shouldContain
+import org.jetbrains.bazel.languages.starlark.fixtures.documentationAtCaret
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class ProjectViewFlagDocumentationTest : StarlarkDocumentationTestCase() {
+@BazelTestApplication
+class ProjectViewFlagDocumentationTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should show documentation for build flags`() {
     myFixture.configureByText(
@@ -17,9 +22,9 @@ class ProjectViewFlagDocumentationTest : StarlarkDocumentationTestCase() {
       """.trimIndent(),
     )
 
-    val documentation = getDocumentationAtCaret()
-    assertNotNull(documentation)
-    assertTrue(documentation!!.contains("action_cache_store_output_metadata"))
+    val documentation = myFixture.documentationAtCaret()
+    documentation.shouldNotBeNull()
+    documentation shouldContain "action_cache_store_output_metadata"
   }
 
   @Test
@@ -32,7 +37,7 @@ class ProjectViewFlagDocumentationTest : StarlarkDocumentationTestCase() {
       """.trimIndent(),
     )
 
-    val documentation = getDocumentationAtCaret()
-    assertNull(documentation)
+    val documentation = myFixture.documentationAtCaret()
+    documentation.shouldBeNull()
   }
 }

@@ -1,19 +1,18 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-internal class StarlarkControlFlowContextInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+internal class StarlarkControlFlowContextInspectionTest : StarlarkInspectionTestCase() {
   private val descriptionBreak = StarlarkBundle.message("inspection.description.break.outside.for.loop")
   private val descriptionContinue = StarlarkBundle.message("inspection.description.continue.outside.for.loop")
   private val descriptionReturn = StarlarkBundle.message("inspection.description.return.outside.function")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkControlFlowContextInspection())
   }

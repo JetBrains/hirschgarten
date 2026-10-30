@@ -1,14 +1,16 @@
 package org.jetbrains.bazel.languages.bazelrc.completion
 
+import com.intellij.testFramework.runInEdtAndGet
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.collections.shouldNotHaveSize
+import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {
   @Test
   fun `should complete at beginning of a flag`() {
@@ -16,7 +18,7 @@ class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {
     myFixture.configureByText(".bazelrc", "common <caret>")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldNotHaveSize 0
@@ -28,7 +30,7 @@ class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {
     myFixture.configureByText(".bazelrc", """common <caret>asdfa""")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     lookups shouldNotHaveSize 0
@@ -40,7 +42,7 @@ class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {
     myFixture.configureByText(".bazelrc", """startup <caret>""")
 
     // when
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     // then
     // commands that are specific for startup
@@ -58,7 +60,7 @@ class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {
     // when
     myFixture.completeBasic()
     myFixture.type("cache")
-    val lookups = myFixture.lookupElementStrings!!.toTypedArray()
+    val lookups = runInEdtAndGet { myFixture.lookupElementStrings }.shouldNotBeNull()
 
     // then
     lookups shouldContainAll listOf("--action_cache", "--noaction_cache", "--cache_test_results", "--nocache_test_results")

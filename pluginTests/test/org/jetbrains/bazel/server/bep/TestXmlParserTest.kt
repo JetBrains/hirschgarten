@@ -6,8 +6,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.util.BspClientTestNotifier
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -46,7 +46,8 @@ class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
   override fun onCachedTestLog(testLog: CachedTestLog) {}
 }
 
-class TestXmlParserTest : MockProjectBaseTest() {
+@BazelTestApplication
+class TestXmlParserTest {
   private val javaTargetKind = TargetKindService.getInstance().findPredefinedRule("java_test")
   private val pythonTargetKind = TargetKindService.getInstance().findPredefinedRule("py_test")
 

@@ -9,30 +9,23 @@ import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.DIRECTORIES_KEY
 import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
-import org.jetbrains.bazel.languages.projectview.ProjectView
-import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.SHARD_SYNC_KEY
 import org.jetbrains.bazel.languages.projectview.TARGETS_KEY
 import org.jetbrains.bazel.languages.projectview.imports.Import
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.test.framework.testBazel
-import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.parseProjectView
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import kotlin.io.path.Path
 
 @BazelTestApplication
 class ProjectViewImportTest {
-  private val myFixture by bazelCodeInsightFixture()
-
-  private val project get() = myFixture.project
-  private val rootDir get() = myFixture.testBazel.workspaceRoot
+  private val testBazel by testBazelProjectFixture()
 
   @Test
   fun `test import no overlap`() {
-    myFixture.testBazel.writeFile(
+    testBazel.writeFile(
       "A.bazelproject",
       """
       import_depth: 123
@@ -42,7 +35,7 @@ class ProjectViewImportTest {
       """.trimIndent(),
     )
     val main =
-      myFixture.testBazel.writeFile(
+      testBazel.writeFile(
         "B.bazelproject",
         """
         shard_sync: false
@@ -53,7 +46,7 @@ class ProjectViewImportTest {
         import A.bazelproject
         """.trimIndent(),
       ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 123
     projectView.getSection(SHARD_SYNC_KEY) shouldBe false
     projectView.getSection(TARGETS_KEY) shouldContainExactly
@@ -70,7 +63,7 @@ class ProjectViewImportTest {
 
   @Test
   fun `test import full overlap`() {
-    myFixture.testBazel.writeFile(
+    testBazel.writeFile(
       "A.bazelproject",
       """
       import_depth: 123
@@ -80,7 +73,7 @@ class ProjectViewImportTest {
       """.trimIndent(),
     )
     val main =
-      myFixture.testBazel.writeFile(
+      testBazel.writeFile(
         "B.bazelproject",
         """
         import_depth: 321
@@ -91,7 +84,7 @@ class ProjectViewImportTest {
         import A.bazelproject
         """.trimIndent(),
       ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 123
     projectView.getSection(TARGETS_KEY) shouldContainExactly
       listOf(
@@ -104,7 +97,7 @@ class ProjectViewImportTest {
 
   @Test
   fun `test import full overlap import first`() {
-    myFixture.testBazel.writeFile(
+    testBazel.writeFile(
       "A.bazelproject",
       """
       import_depth: 123
@@ -114,7 +107,7 @@ class ProjectViewImportTest {
       """.trimIndent(),
     )
     val main =
-      myFixture.testBazel.writeFile(
+      testBazel.writeFile(
         "B.bazelproject",
         """
         import A.bazelproject
@@ -125,7 +118,7 @@ class ProjectViewImportTest {
           targetD
         """.trimIndent(),
       ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.getSection(IMPORT_DEPTH_KEY) shouldBe 321
     projectView.getSection(TARGETS_KEY) shouldContainExactly
       listOf(
@@ -138,9 +131,9 @@ class ProjectViewImportTest {
 
   @Test
   fun `test resolved import mapping`() {
-    val importedFile = myFixture.testBazel.writeFile("A.bazelproject", "import_depth: 1").toNioPath()
-    val main = myFixture.testBazel.writeFile("B.bazelproject", "import A.bazelproject").toNioPath()
-    val projectView = parse(main)
+    val importedFile = testBazel.writeFile("A.bazelproject", "import_depth: 1").toNioPath()
+    val main = testBazel.writeFile("B.bazelproject", "import A.bazelproject").toNioPath()
+    val projectView = testBazel.parseProjectView(main)
     projectView.imports.shouldBeSingleton {
       val resolved = it.shouldBeInstanceOf<Import.Resolved>()
       resolved.path shouldBe importedFile
@@ -151,7 +144,7 @@ class ProjectViewImportTest {
   @Test
   fun `test unresolved import mapping`() {
     val main =
-      myFixture.testBazel.writeFile(
+      testBazel.writeFile(
         "B.bazelproject",
         """
         directories:
@@ -160,7 +153,7 @@ class ProjectViewImportTest {
         import missing.bazelproject
         """.trimIndent(),
       ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.imports.shouldBeSingleton {
       val unresolved = it.shouldBeInstanceOf<Import.Unresolved>()
       unresolved.isRequired shouldBe true
@@ -174,7 +167,7 @@ class ProjectViewImportTest {
   @Test
   fun `test other sections are mapped when import is missing`() {
     val main =
-      myFixture.testBazel.writeFile(
+      testBazel.writeFile(
         "B.bazelproject",
         """
         import_depth: 42
@@ -185,7 +178,7 @@ class ProjectViewImportTest {
         import missing.bazelproject
         """.trimIndent(),
       ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.imports.shouldBeSingleton {
       it.shouldBeInstanceOf<Import.Unresolved>()
     }
@@ -199,7 +192,7 @@ class ProjectViewImportTest {
 
   @Test
   fun `import should work with subdirectories`() {
-    myFixture.testBazel.writeFile(
+    testBazel.writeFile(
       "subdirectory/imported.bazelproject",
       """
       directories:
@@ -208,21 +201,21 @@ class ProjectViewImportTest {
     )
 
     val main =
-      myFixture.testBazel.writeFile(
+      testBazel.writeFile(
         "main.bazelproject",
         """
         import subdirectory/imported.bazelproject
         """.trimIndent(),
       ).toNioPath()
 
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
 
     projectView.getSection(DIRECTORIES_KEY) shouldContainExactly listOf(ExcludableValue.included(Path("dirA")))
   }
 
   @Test
   fun `test self import does not recurse infinitely nor duplicate sections`() {
-    val main = myFixture.testBazel.writeFile(
+    val main = testBazel.writeFile(
       "A.bazelproject",
       """
         targets:
@@ -231,7 +224,7 @@ class ProjectViewImportTest {
         import A.bazelproject
         """.trimIndent(),
     ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.getSection(TARGETS_KEY) shouldContainExactly listOf(ExcludableValue.included(Label.parse("targetA")))
     projectView.imports.shouldBeSingleton {
       it.shouldBeInstanceOf<Import.Resolved>()
@@ -240,7 +233,7 @@ class ProjectViewImportTest {
 
   @Test
   fun `test import cycle back to root terminates without duplicating sections`() {
-    myFixture.testBazel.writeFile(
+    testBazel.writeFile(
       "B.bazelproject",
       """
       targets:
@@ -249,7 +242,7 @@ class ProjectViewImportTest {
       import A.bazelproject
       """.trimIndent(),
     )
-    val main = myFixture.testBazel.writeFile(
+    val main = testBazel.writeFile(
       "A.bazelproject",
       """
         targets:
@@ -258,12 +251,10 @@ class ProjectViewImportTest {
         import B.bazelproject
         """.trimIndent(),
     ).toNioPath()
-    val projectView = parse(main)
+    val projectView = testBazel.parseProjectView(main)
     projectView.getSection(TARGETS_KEY) shouldContainExactly listOf(
       ExcludableValue.included(Label.parse("targetA")),
       ExcludableValue.included(Label.parse("targetB")),
     )
   }
-
-  private fun parse(source: Path): ProjectView = ProjectViewFactory.from(project, source = source, root = rootDir)
 }

@@ -1,19 +1,23 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldContainAll
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import io.kotest.matchers.nulls.shouldBeNull
+import org.jetbrains.bazel.commons.BazelRelease
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
+@BazelTestApplication
+class BazelNativeRulesCompletionContributorTest {
+  private val myFixture by bazelCodeInsightFixture(release = BazelRelease(9, 1))
+
   @Test
   fun `should complete cc native rule`() {
     myFixture.configureByText("BUILD", "")
     myFixture.type("cc")
 
-    val ccLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val ccLookups = myFixture.completeBasicLookupStrings()
 
     ccLookups shouldContainAll
       listOf(
@@ -29,7 +33,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
     myFixture.configureByText("BUILD", "")
     myFixture.type("fd")
-    val fdoLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val fdoLookups = myFixture.completeBasicLookupStrings()
 
     fdoLookups shouldContainAll
       listOf(
@@ -39,7 +43,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
     myFixture.configureByText("BUILD", "")
     myFixture.type("pro")
-    val propLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val propLookups = myFixture.completeBasicLookupStrings()
 
     propLookups shouldContainAll
       listOf(
@@ -52,7 +56,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText("BUILD", "")
     myFixture.type("java")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -66,7 +70,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText("BUILD", "")
     myFixture.type("obj")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -80,7 +84,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText("BUILD", "")
     myFixture.type("proto")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -99,7 +103,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText("BUILD", "")
     myFixture.type("py")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -115,7 +119,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     myFixture.configureByText("BUILD", "")
     myFixture.type("sh")
 
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups shouldContainAll
       listOf(
@@ -132,7 +136,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
     val lookups = myFixture.completeBasic()
 
-    assertNull(lookups)
+    lookups.shouldBeNull()
     val expected = "java_binary(<caret>)"
 
     myFixture.checkResult(expected)

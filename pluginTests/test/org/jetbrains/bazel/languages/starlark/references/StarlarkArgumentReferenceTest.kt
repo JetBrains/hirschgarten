@@ -1,25 +1,24 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.openapi.application.runReadActionBlocking
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkReferencesTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkArgumentReferenceTest : StarlarkReferencesTestCase() {
   @Test
   fun `should resolve arguments in function call`() {
     // given
     myFixture.configureByFile("ArgumentReference.bzl")
     // when
-    val expectedResolved = getParameters()
-    val arguments = getNamedArguments()
-    val resolved = arguments?.map { it.reference?.resolve() }
+    val expectedResolved = runReadActionBlocking { getParameters() }
+    val resolved = runReadActionBlocking { getNamedArguments()?.map { it.reference?.resolve() } }
     // then
     resolved shouldContainExactlyInAnyOrder expectedResolved
   }
@@ -29,9 +28,8 @@ class StarlarkArgumentReferenceTest : StarlarkReferencesTestCase() {
     // given
     myFixture.configureByFile("KeywordVariadicArgumentReference.bzl")
     // when
-    val expectedResolved = getParameters()
-    val arguments = getNamedArguments()
-    val resolved = arguments?.map { it.reference?.resolve() }
+    val expectedResolved = runReadActionBlocking { getParameters() }
+    val resolved = runReadActionBlocking { getNamedArguments()?.map { it.reference?.resolve() } }
     // then
     resolved shouldContainExactlyInAnyOrder expectedResolved
   }

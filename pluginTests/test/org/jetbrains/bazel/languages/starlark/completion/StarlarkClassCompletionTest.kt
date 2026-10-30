@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldContainOnly
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
@@ -39,7 +40,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
@@ -71,7 +72,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyOtherClass\""))
   }
@@ -104,7 +105,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.\"", "\"com.exampleKt.\""))
   }
@@ -129,7 +130,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContain("\"com.\"")
   }
@@ -155,7 +156,7 @@ class StarlarkClassCompletionTest {
       )
       """.trimMargin(),
     )
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContainExactlyInAnyOrder(listOf("\"com.example.MyClass\"", "\"com.example.MyClass.\""))
   }
@@ -181,7 +182,7 @@ class StarlarkClassCompletionTest {
       )
       """.trimMargin(),
     )
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContain("\"com.example.MyClass.NestedClass\"")
   }
@@ -205,7 +206,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldBeEmpty()
   }
@@ -263,7 +264,7 @@ class StarlarkClassCompletionTest {
 
     myFixture.completeBasic()
     myFixture.type('\n')
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     myFixture.checkResult(
       """
@@ -310,7 +311,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
@@ -342,7 +343,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
@@ -373,7 +374,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 
@@ -404,7 +405,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups.shouldContainOnly("\"com.example.mf.Valid\"")
   }
 
@@ -435,7 +436,7 @@ class StarlarkClassCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = myFixture.completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
     lookups.shouldContainOnly("\"com.example.Valid\"")
   }
 }

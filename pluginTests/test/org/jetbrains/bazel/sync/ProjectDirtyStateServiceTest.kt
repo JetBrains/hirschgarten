@@ -1,15 +1,21 @@
 package org.jetbrains.bazel.sync
 
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
-internal class ProjectDirtyStateServiceTest : MockProjectBaseTest() {
+@BazelTestApplication
+internal class ProjectDirtyStateServiceTest {
+  private val projectDir = tempPathFixture()
+  private val project by projectFixture(projectDir, openAfterCreation = false)
+
   @Test
   fun `a new service is clean`() {
     val service = service()

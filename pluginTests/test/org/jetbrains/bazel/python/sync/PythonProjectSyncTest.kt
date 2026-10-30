@@ -77,8 +77,8 @@ import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -527,8 +527,8 @@ class PythonProjectSyncTest {
 
   @Test
   fun `shared source fallback does not select an outdated hardlink`(): Unit = timeoutRunBlocking {
-    val info = testBazelInfo(workspaceRoot = testBazel.workspaceRoot, outputBase = testBazel.outputBase)
-    val source = info.execRoot.resolve("bazel-out/${TEST_OUTPUT_ROOT.path}/generated/shared.py")
+    val info = testBazel.bazelInfo
+    val source = info.bazelBin.resolve("generated/shared.py")
     source.parent.createDirectories()
     source.writeText("VALUE = 1\n")
     val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
@@ -1065,7 +1065,7 @@ class PythonProjectSyncTest {
        .map { generateExpectedSourceRootEntity(it, "python-resource", parentModuleEntity) }).toList()
 
   private fun bazelInfo(execRoot: Path = testBazel.workspaceRoot): BazelInfo =
-    testBazelInfo(workspaceRoot = testBazel.workspaceRoot, outputBase = testBazel.workspaceRoot, execRoot = execRoot)
+    testProjectBazelInfo(workspaceRoot = testBazel.workspaceRoot, outputBase = testBazel.workspaceRoot, execRoot = execRoot)
 
   private fun outputResolver(execRoot: Path = testBazel.workspaceRoot): OutputLocationResolver =
     DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo(execRoot))
@@ -1088,10 +1088,7 @@ class PythonProjectSyncTest {
   }
 
   private fun createPythonFile(relativePath: String, text: String): PyFile {
-    val path = testBazel.workspaceRoot.resolve(relativePath)
-    path.parent.createDirectories()
-    path.writeText(text)
-    val virtualFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(path)!!
+    val virtualFile = testBazel.writeFile(relativePath, text)
     return runReadActionBlocking {
       PsiManager.getInstance(testBazel.project).findFile(virtualFile) as PyFile
     }

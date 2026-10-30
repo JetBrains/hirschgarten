@@ -7,7 +7,10 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.persistent.PersistentFS
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.createDirectory
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledOnOs
@@ -18,14 +21,15 @@ import kotlin.io.path.pathString
 
 private const val TEST_LINE_PREFIX = "it really doesn't matter what is here"
 
-class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class AbsoluteAndRelativePathsConsoleFilterTest {
+  private val testBazel by testBazelProjectFixture()
   private lateinit var filter: AbsoluteAndRelativePathsConsoleFilter
 
   @BeforeEach
-  override fun beforeEach() {
-    super.beforeEach()
+  fun setUp() {
     // given
-    filter = AbsoluteAndRelativePathsConsoleFilter(project)
+    filter = AbsoluteAndRelativePathsConsoleFilter(testBazel.project)
   }
 
   @Test
@@ -367,8 +371,8 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should not pollute VFS with paths in Bazel's output (BAZEL-3614)`() {
     // given
-    val path = projectBasePath.resolve("bazel-bin/path/in/output").createDirectories()
-    val bazelBin = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(projectBasePath.resolve("bazel-bin"))!!
+    val path = testBazel.workspaceRoot.resolve("bazel-bin/path/in/output").createDirectories()
+    val bazelBin = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(testBazel.workspaceRoot.resolve("bazel-bin"))!!
 
     val line = "$path\n"
 
@@ -380,11 +384,7 @@ class AbsoluteAndRelativePathsConsoleFilterTest : WorkspaceModelBaseTest() {
     PersistentFS.getInstance().wereChildrenAccessed(bazelBin) shouldBe false
   }
 
-  private fun createPathInProject(relativePath: String): Path =
-    projectBasePath
-      .resolve(relativePath)
-      .createDirectories()
-      .also { VirtualFileManager.getInstance().refreshAndFindFileByNioPath(it) }
+  private fun createPathInProject(relativePath: String): Path = testBazel.createDirectory(relativePath).toNioPath()
 
   private fun Filter.ResultItem.shouldHave(
     expectedStartOffset: Int,

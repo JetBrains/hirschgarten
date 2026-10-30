@@ -3,25 +3,25 @@ package org.jetbrains.bazel.languages.starlark.inspection
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.languages.starlark.inspection.StarlarkBindingConflictInspection.NavigateToConflictingDeclarationAction
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 
-@RunWith(JUnit4::class)
-internal class StarlarkBindingConflictInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+internal class StarlarkBindingConflictInspectionTest : StarlarkInspectionTestCase() {
   private val descriptionCrossKindGlobal = StarlarkBundle.message("inspection.description.binding.conflict.cross.kind", "x", "global")
   private val descriptionCrossKindFileLocal = StarlarkBundle.message("inspection.description.binding.conflict.cross.kind", "x", "file-local")
   private val descriptionSameKind = StarlarkBundle.message("inspection.description.binding.conflict.same.kind", "x")
   private val descriptionOrig = StarlarkBundle.message("inspection.description.binding.conflict.original", "x")
   private val quickFixText = StarlarkBundle.message("inspection.quickfix.show.conflicting.declarations.text", "x")
 
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkBindingConflictInspection())
   }
@@ -254,17 +254,19 @@ internal class StarlarkBindingConflictInspectionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val originalOffset = myFixture.file.text.indexOf("x = 1")
-    val navigateToOriginal = NavigateToConflictingDeclarationAction(navigatableAt(originalOffset))
-    myFixture.launchAction(navigateToOriginal.asIntention())
-    PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+    runInEdtAndWait {
+      val originalOffset = myFixture.file.text.indexOf("x = 1")
+      val navigateToOriginal = NavigateToConflictingDeclarationAction(navigatableAt(originalOffset))
+      myFixture.launchAction(navigateToOriginal.asIntention())
+      PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
-    myFixture.checkResult(
-      """
-      <selection><caret>x</selection> = 1
-      x = 2
-      """.trimIndent(),
-    )
+      myFixture.checkResult(
+        """
+        <selection><caret>x</selection> = 1
+        x = 2
+        """.trimIndent(),
+      )
+    }
   }
 
   @Test
@@ -279,19 +281,21 @@ internal class StarlarkBindingConflictInspectionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val functionNameOffset = myFixture.file.text.indexOf("x")
-    val navigateToFunction = NavigateToConflictingDeclarationAction(navigatableAt(functionNameOffset))
-    myFixture.launchAction(navigateToFunction.asIntention())
-    PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+    runInEdtAndWait {
+      val functionNameOffset = myFixture.file.text.indexOf("x")
+      val navigateToFunction = NavigateToConflictingDeclarationAction(navigatableAt(functionNameOffset))
+      myFixture.launchAction(navigateToFunction.asIntention())
+      PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
-    myFixture.checkResult(
-      """
-      def <selection><caret>x</selection>():
-          pass
+      myFixture.checkResult(
+        """
+        def <selection><caret>x</selection>():
+            pass
 
-      x = 1
-      """.trimIndent(),
-    )
+        x = 1
+        """.trimIndent(),
+      )
+    }
   }
 
   @Test
@@ -304,17 +308,19 @@ internal class StarlarkBindingConflictInspectionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val firstLoadedSymbolOffset = myFixture.file.text.indexOf("\"x\"")
-    val navigateToFirstLoadedSymbol = NavigateToConflictingDeclarationAction(navigatableAt(firstLoadedSymbolOffset))
-    myFixture.launchAction(navigateToFirstLoadedSymbol.asIntention())
-    PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+    runInEdtAndWait {
+      val firstLoadedSymbolOffset = myFixture.file.text.indexOf("\"x\"")
+      val navigateToFirstLoadedSymbol = NavigateToConflictingDeclarationAction(navigatableAt(firstLoadedSymbolOffset))
+      myFixture.launchAction(navigateToFirstLoadedSymbol.asIntention())
+      PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
-    myFixture.checkResult(
-      """
-      load("//:a.bzl", <selection><caret>"x"</selection>)
-      load("//:b.bzl", "x")
-      """.trimIndent(),
-    )
+      myFixture.checkResult(
+        """
+        load("//:a.bzl", <selection><caret>"x"</selection>)
+        load("//:b.bzl", "x")
+        """.trimIndent(),
+      )
+    }
   }
 
   @Test
@@ -327,17 +333,19 @@ internal class StarlarkBindingConflictInspectionTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val firstLoadedSymbolOffset = myFixture.file.text.indexOf("x")
-    val navigateToFirstLoadedSymbol = NavigateToConflictingDeclarationAction(navigatableAt(firstLoadedSymbolOffset))
-    myFixture.launchAction(navigateToFirstLoadedSymbol.asIntention())
-    PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+    runInEdtAndWait {
+      val firstLoadedSymbolOffset = myFixture.file.text.indexOf("x")
+      val navigateToFirstLoadedSymbol = NavigateToConflictingDeclarationAction(navigatableAt(firstLoadedSymbolOffset))
+      myFixture.launchAction(navigateToFirstLoadedSymbol.asIntention())
+      PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
-    myFixture.checkResult(
-      """
-      load("//:a.bzl", <selection><caret>x</selection>="y")
-      load("//:b.bzl", "x")
-      """.trimIndent(),
-    )
+      myFixture.checkResult(
+        """
+        load("//:a.bzl", <selection><caret>x</selection>="y")
+        load("//:b.bzl", "x")
+        """.trimIndent(),
+      )
+    }
   }
 
   private fun navigatableAt(offset: Int): NavigatablePsiElement {

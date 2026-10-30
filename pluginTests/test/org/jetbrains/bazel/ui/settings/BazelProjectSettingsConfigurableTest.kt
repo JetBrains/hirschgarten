@@ -6,12 +6,16 @@ import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.replaceService
 import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.util.ui.UIUtil
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.BazelEnvironmentService
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,12 +24,12 @@ import org.mockito.Mockito.reset
 import org.mockito.Mockito.`when`
 import java.nio.file.Path
 import kotlin.io.path.createFile
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
-internal class BazelProjectSettingsConfigurableTest : MockProjectBaseTest() {
+@BazelTestApplication
+internal class BazelProjectSettingsConfigurableTest {
+  private val testBazel by testBazelProjectFixture(openAfterCreation = false)
+  private val project get() = testBazel.project
+
   private lateinit var detectedBuildifier: Path
   private lateinit var environmentService: BazelEnvironmentService
 
@@ -34,7 +38,7 @@ internal class BazelProjectSettingsConfigurableTest : MockProjectBaseTest() {
     detectedBuildifier = createExecutable("detected-buildifier")
     environmentService = mock(BazelEnvironmentService::class.java)
     `when`(environmentService.findInPath("buildifier")).thenAnswer { detectedBuildifier }
-    project.replaceService(BazelEnvironmentService::class.java, environmentService, disposable)
+    project.replaceService(BazelEnvironmentService::class.java, environmentService, testBazel.disposable)
   }
 
   @AfterEach
@@ -60,11 +64,11 @@ internal class BazelProjectSettingsConfigurableTest : MockProjectBaseTest() {
       field.text to modified
     }
 
-    assertEquals("", text)
-    assertTrue(modified)
-    assertNull(project.bazelProjectSettings.buildifierExecutablePath)
+    text shouldBe ""
+    modified shouldBe true
+    project.bazelProjectSettings.buildifierExecutablePath.shouldBeNull()
     detectedBuildifier = createExecutable("new-detected-buildifier")
-    assertEquals(detectedBuildifier.toString(), project.bazelProjectSettings.getBuildifierPathString(project))
+    project.bazelProjectSettings.getBuildifierPathString(project) shouldBe detectedBuildifier.toString()
   }
 
   @Test
@@ -75,8 +79,8 @@ internal class BazelProjectSettingsConfigurableTest : MockProjectBaseTest() {
       field.text to configurable.isModified()
     }
 
-    assertEquals(detectedBuildifier.toString(), text)
-    assertFalse(modified)
+    text shouldBe detectedBuildifier.toString()
+    modified shouldBe false
   }
 
   @Test
@@ -90,13 +94,13 @@ internal class BazelProjectSettingsConfigurableTest : MockProjectBaseTest() {
       field.text to configurable.isModified()
     }
 
-    assertEquals(customBuildifier.toString(), text)
-    assertFalse(modified)
-    assertEquals(customBuildifier, project.bazelProjectSettings.buildifierExecutablePath)
+    text shouldBe customBuildifier.toString()
+    modified shouldBe false
+    project.bazelProjectSettings.buildifierExecutablePath shouldBe customBuildifier
   }
 
   private fun createExecutable(name: String): Path =
-    projectDir.get().resolve(name).createFile().apply {
+    testBazel.workspaceRoot.resolve(name).createFile().apply {
       check(toFile().setExecutable(true))
     }
 

@@ -1,20 +1,19 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkFunctionParameterValidationInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkFunctionParameterValidationInspectionTest : StarlarkInspectionTestCase() {
   val descriptionDuplicate = StarlarkBundle.message("inspection.description.parameters.duplicate.name", "a")
   val descriptionMultipleVariadic = StarlarkBundle.message("inspection.description.parameters.multiple.variadic")
   val descriptionAfterKeywordVariadic = StarlarkBundle.message("inspection.description.parameters.after.keyword.variadic")
   val descriptionMandatoryAfterOptional = StarlarkBundle.message("inspection.description.parameters.mandatory.after.optional")
   val descriptionAsterisk = StarlarkBundle.message("inspection.description.parameters.bare.asterisk")
-  @Before
+  @BeforeEach
   fun beforeEach() {
     myFixture.enableInspections(StarlarkFunctionParameterValidationInspection())
   }

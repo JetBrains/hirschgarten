@@ -1,14 +1,20 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.openapi.application.runReadActionBlocking
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.inspection.StarlarkFunctionCallValidationInspection
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class ModuleOverrideInsightTest : BasePlatformTestCase() {
+@BazelTestApplication
+class ModuleOverrideInsightTest {
+  private val myFixture by bazelCodeInsightFixture(release = BazelRelease(9, 1))
+
   @Test
   fun `should resolve reference to original bazel_dep`() {
     myFixture.configureByText(
@@ -19,11 +25,11 @@ class ModuleOverrideInsightTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val reference = myFixture.getReferenceAtCaretPosition()
-    assertNotNull(reference)
-    val resolved = reference!!.resolve()
-    assertNotNull(resolved)
-    assertEquals("bazel_dep(name = \"dep\", version=\"1.2.3\")", resolved!!.text)
+    val resolvedText = runReadActionBlocking {
+      val reference = myFixture.getReferenceAtCaretPosition().shouldNotBeNull()
+      reference.resolve().shouldNotBeNull().text
+    }
+    resolvedText shouldBe "bazel_dep(name = \"dep\", version=\"1.2.3\")"
   }
 
   @Test
@@ -35,10 +41,11 @@ class ModuleOverrideInsightTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val reference = myFixture.getReferenceAtCaretPosition()
-    assertNotNull(reference)
-    val resolved = reference!!.resolve()
-    assertNull(resolved)
+    val resolved = runReadActionBlocking {
+      val reference = myFixture.getReferenceAtCaretPosition().shouldNotBeNull()
+      reference.resolve()
+    }
+    resolved.shouldBeNull()
   }
 
   @Test

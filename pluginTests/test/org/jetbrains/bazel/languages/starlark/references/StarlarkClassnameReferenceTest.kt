@@ -1,16 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiClass
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
 import org.jetbrains.bazel.languages.starlark.bazel.StarlarkClassParametersProvider
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.testBazel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,9 +18,6 @@ import org.junit.jupiter.api.Test
 @BazelTestApplication
 class StarlarkClassnameReferenceTest {
   private val myFixture by bazelCodeInsightFixture()
-
-  @TestDisposable
-  lateinit var disposable: Disposable
 
   @Test
   fun `should resolve kotlin class`() {
@@ -103,7 +99,7 @@ class StarlarkClassnameReferenceTest {
       object : StarlarkClassParametersProvider {
         override fun getClassnameParameters(): List<String> = listOf("name_of_the_class")
       }
-    ExtensionTestUtil.maskExtensions(StarlarkClassParametersProvider.EP_NAME, listOf(provider), disposable)
+    ExtensionTestUtil.maskExtensions(StarlarkClassParametersProvider.EP_NAME, listOf(provider), myFixture.testBazel.disposable)
 
     myFixture.addFileToProject(
       "com/example/MyClass.java",

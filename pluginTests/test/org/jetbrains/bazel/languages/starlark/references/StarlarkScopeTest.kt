@@ -161,7 +161,6 @@ class StarlarkScopeTest {
   @Test
   fun `falls back to load`() {
     // given
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD", "")
     val defsFile =
       myFixture.addFileToProject(

@@ -1,37 +1,33 @@
 package org.jetbrains.bazel.golang.coverage
 
 import com.intellij.coverage.CoverageLoadErrorReporter
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findOrCreateDirectory
-import com.intellij.openapi.vfs.refreshAndFindVirtualDirectory
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.testFramework.junit5.TestApplication
-import com.intellij.testFramework.junit5.fixture.projectFixture
-import com.intellij.testFramework.junit5.fixture.tempPathFixture
-import com.intellij.testFramework.utils.vfs.createFile
+import com.intellij.platform.backend.workspace.storeAndGet
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.run.coverage.BazelCoverageReportParser
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
+import org.jetbrains.bazel.test.framework.testproject.updateWorkspaceModel
+import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
+import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.writeText
 
-@TestApplication
+@BazelTestApplication
 class BazelGoCoverageReportParserTest {
-  private val tempDirFixture = tempPathFixture()
-  private val tempDir by tempDirFixture
-  private val projectFixture = projectFixture(pathFixture = tempDirFixture, openAfterCreation = true)
-  private val project by projectFixture
+  private val testBazel by testBazelProjectFixture()
 
   @Test
   fun `parser resolves package sources through workspace model and falls back to project root`() {
-    val packageSource = createSource("generated", "calculator.go")
-    val fallbackSource = createSource("", "fallback.go")
+    val packageSource = testBazel.writeFile("generated/calculator.go")
+    val fallbackSource = testBazel.writeFile("fallback.go")
     addGoPackage("github.com/example/project/pkg", packageSource)
-    val report = tempDir.resolve("coverage.out")
+    val report = testBazel.workspaceRoot.resolve("coverage.out")
     report.writeText(
       """
         mode: atomic
@@ -53,10 +49,10 @@ class BazelGoCoverageReportParserTest {
 
   @Test
   fun `parser reports package sources with colliding coverage paths`() {
-    val firstSource = createSource("first", "duplicate.go")
-    val secondSource = createSource("second", "duplicate.go")
+    val firstSource = testBazel.writeFile("first/duplicate.go")
+    val secondSource = testBazel.writeFile("second/duplicate.go")
     addGoPackage("github.com/example/project/collision", firstSource, secondSource)
-    val report = tempDir.resolve("collision.out")
+    val report = testBazel.workspaceRoot.resolve("collision.out")
     report.writeText(
       """
         mode: atomic
@@ -72,26 +68,16 @@ class BazelGoCoverageReportParserTest {
     result.warnings.single().contains(secondSource.path) shouldBe true
   }
 
-  private fun createSource(directory: String, fileName: String): VirtualFile =
-    runWriteAction {
-      val parent = if (directory.isEmpty()) projectRoot else projectRoot.findOrCreateDirectory(directory)
-      parent.createFile(fileName)
-    }
-
   private fun addGoPackage(importPath: String, vararg sources: VirtualFile) {
-    val workspaceModel = project.workspaceModel
-    val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
-    runWriteAction {
-      workspaceModel.updateProjectModel("add Go package $importPath") { storage ->
-        storage.addEntity(
-          BazelGoPackageEntity(
-            importPath = importPath,
-            sources = sources.map { it.toVirtualFileUrl(virtualFileUrlManager) },
-            directDepsImportPaths = emptySet(),
-            entitySource = BazelDummyEntitySource,
-          ),
-        )
-      }
+    testBazel.updateWorkspaceModel { storage ->
+      storage.addEntity(
+        BazelGoPackageEntity(
+          importPath = importPath,
+          sources = sources.map(testBazel.virtualFileUrlManager::storeAndGet),
+          directDepsImportPaths = emptySet(),
+          entitySource = BazelDummyEntitySource,
+        ),
+      )
     }
   }
 
@@ -102,17 +88,14 @@ class BazelGoCoverageReportParserTest {
     val consumedFiles =
       parser.parse(
         listOf(report),
-        project,
-        projectRoot,
+        testBazel.project,
+        testBazel.project.rootDir,
         reporter,
       ) { file, lineNumber, hits ->
         coverage.add(Triple(file, lineNumber, hits))
       }
     return ParseResult(consumedFiles, coverage, reporter.warnings)
   }
-
-  private val projectRoot: VirtualFile
-    get() = checkNotNull(tempDir.refreshAndFindVirtualDirectory())
 }
 
 private data class ParseResult(

@@ -3,17 +3,19 @@ package org.jetbrains.bazel.extension
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class TreeTargetClassifierTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+class TreeTargetClassifierTest {
+  private val testBazel by testBazelProjectFixture()
   lateinit var classifier: TreeTargetClassifier
 
   @BeforeEach
-  override fun beforeEach() {
-    super.beforeEach()
-    classifier = TreeTargetClassifier(project)
+  fun setUp() {
+    classifier = TreeTargetClassifier(testBazel.project)
   }
 
   @Test

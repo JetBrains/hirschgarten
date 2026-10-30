@@ -1,16 +1,19 @@
 package org.jetbrains.bazel.languages.starlark.globbing
 
+import com.intellij.openapi.progress.EmptyProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 
-@RunWith(JUnit4::class)
-internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
+@BazelTestApplication
+internal class StarlarkGlobGlobbingTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   @Test
   fun `should match simple pattern`() {
@@ -25,9 +28,9 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("*.java"))
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(setOf("include1.java", "include2.java"), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe setOf("include1.java", "include2.java")
   }
 
   @Test
@@ -43,9 +46,9 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .addPatterns(listOf("*.java"))
         .addExcludes(listOf("exclude.java"))
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(setOf("include.java"), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe setOf("include.java")
   }
 
   @Test
@@ -61,9 +64,9 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .addPatterns(listOf("*"))
         .addExcludes(listOf("*.java"))
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(setOf("include.kt"), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe setOf("include.kt")
   }
 
   @Test
@@ -78,9 +81,9 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("**/*.kt"))
       .build()
-      .execute()
+      .executeWithProgress()
 
-    assertEquals(setOf("root.kt", "dir1/file1.kt", "dir2/subdir/file2.kt"), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe setOf("root.kt", "dir1/file1.kt", "dir2/subdir/file2.kt")
   }
 
   @Test
@@ -96,10 +99,10 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .addPatterns(listOf("**"))
         .setExcludeDirectories(true)
         .build()
-        .execute()
+        .executeWithProgress()
 
     val relPaths = result.relativePathsFrom(baseDir)
-    assertEquals(setOf("file.kt"), relPaths)
+    relPaths shouldBe setOf("file.kt")
   }
 
 
@@ -114,9 +117,9 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
       StarlarkGlob
         .forPath(baseDir)
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(emptySet<String>(), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe emptySet()
   }
 
   @Test
@@ -133,16 +136,14 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .forPath(baseDir)
         .addPatterns(listOf("x/**/y.kt"))
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(
+    result.relativePathsFrom(baseDir) shouldBe
       setOf(
         "x/y.kt",
         "x/dir/y.kt",
         "x/dir/sub/y.kt",
-      ),
-      result.relativePathsFrom(baseDir),
-    )
+      )
   }
 
   @Test
@@ -160,9 +161,9 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .addPatterns(listOf("**/*.kt"))
         .addExcludes(listOf("dir/exclude/**"))
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(setOf("dir/include1.kt", "dir/sub/include2.kt"), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe setOf("dir/include1.kt", "dir/sub/include2.kt")
   }
 
   @Test
@@ -178,10 +179,14 @@ internal class StarlarkGlobGlobbingTest : BasePlatformTestCase() {
         .addPatterns(listOf("**/*.txt"))
         .setDirectoryFilter { dir -> dir.name != "skipDir" }
         .build()
-        .execute()
+        .executeWithProgress()
 
-    assertEquals(setOf("include/visible.txt"), result.relativePathsFrom(baseDir))
+    result.relativePathsFrom(baseDir) shouldBe setOf("include/visible.txt")
   }
+
+  /** A JUnit 5 test runs off the EDT, so [StarlarkGlob.execute] needs a progress indicator, as in the background highlighting. */
+  private fun StarlarkGlob.executeWithProgress(): List<VirtualFile> =
+    ProgressManager.getInstance().runProcess<List<VirtualFile>>({ execute() }, EmptyProgressIndicator())
 
   private fun List<VirtualFile>.relativePathsFrom(base: VirtualFile): Set<String> {
     return map { Path(it.path).relativeTo(Path(base.path)).invariantSeparatorsPathString }.toSet()

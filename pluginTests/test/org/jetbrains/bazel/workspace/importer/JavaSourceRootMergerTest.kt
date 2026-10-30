@@ -1,15 +1,18 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.testFramework.junit5.TestDisposable
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.FileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.workspace.importer.SourceRootBuilder.ResolvedSourceRoot
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -17,12 +20,18 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
 
-internal class JavaSourceRootMergerTest : WorkspaceModelBaseTest() {
+@BazelTestApplication
+internal class JavaSourceRootMergerTest {
+  private val root by tempPathFixture()
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   private val packageRoot: Path
-    get() = projectBasePath.resolve("pkg")
+    get() = root.resolve("pkg")
 
   private val generatedRoot: Path
-    get() = projectBasePath.resolve("bazel-out/bin/pkg")
+    get() = root.resolve("bazel-out/bin/pkg")
 
   @Test
   fun `should merge sources into the deepest common directory`() {
@@ -244,7 +253,7 @@ internal class JavaSourceRootMergerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should keep directory and non-JVM source roots as is`() {
     val file = file("pkg/src/File1.java")
-    val directory = projectBasePath.resolve("pkg/srcdir").createDirectories()
+    val directory = root.resolve("pkg/srcdir").createDirectories()
     val srcJar = file("bazel-out/bin/pkg/ksp.srcjar")
     val resource = file("pkg/src/resource.xml")
 
@@ -304,7 +313,7 @@ internal class JavaSourceRootMergerTest : WorkspaceModelBaseTest() {
     JavaSourceRootMerger(fileToTargets).merge(baseDirectory, sourceRoots.toList(), resources)
 
   private fun file(relativePath: String): Path =
-    projectBasePath.resolve(relativePath).createParentDirectories().createFile()
+    root.resolve(relativePath).createParentDirectories().createFile()
 
   private fun targetKey(label: String): WorkspaceTargetKey = WorkspaceTargetKey(Label.parse(label))
 

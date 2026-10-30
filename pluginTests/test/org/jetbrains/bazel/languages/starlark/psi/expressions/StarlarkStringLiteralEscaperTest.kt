@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.ElementManipulators
@@ -7,44 +8,43 @@ import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
 /**
  * Starlark literals are written as Kotlin raw strings, which have no escape sequences of their own, so that they read
  * exactly as they would in a BUILD file. Since `"""` cannot appear in a Kotlin raw string, Starlark triple-quoted
  * strings use `'''`.
  */
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkStringLiteralEscaperTest : StarlarkPsiTestCase() {
   @Test
   fun `should compute contents of differently quoted strings`() {
-    stringLiteral(""""abc"""").getStringContents() shouldBe "abc"
-    stringLiteral("""'abc'""").getStringContents() shouldBe "abc"
-    stringLiteral("\"\"\"abc\"\"\"").getStringContents() shouldBe "abc"
-    stringLiteral("""'''abc'''""").getStringContents() shouldBe "abc"
-    stringLiteral("'''\nabc\n'''").getStringContents() shouldBe "\nabc\n"
-    stringLiteral("""''""").getStringContents() shouldBe ""
-    stringLiteral("""''''''""").getStringContents() shouldBe ""
-    stringLiteral("""r"a\b"""").getStringContents() shouldBe """a\b"""
-    stringLiteral("""b'abc'""").getStringContents() shouldBe "abc"
-    stringLiteral("""rb'abc'""").getStringContents() shouldBe "abc"
-    stringLiteral("""'''abc'''""").getStringContents() shouldBe "abc"
+    readStringLiteral(""""abc"""") { getStringContents() } shouldBe "abc"
+    readStringLiteral("""'abc'""") { getStringContents() } shouldBe "abc"
+    readStringLiteral("\"\"\"abc\"\"\"") { getStringContents() } shouldBe "abc"
+    readStringLiteral("""'''abc'''""") { getStringContents() } shouldBe "abc"
+    readStringLiteral("'''\nabc\n'''") { getStringContents() } shouldBe "\nabc\n"
+    readStringLiteral("""''""") { getStringContents() } shouldBe ""
+    readStringLiteral("""''''''""") { getStringContents() } shouldBe ""
+    readStringLiteral("""r"a\b"""") { getStringContents() } shouldBe """a\b"""
+    readStringLiteral("""b'abc'""") { getStringContents() } shouldBe "abc"
+    readStringLiteral("""rb'abc'""") { getStringContents() } shouldBe "abc"
+    readStringLiteral("""'''abc'''""") { getStringContents() } shouldBe "abc"
   }
 
   @Test
   fun `should detect quotes and raw strings`() {
-    stringLiteral(""""abc"""").getQuote() shouldBe StarlarkQuote.DOUBLE
-    stringLiteral("""'abc'""").getQuote() shouldBe StarlarkQuote.SINGLE
-    stringLiteral("\"\"\"abc\"\"\"").getQuote() shouldBe StarlarkQuote.TRIPLE_DOUBLE
-    stringLiteral("""'''abc'''""").getQuote() shouldBe StarlarkQuote.TRIPLE_SINGLE
-    stringLiteral("""r"abc"""").getQuote() shouldBe StarlarkQuote.DOUBLE
-    stringLiteral("""r'''abc'''""").getQuote() shouldBe StarlarkQuote.TRIPLE_SINGLE
-    stringLiteral(""""abc"""").isRaw() shouldBe false
-    stringLiteral("""r"abc"""").isRaw() shouldBe true
-    stringLiteral("""rb"abc"""").isRaw() shouldBe true
-    stringLiteral("""b"abc"""").isRaw() shouldBe false
+    readStringLiteral(""""abc"""") { getQuote() } shouldBe StarlarkQuote.DOUBLE
+    readStringLiteral("""'abc'""") { getQuote() } shouldBe StarlarkQuote.SINGLE
+    readStringLiteral("\"\"\"abc\"\"\"") { getQuote() } shouldBe StarlarkQuote.TRIPLE_DOUBLE
+    readStringLiteral("""'''abc'''""") { getQuote() } shouldBe StarlarkQuote.TRIPLE_SINGLE
+    readStringLiteral("""r"abc"""") { getQuote() } shouldBe StarlarkQuote.DOUBLE
+    readStringLiteral("""r'''abc'''""") { getQuote() } shouldBe StarlarkQuote.TRIPLE_SINGLE
+    readStringLiteral(""""abc"""") { isRaw() } shouldBe false
+    readStringLiteral("""r"abc"""") { isRaw() } shouldBe true
+    readStringLiteral("""rb"abc"""") { isRaw() } shouldBe true
+    readStringLiteral("""b"abc"""") { isRaw() } shouldBe false
   }
 
   @Test
@@ -74,18 +74,19 @@ class StarlarkStringLiteralEscaperTest : StarlarkPsiTestCase() {
 
   @Test
   fun `should map decoded offsets back to the host`() {
-    val literal = stringLiteral(""""a\nb\x41c"""")
-    val escaper = literal.createLiteralTextEscaper()
-    val range = literal.getStringContentsOffset()
-    val decoded = StringBuilder()
-    escaper.decode(range, decoded) shouldBe true
-    decoded.toString() shouldBe "a\nbAc"
-    // decoded: a | \n | b | A | c
-    // source:  a | \n | b | \x41 | c   (offset by the opening quote)
-    listOf(0, 1, 2, 3, 4, 5).map { escaper.getOffsetInHost(it, range) } shouldBe listOf(1, 2, 4, 5, 9, 10)
-    escaper.getOffsetInHost(6, range) shouldBe -1
-    escaper.isOneLine() shouldBe true
-    stringLiteral("""'''a'''""").createLiteralTextEscaper().isOneLine() shouldBe false
+    readStringLiteral(""""a\nb\x41c"""") {
+      val escaper = createLiteralTextEscaper()
+      val range = getStringContentsOffset()
+      val decoded = StringBuilder()
+      escaper.decode(range, decoded) shouldBe true
+      decoded.toString() shouldBe "a\nbAc"
+      // decoded: a | \n | b | A | c
+      // source:  a | \n | b | \x41 | c   (offset by the opening quote)
+      listOf(0, 1, 2, 3, 4, 5).map { escaper.getOffsetInHost(it, range) } shouldBe listOf(1, 2, 4, 5, 9, 10)
+      escaper.getOffsetInHost(6, range) shouldBe -1
+      escaper.isOneLine() shouldBe true
+    }
+    readStringLiteral("""'''a'''""") { createLiteralTextEscaper().isOneLine() } shouldBe false
   }
 
   @Test
@@ -113,26 +114,34 @@ class StarlarkStringLiteralEscaperTest : StarlarkPsiTestCase() {
     replaceContents("""rb"ab"""", """a"b""") shouldBe """b"a\"b""""
   }
 
-  private fun decode(literal: String): String {
-    val stringLiteral = stringLiteral(literal)
-    val decoded = StringBuilder()
-    stringLiteral.createLiteralTextEscaper().decode(stringLiteral.getStringContentsOffset(), decoded) shouldBe true
-    return decoded.toString()
-  }
+  private fun decode(literal: String): String =
+    readStringLiteral(literal) {
+      val decoded = StringBuilder()
+      createLiteralTextEscaper().decode(getStringContentsOffset(), decoded) shouldBe true
+      decoded.toString()
+    }
 
   private fun replaceContents(literal: String, newContent: String): String {
     val stringLiteral = stringLiteral(literal)
     return WriteCommandAction.runWriteCommandAction(
-      project,
+      myFixture.project,
       Computable { ElementManipulators.handleContentChange(stringLiteral, newContent).text },
     )
   }
 
+  /** Configures a BUILD file with [literal] and runs [read] on its string literal in a read action. */
+  private fun <T> readStringLiteral(literal: String, read: StarlarkStringLiteralExpression.() -> T): T {
+    val stringLiteral = stringLiteral(literal)
+    return runReadActionBlocking { stringLiteral.read() }
+  }
+
   private fun stringLiteral(literal: String): StarlarkStringLiteralExpression {
     myFixture.configureByText("BUILD", "x = $literal\n")
-    val stringLiteral = PsiTreeUtil.findChildOfType(myFixture.file, StarlarkStringLiteralExpression::class.java)
-    checkNotNull(stringLiteral) { "No string literal found in $literal" }
-    stringLiteral.text shouldBe literal
-    return stringLiteral
+    return runReadActionBlocking {
+      val stringLiteral = PsiTreeUtil.findChildOfType(myFixture.file, StarlarkStringLiteralExpression::class.java)
+      checkNotNull(stringLiteral) { "No string literal found in $literal" }
+      stringLiteral.text shouldBe literal
+      stringLiteral
+    }
   }
 }

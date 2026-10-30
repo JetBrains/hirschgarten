@@ -7,10 +7,6 @@ import com.intellij.codeInsight.multiverse.SingleEditorContext
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.testFramework.ExpectedHighlightingData
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -20,7 +16,6 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.io.path.Path
 
 suspend fun CodeInsightTestFixture.checkHighlighting(
   path: String,
@@ -60,12 +55,4 @@ suspend fun CodeInsightTestFixture.checkHighlighting(
       (this@checkHighlighting as CodeInsightTestFixtureImpl).collectAndCheckHighlighting(expected)
     }
   }
-}
-
-fun CodeInsightTestFixture.virtualFileOf(path: String): VirtualFile {
-  val manager = project.workspaceModel.getVirtualFileUrlManager()
-  return Path(path)
-    .toVirtualFileUrl(manager)
-    .virtualFile
-    .let { requireNotNull(it) { "Virtual file not found for path: $path" } }
 }

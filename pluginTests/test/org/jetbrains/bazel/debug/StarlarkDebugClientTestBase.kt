@@ -6,9 +6,10 @@ import org.jetbrains.bazel.debug.connector.ThreadAwareEventHandler
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.utils.MockDebugSession
 import org.jetbrains.bazel.debug.utils.MockSocket
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 
-abstract class StarlarkDebugClientTestBase : MockProjectBaseTest() {
+@BazelTestApplication
+abstract class StarlarkDebugClientTestBase {
   protected fun establishMockConnection(): MockConnectionPack {
     val socket = MockSocket()
     val session = MockDebugSession()

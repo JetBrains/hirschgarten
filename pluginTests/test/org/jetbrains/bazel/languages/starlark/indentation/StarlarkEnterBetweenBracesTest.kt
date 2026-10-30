@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.indentation
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import com.intellij.openapi.application.runReadActionBlocking
+import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkEnterBetweenBracesTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkEnterBetweenBracesTest {
+  private val myFixture by bazelCodeInsightFixture()
+
   @Test
   fun `should add empty line after enter between braces`() {
     // given
@@ -17,6 +19,6 @@ class StarlarkEnterBetweenBracesTest : BasePlatformTestCase() {
     myFixture.type("\n")
 
     // then
-    myFixture.editor.document.lineCount shouldBeEqual 3
+    runReadActionBlocking { myFixture.editor.document.lineCount } shouldBe 3
   }
 }

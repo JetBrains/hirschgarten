@@ -15,6 +15,7 @@ import com.intellij.testFramework.junit5.fixture.moduleFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
 import com.intellij.testFramework.runInEdtAndWait
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.test.framework.testproject.TestBazelProject
 import org.jetbrains.bazel.test.framework.testproject.installedProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
@@ -34,8 +35,8 @@ import org.jetbrains.bazel.test.framework.testproject.workspaceRootFixture
  * The fixture sets up from a background thread.
  */
 @TestOnly
-fun bazelCodeInsightFixture(): TestFixture<CodeInsightTestFixture> =
-  testBazelProjectFixture().codeInsightFixtureOnTestBazel()
+fun bazelCodeInsightFixture(release: BazelRelease = BazelRelease.FALLBACK_VERSION): TestFixture<CodeInsightTestFixture> =
+  testBazelProjectFixture(release = release).codeInsightFixtureOnTestBazel()
 
 /** Returns the test Bazel project of a fixture from [bazelCodeInsightFixture]. Fails for any other fixture. */
 val CodeInsightTestFixture.testBazel: TestBazelProject

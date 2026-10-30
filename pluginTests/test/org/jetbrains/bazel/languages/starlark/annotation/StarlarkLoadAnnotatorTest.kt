@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
   @Test
   fun testResolvedLoadedSymbolIsNotHighlighted() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD.bazel", "")
     myFixture.addFileToProject(
       "defs.bzl",
@@ -29,7 +28,6 @@ class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
 
   @Test
   fun testUnresolvedLoadedSymbolIsHighlighted() {
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD.bazel", "")
     myFixture.addFileToProject(
       "defs.bzl",
@@ -54,7 +52,6 @@ class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
       appendLine("value = []")
       repeat(100_000) { appendLine("generated_value_$it = []") }
     }
-    myFixture.addFileToProject("MODULE.bazel", "")
     myFixture.addFileToProject("BUILD.bazel", "")
     myFixture.addFileToProject("large_defs.bzl", largeFileContent)
     myFixture.configureByText(

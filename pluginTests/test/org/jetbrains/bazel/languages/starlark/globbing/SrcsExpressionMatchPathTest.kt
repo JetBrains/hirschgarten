@@ -1,17 +1,20 @@
 package org.jetbrains.bazel.languages.starlark.globbing
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.kotest.assertions.withClue
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.utils.srcsExpressionMatchPath
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
+@BazelTestApplication
+internal class SrcsExpressionMatchPathTest {
+  private val myFixture by bazelCodeInsightFixture()
 
   @Test
   fun `string literal srcs matches exact relative path`() {
@@ -22,7 +25,7 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'Foo.java' should match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
+    srcsValue shouldMatch "Foo.java"
   }
 
   @Test
@@ -34,9 +37,9 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertFalse("'Bar.java' should not match", srcsExpressionMatchPath(srcsValue, "Bar.java"))
-    assertFalse("'sub/Foo.java' should not match", srcsExpressionMatchPath(srcsValue, "sub/Foo.java"))
-    assertFalse("'' should not match", srcsExpressionMatchPath(srcsValue, ""))
+    srcsValue shouldNotMatch "Bar.java"
+    srcsValue shouldNotMatch "sub/Foo.java"
+    srcsValue shouldNotMatch ""
   }
 
   @Test
@@ -48,10 +51,10 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'Foo.java' should match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
-    assertTrue("'Bar.java' should match", srcsExpressionMatchPath(srcsValue, "Bar.java"))
-    assertFalse("'Baz.kt' should not match", srcsExpressionMatchPath(srcsValue, "Baz.kt"))
-    assertFalse("'sub/Foo.java' should not match", srcsExpressionMatchPath(srcsValue, "sub/Foo.java"))
+    srcsValue shouldMatch "Foo.java"
+    srcsValue shouldMatch "Bar.java"
+    srcsValue shouldNotMatch "Baz.kt"
+    srcsValue shouldNotMatch "sub/Foo.java"
   }
 
   @Test
@@ -68,12 +71,12 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'Foo.java' should match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
-    assertTrue("'pkg/Foo.java' should match", srcsExpressionMatchPath(srcsValue, "pkg/Foo.java"))
-    assertTrue("'pkg/deep/Foo.java' should match", srcsExpressionMatchPath(srcsValue, "pkg/deep/Foo.java"))
-    assertFalse("'excluded/Bar.java' should not match", srcsExpressionMatchPath(srcsValue, "excluded/Bar.java"))
-    assertFalse("'excluded/deep/Bar.java' should not match", srcsExpressionMatchPath(srcsValue, "excluded/deep/Bar.java"))
-    assertFalse("'Foo.kt' should not match", srcsExpressionMatchPath(srcsValue, "Foo.kt"))
+    srcsValue shouldMatch "Foo.java"
+    srcsValue shouldMatch "pkg/Foo.java"
+    srcsValue shouldMatch "pkg/deep/Foo.java"
+    srcsValue shouldNotMatch "excluded/Bar.java"
+    srcsValue shouldNotMatch "excluded/deep/Bar.java"
+    srcsValue shouldNotMatch "Foo.kt"
   }
 
   @Test
@@ -85,10 +88,10 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'Foo.java' should match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
-    assertTrue("'Bar.java' should match", srcsExpressionMatchPath(srcsValue, "Bar.java"))
-    assertFalse("'Baz.java' should not match", srcsExpressionMatchPath(srcsValue, "Baz.java"))
-    assertFalse("'sub/Foo.java' should not match", srcsExpressionMatchPath(srcsValue, "sub/Foo.java"))
+    srcsValue shouldMatch "Foo.java"
+    srcsValue shouldMatch "Bar.java"
+    srcsValue shouldNotMatch "Baz.java"
+    srcsValue shouldNotMatch "sub/Foo.java"
   }
 
   @Test
@@ -100,8 +103,8 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertFalse("'Foo.java' should not match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
-    assertFalse("'' should not match", srcsExpressionMatchPath(srcsValue, ""))
+    srcsValue shouldNotMatch "Foo.java"
+    srcsValue shouldNotMatch ""
   }
 
   @Test
@@ -113,9 +116,9 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'Foo.java' should match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
-    assertTrue("'Bar.java' should match", srcsExpressionMatchPath(srcsValue, "Bar.java"))
-    assertFalse("'Baz.java' should not match", srcsExpressionMatchPath(srcsValue, "Baz.java"))
+    srcsValue shouldMatch "Foo.java"
+    srcsValue shouldMatch "Bar.java"
+    srcsValue shouldNotMatch "Baz.java"
   }
 
   @Test
@@ -127,10 +130,10 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'Hand.kt' should match", srcsExpressionMatchPath(srcsValue, "Hand.kt"))
-    assertTrue("'Foo.java' should match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
-    assertFalse("'Other.kt' should not match", srcsExpressionMatchPath(srcsValue, "Other.kt"))
-    assertFalse("'Foo.py' should not match", srcsExpressionMatchPath(srcsValue, "Foo.py"))
+    srcsValue shouldMatch "Hand.kt"
+    srcsValue shouldMatch "Foo.java"
+    srcsValue shouldNotMatch "Other.kt"
+    srcsValue shouldNotMatch "Foo.py"
   }
 
   @Test
@@ -142,10 +145,10 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertTrue("'A.java' should match", srcsExpressionMatchPath(srcsValue, "A.java"))
-    assertTrue("'B.java' should match", srcsExpressionMatchPath(srcsValue, "B.java"))
-    assertTrue("'C.java' should match", srcsExpressionMatchPath(srcsValue, "C.java"))
-    assertFalse("'D.java' should not match", srcsExpressionMatchPath(srcsValue, "D.java"))
+    srcsValue shouldMatch "A.java"
+    srcsValue shouldMatch "B.java"
+    srcsValue shouldMatch "C.java"
+    srcsValue shouldNotMatch "D.java"
   }
 
   @Test
@@ -157,7 +160,7 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
 
     val srcsValue = buildFile.findSrcsExpression()
 
-    assertFalse("'Foo.java' should not match", srcsExpressionMatchPath(srcsValue, "Foo.java"))
+    srcsValue shouldNotMatch "Foo.java"
   }
 
   private fun configureBuildFile(directory: String, content: String): PsiFile {
@@ -166,8 +169,21 @@ internal class SrcsExpressionMatchPathTest : BasePlatformTestCase() {
     return buildFile
   }
 
-  private fun PsiFile.findSrcsExpression(): PsiElement {
-    val ruleExpr: StarlarkCallExpression = (this as StarlarkFile).getTargetRules().single()
-    return ruleExpr.getArgumentList()!!.getSrcsArgument()!!.getValue()!!
+  private fun PsiFile.findSrcsExpression(): PsiElement =
+    runReadActionBlocking {
+      val ruleExpr: StarlarkCallExpression = (this as StarlarkFile).getTargetRules().single()
+      ruleExpr.getArgumentList()!!.getSrcsArgument()!!.getValue()!!
+    }
+
+  private infix fun PsiElement.shouldMatch(path: String) {
+    withClue("'$path' should match") {
+      runReadActionBlocking { srcsExpressionMatchPath(this, path) } shouldBe true
+    }
+  }
+
+  private infix fun PsiElement.shouldNotMatch(path: String) {
+    withClue("'$path' should not match") {
+      runReadActionBlocking { srcsExpressionMatchPath(this, path) } shouldBe false
+    }
   }
 }

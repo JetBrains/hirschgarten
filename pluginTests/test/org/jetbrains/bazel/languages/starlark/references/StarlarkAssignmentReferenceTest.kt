@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
@@ -10,11 +11,10 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpr
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
+@BazelTestApplication
 class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
   inline fun <reified T : PsiElement> PsiElement.getChildOfType(): T? =
     PsiTreeUtil.getChildOfType<T>(this, T::class.java)
@@ -23,11 +23,12 @@ class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
   fun `should resolve basic assignment`() {
     // given
     myFixture.configureByFile("AssignmentReference.bzl")
-    val expectedResolved =
+    val expectedResolved = runReadActionBlocking {
       myFixture.file.getChildOfType<StarlarkAssignmentStatement>()!!
         .getChildOfType<StarlarkTargetExpression>()
+    }
     // when
-    val resolved = getUsage()?.reference?.resolve()
+    val resolved = resolveUsage()
     // then
     resolved shouldBe expectedResolved
   }
@@ -36,13 +37,14 @@ class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
   fun `should resolve tuple assignment`() {
     // given
     myFixture.configureByFile("TupleAssignmentReference.bzl")
-    val expectedResolved =
+    val expectedResolved = runReadActionBlocking {
       myFixture.file
         .getChildOfType<StarlarkAssignmentStatement>()!!
         .getChildOfType<StarlarkTupleExpression>()!!
         .getChildOfType<StarlarkTargetExpression>()
+    }
     // when
-    val resolved = getUsage()?.reference?.resolve()
+    val resolved = resolveUsage()
     // then
     resolved shouldBe expectedResolved
   }
@@ -51,20 +53,25 @@ class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
   fun `should resolve parenthesized tuple assignment`() {
     // given
     myFixture.configureByFile("ParenthesizedTupleAssignmentReference.bzl")
-    val expectedResolved =
+    val expectedResolved = runReadActionBlocking {
       myFixture.file
         .getChildOfType<StarlarkAssignmentStatement>()!!
         .getChildOfType<StarlarkParenthesizedExpression>()!!
         .getChildOfType<StarlarkTupleExpression>()!!
         .getChildOfType<StarlarkTargetExpression>()
+    }
     // when
-    val resolved = getUsage()?.reference?.resolve()
+    val resolved = resolveUsage()
     // then
     resolved shouldBe expectedResolved
   }
 
-  private fun getUsage(): StarlarkReferenceExpression? =
-    myFixture.file
-      .getChildOfType<StarlarkExpressionStatement>()
-      ?.getChildOfType<StarlarkReferenceExpression>()
+  private fun resolveUsage(): PsiElement? =
+    runReadActionBlocking {
+      myFixture.file
+        .getChildOfType<StarlarkExpressionStatement>()
+        ?.getChildOfType<StarlarkReferenceExpression>()
+        ?.reference
+        ?.resolve()
+    }
 }

@@ -1,16 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.ExtensionTestUtil
-import com.intellij.testFramework.junit5.TestDisposable
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bazel.languages.starlark.bazel.bzlmod.BazelModuleResolver
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
+import org.jetbrains.bazel.test.framework.testBazel
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -18,12 +17,9 @@ import org.junit.jupiter.api.Test
 class BazelDepModuleCompletionTest {
   private val myFixture by bazelCodeInsightFixture()
 
-  @TestDisposable
-  lateinit var disposable: Disposable
-
   @BeforeEach
   fun beforeEach() {
-    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), disposable)
+    ExtensionTestUtil.maskExtensions(BazelModuleResolver.EP_NAME, listOf(provider), myFixture.testBazel.disposable)
   }
 
   private val provider =
@@ -55,7 +51,7 @@ class BazelDepModuleCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContain("\"module_name\"")
   }
@@ -72,7 +68,7 @@ class BazelDepModuleCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldContainExactly(listOf("\"1.0.0\"", "\"0.1.0\""))
   }
@@ -89,10 +85,8 @@ class BazelDepModuleCompletionTest {
       """.trimMargin(),
     )
 
-    val lookups = completeBasic().map { it.lookupString }
+    val lookups = myFixture.completeBasicLookupStrings()
 
     lookups.shouldBeEmpty()
   }
-
-  private fun completeBasic(): Array<LookupElement> = myFixture.completeBasic()
 }

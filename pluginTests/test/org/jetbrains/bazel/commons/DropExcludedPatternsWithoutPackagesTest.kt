@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.test.framework.annotation.BazelTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
@@ -18,7 +17,6 @@ import kotlin.io.path.createSymbolicLinkPointingTo
  * [dropExcludedPatternsWithoutPackages] must keep an excluded pattern when Bazel can find a package beneath it.
  * See BAZEL-3586.
  */
-@BazelTest
 class DropExcludedPatternsWithoutPackagesTest {
   @TempDir
   lateinit var workspaceRoot: Path

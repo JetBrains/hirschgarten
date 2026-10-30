@@ -14,11 +14,10 @@ import org.jetbrains.bazel.commons.RuleType.TEST
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.sync.workspace.mapper.AspectBazelProjectMapper
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class TargetKindServiceTest: WorkspaceModelBaseTest() {
+class TargetKindServiceTest {
   private val service = TargetKindService.getInstance()
 
   // -- fromTargetInfo ------------------------------------------------------

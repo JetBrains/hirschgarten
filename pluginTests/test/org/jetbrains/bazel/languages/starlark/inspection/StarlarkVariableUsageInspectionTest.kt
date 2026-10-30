@@ -1,20 +1,20 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
+import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
-class StarlarkVariableUsageInspectionTest : BasePlatformTestCase() {
+@BazelTestApplication
+class StarlarkVariableUsageInspectionTest : StarlarkInspectionTestCase() {
   private val descriptionGlobal = StarlarkBundle.message("inspection.description.variable.referenced.before.assignment", "Global", "x")
   private val descriptionLocal = StarlarkBundle.message("inspection.description.variable.referenced.before.assignment", "Local", "x")
   private val descriptionFree = StarlarkBundle.message("inspection.description.variable.referenced.before.assignment", "Free", "x")
   private val descriptionUndefined = StarlarkBundle.message("inspection.description.variable.undefined", "x")
 
-  override fun setUp() {
-    super.setUp()
+  @BeforeEach
+  fun beforeEach() {
     myFixture.enableInspections(StarlarkVariableUsageInspection())
   }
 

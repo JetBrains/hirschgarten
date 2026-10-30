@@ -1,9 +1,12 @@
 package org.jetbrains.bazel.fus
 
 import com.intellij.internal.statistic.FUCollectorTestCase
+import com.intellij.openapi.Disposable
+import com.intellij.testFramework.junit5.TestDisposable
+import com.intellij.testFramework.junit5.fixture.projectFixture
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidationCause
 import org.jetbrains.bsp.protocol.BazelActionCacheStats
@@ -11,7 +14,13 @@ import org.jetbrains.bsp.protocol.BazelInvocationContext
 import org.jetbrains.bsp.protocol.BazelInvocationMetrics
 import org.junit.jupiter.api.Test
 
-class BazelBuildMetricsCollectorTest : MockProjectBaseTest() {
+@BazelTestApplication
+class BazelBuildMetricsCollectorTest {
+  private val project by projectFixture(openAfterCreation = false)
+
+  @TestDisposable
+  lateinit var disposable: Disposable
+
   private fun report(metrics: BazelInvocationMetrics) =
     FUCollectorTestCase.collectLogEvents(disposable) {
       BazelTaskEventsService.getInstance(project).onBazelInvocationMetrics(metrics)

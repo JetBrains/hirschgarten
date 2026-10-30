@@ -388,7 +388,7 @@ class WorkspaceDirectoriesFromProjectViewTest {
     projectViewContent: String,
     repoMapping: RepoMapping = RepoMappingDisabled,
   ): WorkspaceDirectoriesResult {
-    val projectView = ProjectViewFactory.from(project, projectViewContent, root = workspaceRoot)
+    val projectView = ProjectViewFactory.from(project, projectViewContent)
     val owner = ModalTaskOwner.guess()
     val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(testBazel.bazelInfo))
     // runWithModalProgressBlocking enters a modal state, and this needs the EDT.

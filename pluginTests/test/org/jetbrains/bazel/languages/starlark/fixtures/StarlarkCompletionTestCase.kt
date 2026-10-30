@@ -1,9 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.fixtures
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.test.framework.BazelPathManager
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.BeforeEach
 
-abstract class StarlarkCompletionTestCase : BasePlatformTestCase() {
-  override fun getTestDataPath(): String =
-    BazelPathManager.getTestFixture("starlark/completion")
+abstract class StarlarkCompletionTestCase {
+  protected val myFixture by bazelCodeInsightFixture(release = BazelRelease(9, 1))
+
+  @BeforeEach
+  fun setUpTestDataPath() {
+    myFixture.testDataPath = BazelPathManager.getTestFixture("starlark/completion")
+  }
 }
