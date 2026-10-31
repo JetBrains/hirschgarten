@@ -9,7 +9,6 @@
     <module name="intellij.libraries.fastutil"/>
     <module name="intellij.libraries.grpc"/>
     <module name="intellij.libraries.gson"/>
-    <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.hash4j"/>
     <module name="intellij.libraries.jackson"/>
     <module name="intellij.libraries.jackson.databind"/>

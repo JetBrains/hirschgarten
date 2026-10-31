@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ignore
 
-import com.google.common.cache.Cache
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.DefaultProjectFactory
 import com.intellij.psi.PsiFileFactory
@@ -13,6 +12,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.utils.isUnder
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -97,7 +97,7 @@ object BazelIgnoreMatcherFactory {
       return BazelIgnoreMatcher.EMPTY
 
     return object : BazelIgnoreMatcher {
-      private val cache: Cache<String, Pattern> = StarlarkGlob.createCache()
+      private val cache: ConcurrentHashMap<String, Pattern> = StarlarkGlob.createCache()
       override fun match(relativePath: Path): Boolean {
         val pathString = relativePath.invariantSeparatorsPathString
         return patterns.any { pattern ->

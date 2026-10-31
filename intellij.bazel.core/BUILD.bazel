@@ -27,7 +27,6 @@ jvm_library(
         "//plugins/bazel/intellij.bazel.backend:backend",
         "//plugins/bazel/intellij.bazel.bazelisk:bazelisk",
         "//plugins/bazel/intellij.bazel.projectview:projectview",
-        "@community//libraries/guava",
         "@community//libraries/gson",
         "@community//libraries/jetbrains/annotations",
         "@lib//:kotlin-stdlib",

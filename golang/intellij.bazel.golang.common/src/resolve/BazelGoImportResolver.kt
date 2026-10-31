@@ -19,7 +19,6 @@ package org.jetbrains.bazel.golang.resolve
 import com.goide.psi.impl.GoPackage
 import com.goide.psi.impl.imports.GoImportReference
 import com.goide.psi.impl.imports.GoImportResolver
-import com.google.common.collect.ImmutableList
 import com.intellij.codeInsight.navigation.CtrlMouseHandler
 import com.intellij.lang.documentation.DocumentationProviderEx
 import com.intellij.openapi.module.Module
@@ -50,7 +49,7 @@ internal class BazelGoImportResolver : GoImportResolver {
   ): Collection<GoPackage>? {
     if (!supportsGo(project)) return null
     val goPackage = resolveGoPackage(project, importPath)
-    return if (goPackage != null) ImmutableList.of(goPackage) else null
+    return if (goPackage != null) listOf(goPackage) else null
   }
 
   override fun supportsRelativeImportPaths(project: Project, module: Module?): ThreeState {

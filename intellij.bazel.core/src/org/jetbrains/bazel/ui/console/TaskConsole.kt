@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.console
 
-import com.google.common.base.Throwables.getStackTraceAsString
 import com.intellij.build.BuildContentDescriptor
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
@@ -207,7 +206,7 @@ abstract class BaseTaskConsole(
       resultWithoutShownErrors.failures.forEach {
         log.warn(it.message, it.error)
         it.error?.let { error ->
-          addMessage(taskId, getStackTraceAsString(error))
+          addMessage(taskId, error.stackTraceToString())
         }
       }
     }

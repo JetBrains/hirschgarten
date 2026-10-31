@@ -19,7 +19,6 @@ package org.jetbrains.bazel.golang.resolve
 import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
 import com.goide.sdk.GoPackageUtil
-import com.google.common.annotations.VisibleForTesting
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.FileIndexFacade
@@ -33,6 +32,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.util.Processor
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile

@@ -43,11 +43,5 @@ internal class ArtifactLocation
     override fun toString(): String = this.executionRootRelativePath
 
     override fun compareTo(o: ArtifactLocation): Int =
-      com.google.common.collect.ComparisonChain
-        .start()
-        .compare(this.rootExecutionPathFragment, o.rootExecutionPathFragment)
-        .compare(this.relativePath, o.relativePath)
-        .compareFalseFirst(this.isSource, o.isSource)
-        .compareFalseFirst(this.isExternal, o.isExternal)
-        .result()
+      compareValuesBy(this, o, { it.rootExecutionPathFragment }, { it.relativePath }, { it.isSource }, { it.isExternal })
   }

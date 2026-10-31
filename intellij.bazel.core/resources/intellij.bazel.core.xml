@@ -75,7 +75,6 @@
     <module name="intellij.libraries.bazel.aspect.sdk"/>
     <module name="intellij.libraries.caffeine"/>
     <module name="intellij.libraries.gson"/>
-    <module name="intellij.libraries.guava"/>
     <module name="intellij.libraries.jediterm.core"/>
     <module name="intellij.libraries.jediterm.ui"/>
     <module name="intellij.libraries.jetbrains.annotations"/>

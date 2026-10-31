@@ -11,7 +11,6 @@
     <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.bazel.bazelisk" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
-    <orderEntry type="module" module-name="intellij.libraries.guava" />
     <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />

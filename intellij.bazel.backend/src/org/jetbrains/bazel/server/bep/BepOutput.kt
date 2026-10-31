@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bep
 
-import com.google.common.collect.Queues
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelRelease
@@ -8,6 +7,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import java.nio.file.Path
+import java.util.ArrayDeque
 
 @ApiStatus.Internal
 class BepOutput(
@@ -27,7 +27,7 @@ class BepOutput(
       return emptySet()
     }
     val result = HashSet<Path>(rootIds.size)
-    val toVisit = Queues.newArrayDeque(rootIds)
+    val toVisit = ArrayDeque(rootIds)
     val visited = HashSet<String>(rootIds)
     while (!toVisit.isEmpty()) {
       val fileSetId = toVisit.remove()
