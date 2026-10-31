@@ -16,6 +16,5 @@
     <orderEntry type="module" module-name="intellij.libraries.http.client" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.util.base" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.libraries.commons.logging" scope="TEST" />
   </component>
 </module>
