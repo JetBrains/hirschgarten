@@ -10,7 +10,6 @@
     <module name="intellij.go.frontback"/>
     <module name="intellij.go.impl"/>
     <module name="intellij.libraries.guava"/>
-    <module name="intellij.libraries.stream"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend.workspace"/>
     <module name="intellij.platform.buildView"/>

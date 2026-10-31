@@ -12,18 +12,14 @@
     <orderEntry type="module" module-name="intellij.bazel.bazelisk" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
     <orderEntry type="module" module-name="intellij.libraries.guava" />
-    <orderEntry type="module" module-name="intellij.libraries.fastutil" />
     <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.collections.immutable" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinx.datetime" />
     <orderEntry type="module" module-name="intellij.platform.smRunner" />
     <orderEntry type="module" module-name="intellij.platform.rd.community" />
     <orderEntry type="module" module-name="intellij.libraries.opentelemetry" scope="PROVIDED" />
     <orderEntry type="module" module-name="intellij.libraries.opentelemetry.extension.kotlin" scope="PROVIDED" />
     <orderEntry type="module" module-name="intellij.libraries.protobuf" />
-    <orderEntry type="module" module-name="intellij.libraries.stream" />
     <orderEntry type="module" module-name="intellij.libraries.caffeine" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.languages" />
@@ -75,7 +71,6 @@
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
     <orderEntry type="module" module-name="intellij.libraries.mvstore" />
-    <orderEntry type="module" module-name="intellij.libraries.hash4j" />
     <orderEntry type="module" module-name="intellij.platform.util.text.matching" />
     <orderEntry type="module" module-name="intellij.platform.util.ex" />
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
@@ -87,16 +82,7 @@
     <orderEntry type="module" module-name="intellij.platform.ide.progress" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.ui" />
-    <orderEntry type="module" module-name="intellij.libraries.velocity" />
-    <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
-    <orderEntry type="module" module-name="intellij.libraries.commons.io" />
-    <orderEntry type="module" module-name="intellij.libraries.grpc" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson.databind" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson.dataformat.xml" />
-    <orderEntry type="module" module-name="intellij.libraries.jackson.module.kotlin" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
-    <orderEntry type="library" name="slf4j-api" level="project" />
     <orderEntry type="module" module-name="intellij.platform.eel.provider" />
     <orderEntry type="module" module-name="intellij.platform.lang" />
     <orderEntry type="module" module-name="intellij.platform.buildView" />

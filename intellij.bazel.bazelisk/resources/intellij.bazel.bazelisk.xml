@@ -2,7 +2,6 @@
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.commons"/>
-    <module name="intellij.libraries.jediterm.core"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.ide"/>
     <module name="intellij.platform.ide.core"/>
