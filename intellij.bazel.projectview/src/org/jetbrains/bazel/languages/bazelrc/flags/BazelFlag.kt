@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.languages.bazelrc.flags
 
-import kotlinx.collections.immutable.PersistentMap
-import kotlinx.collections.immutable.toPersistentMap
 import org.jetbrains.annotations.ApiStatus
 import java.lang.reflect.Field
 import kotlin.reflect.KProperty
@@ -37,16 +35,15 @@ sealed class Flag {
   }
 
   companion object {
-    internal val KnownFlags.declaredFieldsMap by object : LazyExtension<PersistentMap<String, Field>, KnownFlags>() {
-      override fun initValue(o: KnownFlags): PersistentMap<String, Field> =
+    internal val KnownFlags.declaredFieldsMap by object : LazyExtension<Map<String, Field>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): Map<String, Field> =
         KnownFlags::class.java.declaredFields
           .filter { it.getDeclaredAnnotation(Option::class.java) != null }
           .associateBy { it.name }
-          .toPersistentMap()
     }
 
-    private val KnownFlags.allFlags by object : LazyExtension<PersistentMap<String, Flag>, KnownFlags>() {
-      override fun initValue(o: KnownFlags): PersistentMap<String, Flag> =
+    private val KnownFlags.allFlags by object : LazyExtension<Map<String, Flag>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): Map<String, Flag> =
         KnownFlags.declaredFieldsMap
           .values
           .mapNotNull {
@@ -54,7 +51,6 @@ sealed class Flag {
           }.mapNotNull { (f, op) -> (f.get(o) as? Flag)?.let { flag -> Pair(flag, op) } }
           .flatMap { knownFlagNames(it) }
           .toMap()
-          .toPersistentMap()
     }
 
     private val KnownFlags.allCommands by object : LazyExtension<Set<String>, KnownFlags>() {
