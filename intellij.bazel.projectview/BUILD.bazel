@@ -25,7 +25,6 @@ jvm_library(
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
-        "@community//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
         "@community//libraries/jetbrains/annotations",
         "//plugins/bazel/intellij.bazel.commons:commons",
         "@community//platform/core-api:core",
