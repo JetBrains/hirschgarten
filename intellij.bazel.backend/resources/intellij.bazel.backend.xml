@@ -15,7 +15,6 @@
     <module name="intellij.libraries.jackson.databind"/>
     <module name="intellij.libraries.jackson.dataformat.xml"/>
     <module name="intellij.libraries.jackson.module.kotlin"/>
-    <module name="intellij.libraries.jediterm.core"/>
     <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.libraries.kotlinx.coroutines.core"/>
     <module name="intellij.libraries.kotlinx.serialization.core"/>
@@ -24,7 +23,6 @@
     <module name="intellij.libraries.mvstore"/>
     <module name="intellij.libraries.opentelemetry"/>
     <module name="intellij.libraries.protobuf"/>
-    <module name="intellij.libraries.velocity"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend"/>
     <module name="intellij.platform.backend.workspace"/>

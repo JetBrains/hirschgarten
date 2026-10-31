@@ -26,7 +26,6 @@ jvm_library(
         # do not sort,
         "@lib//:kotlin-stdlib",
         "//plugins/bazel/intellij.bazel.commons:commons",
-        "@community//libraries/jediterm-core",
         "@community//platform/extensions",
         "@community//platform/core-api:core",
         "@community//platform/platform-api:ide",
