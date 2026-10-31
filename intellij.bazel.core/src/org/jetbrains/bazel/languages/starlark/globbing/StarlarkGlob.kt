@@ -14,9 +14,6 @@
 
 package org.jetbrains.bazel.languages.starlark.globbing
 
-import com.google.common.cache.Cache
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.CacheLoader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.checkCanceled
 import com.intellij.openapi.progress.runBlockingCancellable
@@ -56,7 +53,7 @@ class StarlarkGlob private constructor(
   private val pathFilter: Predicate<VirtualFile>,
 ) {
 
-  private val cache: Cache<String, Pattern> = createCache()
+  private val cache: ConcurrentHashMap<String, Pattern> = createCache()
 
   /**
    * Checks if given file matches the glob pattern.
@@ -389,7 +386,7 @@ class StarlarkGlob private constructor(
       patternParts: List<String>,
       path: String,
       excludeDirectories: Boolean,
-      patternCache: Cache<String, Pattern>?
+      patternCache: ConcurrentHashMap<String, Pattern>?
     ): Boolean {
       val pathPart = path.substringBefore("/")
       val pathTail = path.substringAfter("/", "")
@@ -456,7 +453,7 @@ class StarlarkGlob private constructor(
     private fun partMatches(
       pattern: String,
       str: String,
-      patternCache: Cache<String, Pattern>?,
+      patternCache: ConcurrentHashMap<String, Pattern>?,
     ): Boolean {
       if (pattern.isEmpty() || str.isEmpty()) {
         return false
@@ -489,11 +486,7 @@ class StarlarkGlob private constructor(
         return str.startsWith(pattern.substring(0, lastIndex))
       }
 
-      var regex = patternCache?.getIfPresent(pattern)
-      if (regex == null) {
-        regex = makePatternFromWildcard(pattern)
-        patternCache?.put(pattern, regex)
-      }
+      val regex = patternCache?.getOrPut(pattern) { makePatternFromWildcard(pattern) } ?: makePatternFromWildcard(pattern)
       return regex.matcher(str).matches()
     }
 
@@ -544,14 +537,7 @@ class StarlarkGlob private constructor(
 
     fun forPath(path: VirtualFile): Builder = Builder(path)
 
-    fun createCache(): Cache<String, Pattern> =
-      CacheBuilder
-        .newBuilder()
-        .build(
-          object : CacheLoader<String, Pattern>() {
-            override fun load(wildcard: String): Pattern = makePatternFromWildcard(wildcard)
-          },
-        )
+    fun createCache(): ConcurrentHashMap<String, Pattern> = ConcurrentHashMap()
 
   }
 }

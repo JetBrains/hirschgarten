@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.globbing
 
-import com.google.common.base.Splitter
-
 /**
  * Support for resolving globs.
  */
@@ -31,7 +29,7 @@ internal object GlobPatternValidator {
         else -> {}
       }
     }
-    val segments = Splitter.on('/').split(pattern)
+    val segments = pattern.split('/')
     for (segment in segments) {
       if (segment.isEmpty()) {
         return "empty segment not permitted"

@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.golang.treeview
 
-import com.google.common.collect.ImmutableList
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.SyntheticLibraryElementNode
@@ -112,7 +111,7 @@ class BazelGoTreeStructureProviderTest {
           // parent=
           rootNode,
           // children=
-          ImmutableList.of(fileNode1, fileNode2),
+          listOf(fileNode1, fileNode2),
           // settings=
           object : ViewSettings {},
         ).map { it as GoSyntheticLibraryElementNode }
@@ -141,7 +140,7 @@ class BazelGoTreeStructureProviderTest {
   private fun createRootNode(): SyntheticLibraryElementNode {
     val parentLibrary =
       GoExternalSyntheticLibrary(
-        ImmutableList.of(),
+        emptyList(),
       )
 
     return SyntheticLibraryElementNode(
