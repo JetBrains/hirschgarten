@@ -12,7 +12,6 @@ import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import org.jetbrains.bazel.project.BazelProjectFixtures.initializeBazelProject
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.Test
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
