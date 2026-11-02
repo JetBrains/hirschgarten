@@ -94,6 +94,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
 
         step("Check build diagnostics with run configs") {
           var compilationBroken = false
+          var failure: Throwable? = null
           try {
             step("Break compilation intentionally") {
               openFile("src/com/example/Calculator.java")
@@ -112,17 +113,29 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
 
             step("Run test normally") { x { byAccessibleName("Run 'Test Calculator'") }.click() }
             step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
-          } finally {
+          }
+          catch (e: Throwable) {
+            failure = e
+            throw e
+          }
+          finally {
             // Restore even when a verification above fails, otherwise the deliberately broken file
             // leaks into the following @Order tests and they fail to compile for an unrelated reason.
             if (compilationBroken) {
-              step("Fix compilation") {
-                openFile("src/com/example/Calculator.java")
-                codeEditor {
-                  // Return back the semicolon ;
-                  goToPosition(5, 22)
-                  pasteText(";")
+              try {
+                step("Fix compilation") {
+                  openFile("src/com/example/Calculator.java")
+                  codeEditor {
+                    // Return back the semicolon ;
+                    goToPosition(5, 22)
+                    pasteTextAndCheck(";")
+                  }
                 }
+              }
+              catch (e: Throwable) {
+                // Keep the failure of the verifications above as the test failure.
+                if (failure == null) throw e
+                failure.addSuppressed(e)
               }
             }
           }
@@ -342,9 +355,9 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           openFile("src/com/example/Main.java")
           codeEditor {
             goToPosition(4, 1)
-            pasteText("import java.util.Random;\n")
+            pasteTextAndCheck("import java.util.Random;\n")
             goToPosition(12, 86)
-            pasteText(
+            pasteTextAndCheck(
               "\n" + """
               long start = System.currentTimeMillis();
               double result = 0.0;
@@ -382,9 +395,9 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           openFile("src/com/example/CalculatorTest.java")
           codeEditor {
             goToPosition(4, 1)
-            pasteText("import java.util.Random;")
+            pasteTextAndCheck("import java.util.Random;")
             goToPosition(9, 28)
-            pasteText(
+            pasteTextAndCheck(
               "\n" + """
               long start = System.currentTimeMillis();
               double result = 0.0;
