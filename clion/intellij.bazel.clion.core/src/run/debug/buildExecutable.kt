@@ -13,6 +13,8 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.projectview.debugFlags
@@ -30,7 +32,7 @@ import java.nio.file.Path
 internal class CcDebugBuildResult(
   val executable: ExecutableInfo,
 
-  /** All targets that are where build for as part of the executable. */
+  /** All targets that Bazel built for the executable, empty if the debug aspect did not run. */
   val targets: List<TargetIdeInfo>,
 )
 
@@ -42,7 +44,7 @@ internal fun Collection<TargetIdeInfo>.findDebugTarget(label: Label): TargetIdeI
 
 /**
  * Builds the target and writes the run script with one `bazel run --script_path`. The same command
- * also runs the `intellij_cc_debug_aspect`.
+ * also runs the `intellij_cc_debug_aspect`, if the last sync deployed it.
  */
 @Throws(ExecutionException::class)
 context(ctx: CcDebugContext)
@@ -57,10 +59,15 @@ internal suspend fun buildExecutable(): CcDebugBuildResult {
   }
 
   try {
+    val aspectDeployed = isCcDebugAspectDeployed()
+    if (!aspectDeployed) {
+      ctx.reportEvent(MessageEvent.Kind.WARNING, BazelCLionCoreBundle.message("debug.warning.aspect.not.deployed"))
+    }
+
     val (status, infoFiles) = ctx.project.connection.runWithServer(ctx.taskId) { server ->
       val bazelParams = buildList {
         addAll(ScriptPathBuildTargetTask.scriptPathParams(scriptPath))
-        addAll(ccDebugAspectParams()) // TODO: assumes the aspect is deployed, trigger deployment if not
+        if (aspectDeployed) addAll(ccDebugAspectParams())
         addAll(server.projectView.debugFlags)
         addAll(parseAsProgramArguments(ctx.state.additionalBazelParams))
       }
@@ -87,7 +94,7 @@ internal suspend fun buildExecutable(): CcDebugBuildResult {
       ExecutableInfo.fromBazelRunScript(Files.readString(scriptPath)).also { it.createRequiredDirectories() }
     }
 
-    return CcDebugBuildResult(executableInfo, readDebugTargets(infoFiles) )
+    return CcDebugBuildResult(executableInfo, readDebugTargets(infoFiles))
   }
   catch (e: IOException) {
     throw ExecutionException(BazelCLionCoreBundle.message("debug.error.script.read.failed"), e)
@@ -122,6 +129,20 @@ private suspend fun readDebugTargets(infoFiles: Set<Path>): List<TargetIdeInfo> 
   }
 
   return targets
+}
+
+/**
+ * Only a sync deploys the aspects, thus the files of an older plugin version can miss the debug aspect.
+ *
+ * TODO: this is a very simple heuristic, maybe could re-deploy the aspect here or check some sha-sum instead?
+ */
+context(ctx: CcDebugContext)
+private suspend fun isCcDebugAspectDeployed(): Boolean {
+  val path = ctx.project.rootDir.toNioPath()
+    .resolve(Constants.DOT_BAZELBSP_DIR_NAME)
+    .resolve(INTELLIJ_CC_DEBUG_ASPECT.location.file)
+
+  return withContext(Dispatchers.IO) { Files.exists(path) }
 }
 
 private fun ccDebugAspectParams(): List<String> = listOf(
