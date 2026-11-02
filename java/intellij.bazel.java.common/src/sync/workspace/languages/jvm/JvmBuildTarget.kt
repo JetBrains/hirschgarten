@@ -19,6 +19,7 @@ data class JvmBuildTarget(
 
   val environmentVariables: Map<String, String> = mapOf(),
   val mainClass: String? = null,
+  val testClass: String? = null,
   val jvmArgs: StringsCollection = StringsCollection.EMPTY,
   val programArgs: StringsCollection = StringsCollection.EMPTY,
   val resolvedResourceStripPrefix: OutputLocation? = null,

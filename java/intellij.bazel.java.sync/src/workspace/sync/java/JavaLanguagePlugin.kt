@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sync.workspace.languages.java
 
 import com.google.devtools.build.lib.view.proto.Deps
 import com.google.devtools.intellij.aspect.Common.ArtifactLocation
-import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.JvmTargetInfo
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.TargetIdeInfo
 import com.intellij.openapi.project.Project
 import com.intellij.util.EnvironmentUtil
@@ -118,7 +117,8 @@ class JavaLanguagePlugin : LanguagePlugin {
       javacOpts = StringsCollection.of(target.javaCommon.javacOptsList),
       binaryOutputs = OutputLocationCollectionBuilder.build(target.javaCommon.jarsList.flatMap { it.binaryJarsList }, parser),
       environmentVariables = environmentVariables.toMap(),
-      mainClass = getMainClass(jvmTarget),
+      mainClass = jvmTarget.mainClass.ifBlank { null },
+      testClass = jvmTarget.testClass.ifBlank { null },
       jvmArgs = StringsCollection.of(jvmTarget.jvmFlagsList),
       programArgs = StringsCollection.of(jvmTarget.argsList),
       resolvedResourceStripPrefix = target.resourceStripPrefixLocation(),
@@ -153,9 +153,6 @@ class JavaLanguagePlugin : LanguagePlugin {
 
     return StrictDependencyCheckedType.ERROR
   }
-
-  private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? =
-    jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 
   private suspend fun createJdepsJars(
     server: BazelServerFacade,

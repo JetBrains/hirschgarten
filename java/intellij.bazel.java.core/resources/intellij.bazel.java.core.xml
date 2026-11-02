@@ -105,6 +105,7 @@
     <runWithScriptPathExtension implementation="org.jetbrains.bazel.jvm.run.DebugRunWithScriptPathExtension"/>
     <jvmTestRunnerExtension implementation="org.jetbrains.bazel.jvm.run.DefaultJvmTestRunnerExtension" order="last"/>
     <jvmTestFilterExtension implementation="org.jetbrains.bazel.java.ui.gutters.DefaultJvmTestFilterExtension" order="last"/>
+    <entryPointMatcher implementation="org.jetbrains.bazel.java.ui.gutters.JvmEntryPointMatcher"/>
 
     <testLocationHintProvider implementation="org.jetbrains.bazel.testing.BazelJavaTestLocationHintProvider"/>
     <incompleteTestSuiteParser implementation="org.jetbrains.bazel.jvm.run.Junit5TestVisualOutputParser"/>
