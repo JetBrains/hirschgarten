@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.autolink.ExternalSystemProjectLinkLis
 import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
@@ -15,6 +16,10 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
 
+/**
+ * A Bazel project is the open project itself: the link closes [Project] and opens its base path as a Bazel project.
+ * The link therefore takes only the base path of the project. A path below or outside the project stays unlinked.
+ */
 @ApiStatus.Internal
 class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   companion object {
@@ -30,6 +35,11 @@ class BazelUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
     project.isBazelProject
 
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
+    val basePath = project.basePath
+    if (basePath == null || !FileUtil.pathsEqual(basePath, externalProjectPath)) {
+      log.warn("Bazel cannot link $externalProjectPath into '${project.name}': a Bazel project replaces the open project, and this path is not its base path")
+      return
+    }
     BazelApplicationCoroutineScopeService.getInstance().launch {
       val file = readAction {
         StandardFileSystems.local()
