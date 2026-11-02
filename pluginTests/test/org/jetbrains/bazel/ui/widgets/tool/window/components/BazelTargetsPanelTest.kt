@@ -1,11 +1,16 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
+import com.intellij.openapi.application.UI
 import com.intellij.openapi.project.Project
+import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.SystemPropertyClassLevel
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.ui.speedSearch.SpeedSearchSupply
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -22,6 +27,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @TestApplication
+@SystemPropertyClassLevel(propertyKey = "intellij.testFramework.rethrow.logged.errors", propertyValue = "true")
 class BazelTargetsPanelTest {
   private val projectFixture = projectFixture()
   private val project by projectFixture
@@ -62,16 +68,17 @@ class BazelTargetsPanelTest {
   }
 
   @Test
-  fun `clicking no targets message focuses searchbar`() {
+  fun `clicking no targets message focuses searchbar`(): Unit = timeoutRunBlocking {
     val model = createModel()
     val panel = createPanel(model)
-    panel.showNoTargetsMessage()
-    val message = panel.messageLabel()
     val searchBarPanel = mockSearchBarPanel()
-    panel.replaceSearchBarPanel(searchBarPanel)
-    val event = mouseClicked(message)
 
-    message.dispatchEvent(event)
+    val event = withContext(Dispatchers.UI) {
+      panel.showNoTargetsMessage()
+      val message = panel.messageLabel()
+      panel.replaceSearchBarPanel(searchBarPanel)
+      mouseClicked(message).also { message.dispatchEvent(it) }
+    }
 
     searchBarPanel.verifyFocusRequested()
     assertTrue(event.isConsumed)
