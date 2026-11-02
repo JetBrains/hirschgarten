@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.tests.synthetic_targets
 
 import com.intellij.driver.client.Driver
-import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
@@ -18,6 +17,8 @@ import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.base.withBazelFeatureFlag
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.junit.jupiter.api.Test
 import org.opentest4j.MultipleFailuresError
@@ -36,10 +37,10 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
       .applyVMOptionsPatch {
         this.addSystemProperty("expose.ui.hierarchy.url", "true")
       }
+      .withBazelFeatureFlag(BazelFeatureFlags.SYNTHETIC_RUN_ENABLE)
     context
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
-        setRegistry("bazel.run.synthetic.enable", true.toString())
         syncBazelProject()
         waitForIndicators(5.minutes)
         execute { takeScreenshot("afterSync") }
