@@ -19,6 +19,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -132,7 +133,9 @@ class SyntheticRunTargetStorageTest {
         factory.getPresentation(action).text
       }
     }
-    actionTexts shouldContainAll listOf("Run '//test:kotlin_lib (synthetic)'", "Debug '//test:kotlin_lib (synthetic)'")
+    // SyntheticRunTargetTest finds the Run action by this bundle key.
+    val configurationName = BazelPluginBundle.message("runconfig.synthetic", "//test:kotlin_lib")
+    actionTexts shouldContainAll listOf("Run '$configurationName'", "Debug '$configurationName'")
   }
 
   @Test
