@@ -1,0 +1,77 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "plugin-bazel",
+  "documentNamespace": "https://www.jetbrains.com/spdx/plugin-bazel",
+  "comment": "Maintained by hand. The test //plugins/bazel/intellij.bazel.plugin:sbom_test fails when the plugin packs a jar that this file does not list. The plugin runs on the libraries of the IDE. The SBOM of the IDE distribution lists them.",
+  "creationInfo": {
+    "created": "2026-11-02T00:00:00Z",
+    "creators": [
+      "Organization: JetBrains s.r.o."
+    ]
+  },
+  "documentDescribes": [
+    "SPDXRef-Package-plugin"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-plugin",
+      "name": "Bazel",
+      "comment": "The plugin with the ID org.jetbrains.bazel. The source code is in plugins/bazel.",
+      "supplier": "Organization: JetBrains s.r.o.",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2000-2026 JetBrains s.r.o. and contributors"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-intellij-aspect-sdk",
+      "name": "intellij-aspect-sdk",
+      "versionInfo": "0.0.47",
+      "comment": "The module intellij.libraries.bazel.aspect.sdk packs this library into its jar.",
+      "supplier": "Organization: JetBrains s.r.o.",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.jetbrains.intellij.deps.bazel/intellij-aspect-sdk@0.0.47"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-bazel-protos",
+      "name": "Bazel protocol buffer definitions",
+      "comment": "Copies of .proto files in plugins/bazel/protobuf/src/proto. The module intellij.bazel.protobuf contains the code that protoc generates from them.",
+      "supplier": "Organization: The Bazel Authors",
+      "downloadLocation": "https://github.com/bazelbuild/bazel",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright The Bazel Authors"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-plugin"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-plugin",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-intellij-aspect-sdk"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-plugin",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-Package-bazel-protos"
+    }
+  ]
+}
