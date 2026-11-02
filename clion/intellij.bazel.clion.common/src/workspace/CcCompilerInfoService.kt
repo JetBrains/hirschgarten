@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.platform.workspace.storage.EntityStorage
+import com.jetbrains.cidr.lang.workspace.compiler.MSVCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerId
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.UnknownCompilerKind
@@ -53,6 +54,7 @@ private fun compilerKindById(id: String): OCCompilerKind = when (id) {
   OCCompilerId.CLANG.toString() -> CcCompilerKind.CLANG
   OCCompilerId.GCC.toString() -> CcCompilerKind.GCC
   OCCompilerId.APPLE_CLANG.toString() -> CcCompilerKind.APPLE_CLANG
+  OCCompilerId.MSVC.toString() -> MSVCCompilerKind // no wrapper required for MSVC
   else -> UnknownCompilerKind
 }
 
