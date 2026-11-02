@@ -8,8 +8,10 @@ therefore not reaching any breakpoints.
 
 ## Connection
 Firstly, BSP server is asked to build a target in a debug mode (only the analysis phase can be debugged).
-We then connect to `localhost:<port>` (Bazel does not support debugging between hosts) using Java socket infrastructure
+We then connect to `localhost:<port>` using Java socket infrastructure
 (managed by class [`connector.StarlarkSocketConnector`](connector/StarlarkSocketConnector.kt)).
+Bazel binds its debug server on all network interfaces, not only on loopback.
+Bazel accepts the first client without authentication, so another host can take the debug session before the IDE connects.
 Port is chosen automatically and is not saved in the run configuration —
 thanks to that the chance of port collision is negligible.
 
