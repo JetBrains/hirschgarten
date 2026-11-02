@@ -11,6 +11,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.extended.codeowners.CodeOwnerIndex
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.junit5.PerformanceTest
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
@@ -49,6 +50,7 @@ private val codeOwnerIndex: CodeOwnerIndex? by lazy { CodeOwnerIndex.create() }
  * ```
  */
 @PerformanceUnitTest
+@PerformanceTest
 class PerformanceTest : IdeStarterBaseProjectTest() {
 
   @TestFactory
