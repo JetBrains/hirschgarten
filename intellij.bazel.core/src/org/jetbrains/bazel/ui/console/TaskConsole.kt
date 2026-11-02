@@ -31,7 +31,6 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.terminal.TerminalExecutionConsoleBuilder
-import com.intellij.util.causeChain
 import com.jediterm.core.util.TermSize
 import com.jediterm.terminal.TtyConnector
 import org.jetbrains.annotations.ApiStatus
@@ -283,7 +282,7 @@ abstract class BaseTaskConsole(
    */
   private fun registerFailure(rootTaskId: TaskId, error: Throwable): Boolean {
     val failures = taskFailures.getOrPut(rootTaskId) { mutableSetOf() }
-    return error.causeChain().none { it in failures } && failures.add(error)
+    return generateSequence(error) { it.cause }.none { it in failures } && failures.add(error)
   }
 
   private fun finishChildrenSubtasks(parentId: TaskId, result: EventResult) {
