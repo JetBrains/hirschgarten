@@ -11,6 +11,7 @@ import org.jetbrains.bazel.languages.projectview.ProjectViewFactory
 import org.jetbrains.bazel.languages.projectview.dotIdeaDirectoryLocation
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.isDefaultProjectViewFile
 import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.pickProjectViewFileForProject
+import org.jetbrains.bazel.utils.isRealPathInside
 import java.nio.file.Path
 
 internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
@@ -53,16 +54,22 @@ internal class BazelProjectStorePathCustomizer : ProjectStorePathCustomizer {
     return fileBeingOpen
   }
 
+  /**
+   * Returns the `.idea` directory from the project view, or `<root>/.idea`.
+   * The real path of the directory from the project view must be inside the real project root.
+   * The function does not check `<root>/.idea`, like the platform does not check it for other projects.
+   */
   private fun selectDotIdeaPath(projectRootPath: Path, projectViewPath: Path): Path {
+    val defaultDotIdeaPath = projectRootPath.resolve(DIRECTORY_STORE_FOLDER)
     val defaultProject = ProjectManager.getInstance().defaultProject
     val projectView = ProjectViewFactory.fromOrNull(defaultProject, projectViewPath, projectRootPath)
-    return projectView
-      ?.dotIdeaDirectoryLocation
-      ?.let(projectRootPath::resolve)
-      ?: projectRootPath.defaultDotIdeaDirectory()
+    val dotIdeaPath = projectView?.dotIdeaDirectoryLocation?.let { projectRootPath.resolve(it).normalize() } ?: return defaultDotIdeaPath
+    if (!dotIdeaPath.isRealPathInside(projectRootPath)) {
+      log.warn("The .idea directory $dotIdeaPath is outside of the project root $projectRootPath, using $defaultDotIdeaPath")
+      return defaultDotIdeaPath
+    }
+    return dotIdeaPath
   }
-
-  private fun Path.defaultDotIdeaDirectory(): Path = resolve(DIRECTORY_STORE_FOLDER)
 
   companion object {
     private val log = logger<BazelProjectStorePathCustomizer>()

@@ -87,7 +87,7 @@ private val DirectoriesSection: ProjectViewSection<List<ExcludableValue<Path>>> 
 
 private val DotIdeaDirectoryLocationSection: ProjectViewSection<Path?> = ProjectViewSection(
   key = DOT_IDEA_DIRECTORY_LOCATION_KEY,
-  type = ProjectViewSectionType.path(),
+  type = ProjectViewSectionType.path(insideProjectRoot = true),
   documentation = BazelProjectViewBundle.message("bazel.language.projectview.docs.dot_idea_directory_location"),
 )
 
