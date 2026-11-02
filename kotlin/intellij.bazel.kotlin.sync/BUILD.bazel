@@ -34,7 +34,7 @@ jvm_library(
         # do not sort,
         "@lib//:kotlin-stdlib",
         "@community//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
-        "@community//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
+        "@community//plugins/kotlin/jps/util/runtime",
         "//plugins/bazel/java/intellij.bazel.java.sync:bazel-java-sync",
         "@community//platform/core-api:core",
         "@community//platform/platform-api:ide",
