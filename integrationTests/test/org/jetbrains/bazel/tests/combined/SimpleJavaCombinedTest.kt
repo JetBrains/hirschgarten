@@ -35,6 +35,7 @@ import org.jetbrains.bazel.base.waitForSyncSucceeded
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.performanceImpl.FileKindCheck
+import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -67,6 +68,9 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
 
   @Test @Order(5)
   fun `add new file should show it as unsynced`() = addUnsyncedFileTest()
+
+  @Test @Order(6)
+  fun `run gutter for a shared test library should show only the target of the test class`() = runGutterSharedTestLibrary()
 
   @Test @Order(100)
   fun `update bazel version should not cause server to break`() = bazelVersionUpdate()
@@ -180,6 +184,41 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
               "Run '//:SimpleJavaTest'",
               "Run '//:SimpleJavaTest' with Coverage",
             ),
+          )
+          popup().close()
+        }
+      }
+    }
+  }
+
+  private fun runGutterSharedTestLibrary() {
+    withDriver(bgRun) {
+      ideFrame {
+        // the files have no imports, so the class declaration is always on line 2
+        // the `MultiplyTest` target runs the class in its own `srcs`, so the gutter of the shared `MultiplyTest` shows only `SharedMultiplyTest`
+        val testTargets = mapOf("AddTest" to "AddTest", "SubtractTest" to "SubtractTest", "MultiplyTest" to "SharedMultiplyTest")
+        for ((testName, targetName) in testTargets) {
+          step("Check the run gutter of $testName") {
+            execute { openFile("java/org/example/sharedTestLib/$testName.java") }
+            clickRunGutterOnLine(2)
+            verifyAvailableRunGutterActions(
+              listOf(
+                "Run '//java/org/example/sharedTestLib:$targetName'",
+                "Debug '//java/org/example/sharedTestLib:$targetName'",
+                "Run '//java/org/example/sharedTestLib:$targetName' with Coverage",
+                "Profile '//java/org/example/sharedTestLib:$targetName' with 'IntelliJ Profiler'",
+              ),
+            )
+            popup().close()
+          }
+        }
+        step("Check the run gutter of FooApp") {
+          execute { openFile("java/org/example/sharedTestLib/FooApp.java") }
+          // the `main` method is on line 3
+          clickRunGutterOnLine(3)
+          val target = "//java/org/example/sharedTestLib:FooApp"
+          verifyAvailableRunGutterActions(
+            listOf("Run '$target'", "Debug '$target'", "Profile '$target' with 'IntelliJ Profiler'"),
           )
           popup().close()
         }

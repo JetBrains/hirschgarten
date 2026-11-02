@@ -274,6 +274,11 @@ class BazelProjectOpenStarterTest : IdeStarterBaseProjectTest() {
                 "//:associates_example",
                 "//:requires-no-ide",
                 "//:not-ignored",
+                "//src/org/example/sharedTestLib:tests",
+                "//src/org/example/sharedTestLib:MultiplyTest",
+                "//src/org/example/sharedTestLib:DivideTest",
+                "//src/org/example/sharedTestLib:apps",
+                "//src/org/example/sharedTestLib:FooApp",
               )
             }
           }

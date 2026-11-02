@@ -4,6 +4,7 @@ import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.actions.MultipleRunLocationsProvider
 import com.intellij.psi.PsiElement
+import com.intellij.util.ThreeState
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetStorage
@@ -35,7 +36,22 @@ class BazelContainingTargetsLocationsProvider : MultipleRunLocationsProvider() {
       .mapNotNull { targetUtils.getTargetSummary(it) }
     val executableTargets = targetUtils.getExecutableTargetsForFile(containingFile)
       .mapNotNull { targetUtils.getTargetSummary(it) }
-    return (normalTargets + executableTargets).distinctBy { it.id }
+    val normalLabels = normalTargets.mapTo(HashSet()) { it.id }
+    val dependentTargets = executableTargets.filter { it.id !in normalLabels }
+    return (normalTargets + filterDependentTargets(element, dependentTargets)).distinctBy { it.id }
+  }
+
+  private fun filterDependentTargets(element: PsiElement, targets: List<BuildTarget>): List<BuildTarget> {
+    if (targets.size < 2) return targets
+    val matches = BazelEntryPointMatcher.matchAll(element, targets)
+    // in case element is not recognized as an entry point of any given targets, keep all targets
+    if (matches.values.none { it == ThreeState.YES }) return targets
+    return targets.filter {
+      when (matches.getValue(it.id)) {
+        ThreeState.YES, ThreeState.UNSURE -> true
+        ThreeState.NO -> false
+      }
+    }
   }
 
   override fun getLocationDisplayName(

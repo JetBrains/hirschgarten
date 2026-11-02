@@ -60,6 +60,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.testRerunExtension"
                     interface="org.jetbrains.bazel.run.BazelTestRerunExtension"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.entryPointMatcher"
+                    interface="org.jetbrains.bazel.ui.gutters.BazelEntryPointMatcher"
+                    dynamic="true"/>
   </extensionPoints>
 
   <resource-bundle>messages.BazelPluginBundle</resource-bundle>
