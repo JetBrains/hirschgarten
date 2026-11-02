@@ -53,12 +53,18 @@ internal suspend fun calculateRepoNameMappingOnly(
     mapping: Map<String, String>,
   ) = repositoryNames.all { mapping.containsKey(it) }
 
-  val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
-    rootRulesToNeededTransitiveRules.filter {
+  val bcrNameOfReposWithTransitiveNeeds = rootRulesToNeededTransitiveRules.filter {
       !coveredByMap(it.value, moduleApparentNameToCanonicalName)
     }
-      .keys
-      .mapNotNull { moduleApparentNameToCanonicalName[it] }
+   .keys
+
+  val reposToAskTransitively = moduleApparentNameToCanonicalName.values.filter {
+    canonicalName ->
+    bcrNameOfReposWithTransitiveNeeds.any { canonicalName.contains(it) }
+  }
+
+  val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
+      reposToAskTransitively
       .let {
         moduleResolver.getRepoMappings(it)
       }.values
