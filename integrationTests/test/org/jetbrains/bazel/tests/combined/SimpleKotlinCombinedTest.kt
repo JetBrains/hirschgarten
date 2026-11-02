@@ -111,15 +111,18 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
           .clickOnIcon(12)
         takeScreenshot("afterTriggerBuild")
         val buildView = x { byType("com.intellij.build.BuildView") }
-        // Check that waitContainsText doesn't care about separating output lines, carrying over a word from the previous line
-        buildView.waitContainsText("actionsINFO: Build", timeout = 2.minutes)
-        // If PTY terminal is disabled, it will print an empty "INFO:" into the console and won't be able to overwrite it
+        waitFor(
+          message = "Build console should show the end of the build with the escape sequences interpreted",
+          timeout = 2.minutes,
+          getter = { buildView.getAllTexts().asString() },
+          checker = BazelBuildViewText::hasInterpretedBuildEnd,
+        )
         takeScreenshot("afterReadingBuildCompletion")
         waitFor(
           message = "Build console shouldn't contain empty \"INFO:\"",
           timeout = 10.seconds,
           getter = { buildView.getAllTexts().asString() },
-          checker = { text: String -> "INFO: INFO: " !in text },
+          checker = { text: String -> !BazelBuildViewText.hasEmptyInfoLine(text) },
         )
       }
     }
