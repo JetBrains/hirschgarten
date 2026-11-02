@@ -18,6 +18,7 @@ import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.junit.jupiter.api.Test
 import org.opentest4j.MultipleFailuresError
 import kotlin.time.Duration.Companion.minutes
@@ -128,11 +129,12 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
     check(gutterIcons.size == 1) { "Expected one gutter icon at line ${scenario.line}, got ${gutterIcons.size}" }
     gutterIcons.single().click()
     val popup = popup()
-    val targetOnlyAction = "Run '${scenario.targetLabel}'"
-    val targetAndMainClassAction = "Run '${scenario.targetLabel} ${scenario.mainClass}'"
+    val configurationName = BazelPluginBundle.message("runconfig.synthetic", scenario.targetLabel)
+    // RunManager adds " (N)" when another main class of the same target already has a configuration.
+    val runAction = Regex("Run '${Regex.escape(configurationName)}( \\(\\d+\\))?'")
     val action = popup.waitOneText(
-      message = "Finding the run action for ${scenario.targetLabel} and ${scenario.mainClass}",
-    ) { it.text == targetOnlyAction || it.text == targetAndMainClassAction }
+      message = "Finding the run action for '$configurationName' (optional ' (N)' suffix) for ${scenario.mainClass}",
+    ) { runAction.matches(it.text) }
     driver.execute { takeScreenshot("${scenario.name}_runPopup") }
     action.click()
   }
