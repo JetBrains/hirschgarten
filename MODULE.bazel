@@ -17,7 +17,7 @@ community_stub(name = "community")
 bazel_dep(name = "intellij_aspect_sdk")
 git_override(
     module_name = "intellij_aspect_sdk",
-    commit = "361e77f2c32384d7267bfaf353f043be8c70c5b6",
+    commit = "326afd3c208ce570ef86bb920df1da7e9fecfde9",
     remote = "https://github.com/JetBrains/intellij-aspect.git",
 )
 
