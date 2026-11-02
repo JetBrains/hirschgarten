@@ -17,6 +17,7 @@ Modify the `BUILD.bazel` file
 ``` bazel
 jps_test(
     name = "pluginTests.clion_test",
+    data = all_test_dep_targets,
     runtime_deps = [":pluginTests.clion_test_lib"],
     env = {
         "RESHARPER_HOST_BIN": "/Users/...../ultimate/dotnet/Bin.RiderBackend",
@@ -25,7 +26,7 @@ jps_test(
 
 ```
 
-Please note that this change will be overwritten on each jps-to-bazel call 
+Do not commit this change.
 
 ### Running CLion tests from the command line
 
