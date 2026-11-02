@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
-import com.intellij.aspect.lib.ASPECT_NAME
+import com.intellij.aspect.lib.INTELLIJ_ASPECT
 import com.intellij.aspect.lib.OutputGroups
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
@@ -197,7 +197,7 @@ class ProjectResolver(
     taskId: TaskId,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
-      val aspects = listOf(ASPECT_NAME)
+      val aspects = listOf(INTELLIJ_ASPECT.location.toString())
       val taskLogger = taskEventsHandler.asLogger(taskId)
       val outputGroups = mutableListOf(OutputGroups.INFO.groupName)
       if (BazelFeatureFlags.isSyncRequestSourcesEnabled) {
