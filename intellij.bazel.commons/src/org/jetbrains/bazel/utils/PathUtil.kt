@@ -8,6 +8,7 @@ import java.io.IOException
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import kotlin.io.path.exists
 import kotlin.io.path.readAttributes
 import kotlin.io.path.readSymbolicLink
 
@@ -100,6 +101,19 @@ fun Path.rebaseOrNull(from: Path, to: Path): Path? = when {
 @ApiStatus.Internal
 fun Path.rebase(from: Path, to: Path): Path =
   requireNotNull(rebaseOrNull(from = from, to = to)) { "$this is not under $from" }
+
+/**
+ * Checks whether the real path of this path is inside the real path of [root].
+ * This path does not have to exist, so the function resolves the real path of the nearest existing parent.
+ * A dangling symlink counts as existing, so its real path fails and the function returns `false`.
+ */
+@ApiStatus.Internal
+fun Path.isRealPathInside(root: Path): Boolean {
+  val existingParent = allAncestorsSequence().firstOrNull { it.exists(LinkOption.NOFOLLOW_LINKS) } ?: return false
+  val realParent = existingParent.toRealPathOrNull() ?: return false
+  val realRoot = root.toRealPathOrNull() ?: return false
+  return rebase(from = existingParent, to = realParent).startsWith(realRoot)
+}
 
 /**
  * See [com.intellij.openapi.vfs.VfsUtilCore.getCommonAncestor].

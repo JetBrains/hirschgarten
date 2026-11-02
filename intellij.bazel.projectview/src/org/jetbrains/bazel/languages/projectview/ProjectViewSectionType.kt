@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.projectview
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.languages.projectview.completion.SimpleCompletionProv
 import org.jetbrains.bazel.languages.projectview.completion.TargetCompletionProvider
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.sync.environment.bazelProjectInfo
+import org.jetbrains.bazel.utils.isRealPathInside
 import java.nio.file.Path
 import kotlin.collections.contains
 import kotlin.enums.EnumEntries
@@ -52,10 +54,11 @@ interface ProjectViewSectionType<T : Any> {
 
     fun path(
       existing: Boolean = false,
+      insideProjectRoot: Boolean = false,
       completionProvider: CompletionProvider<CompletionParameters>? = null,
     ): Scalar<Path> = scalar(
       read = String::toNioPathOrNull,
-      checker = pathChecker(String::toNioPathOrNull, existing),
+      checker = pathChecker(String::toNioPathOrNull, existing, insideProjectRoot),
       completionProvider = completionProvider,
     )
 
@@ -147,7 +150,7 @@ private fun <T> scalarChecker(read: (String) -> T?) = projectViewChecker<String>
   }
 }
 
-private fun pathChecker(read: (String) -> Path?, existing: Boolean) = projectViewChecker<String> { project, subject ->
+private fun pathChecker(read: (String) -> Path?, existing: Boolean, insideProjectRoot: Boolean) = projectViewChecker<String> { project, subject ->
   val path = read(subject)
   if (path == null) {
     val problem = ProjectViewProblem(
@@ -157,6 +160,20 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean) = projectVie
     )
     yield(problem)
     return@projectViewChecker
+  }
+
+  if (insideProjectRoot) {
+    val rootDir = project.bazelProjectInfo.projectRootDir?.toNioPathOrNull()
+    val resolvedPath = rootDir?.resolve(path)?.normalize()
+    if (resolvedPath != null && !resolvedPath.isRealPathInside(rootDir)) {
+      val problem = ProjectViewProblem(
+        id = ProjectViewProblem.Id.InvalidValue,
+        message = BazelProjectViewBundle.message("annotator.path.outside.of.project.root.error", resolvedPath, rootDir),
+        severity = ProjectViewProblem.Severity.Error,
+      )
+      yield(problem)
+      return@projectViewChecker
+    }
   }
 
   if (!existing) return@projectViewChecker

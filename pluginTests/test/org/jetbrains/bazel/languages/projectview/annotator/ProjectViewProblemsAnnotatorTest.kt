@@ -16,6 +16,7 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.BazelProjectViewBundle
 import org.jetbrains.bazel.languages.projectview.quickfix.inspectCodeSuppressActionsAtCaret
 import org.jetbrains.bazel.languages.projectview.quickfix.suppressInInspectCode
@@ -25,11 +26,15 @@ import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.testBazel
 import org.jetbrains.bazel.test.framework.testproject.writeFile
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.time.Duration.Companion.seconds
 
 @BazelTestApplication
 class ProjectViewProblemsAnnotatorTest {
   private val codeInsightFixture by bazelCodeInsightFixture()
+
+  private val rootDir: Path
+    get() = codeInsightFixture.project.rootDir.toNioPath()
 
   @Test
   fun `should warn about unsupported sections`() {
@@ -108,6 +113,27 @@ class ProjectViewProblemsAnnotatorTest {
         --run_under=valgrind
       """.trimIndent(),
     )
+  }
+
+  @Test
+  fun `should accept a dot idea directory inside of the project root`() {
+    checkHighlighting("""dot_idea_directory_location: custom/.idea""")
+  }
+
+  @Test
+  fun `should report a relative dot idea directory outside of the project root`() {
+    val outsidePath = rootDir.parent.resolve("outside").resolve(".idea")
+    val message = BazelProjectViewBundle.message("annotator.path.outside.of.project.root.error", outsidePath, rootDir)
+
+    checkHighlighting("""dot_idea_directory_location: <error descr="$message">../outside/.idea</error>""")
+  }
+
+  @Test
+  fun `should report an absolute dot idea directory outside of the project root`() {
+    val outsidePath = rootDir.parent.resolve("outside").resolve(".idea")
+    val message = BazelProjectViewBundle.message("annotator.path.outside.of.project.root.error", outsidePath, rootDir)
+
+    checkHighlighting("""dot_idea_directory_location: <error descr="$message">$outsidePath</error>""")
   }
 
   @Test
