@@ -158,7 +158,7 @@ private class Parser(
               ?.sections
               ?.forEach { (key, value) -> sections.mergeSection(key, value) }
           }
-          is Import.Unresolved -> Unit
+          is Import.Unresolved, is Import.OutsideOfProjectRoot -> Unit
         }
       }
     }

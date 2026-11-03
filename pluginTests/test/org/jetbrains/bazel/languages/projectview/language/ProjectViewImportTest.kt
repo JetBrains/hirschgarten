@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.language
 
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContainExactly
@@ -22,10 +23,13 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createSymbolicLinkPointingTo
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.writeText
 
 @BazelTestApplication
 class ProjectViewImportTest {
   private val testBazel by testBazelProjectFixture()
+  private val outsideDir by tempPathFixture()
 
   @Test
   fun `test an import cycle through a symbolic link stops`() {
@@ -193,6 +197,32 @@ class ProjectViewImportTest {
       ).toNioPath()
     val projectView = testBazel.parseProjectView(main)
     projectView.imports.shouldBeEmpty()
+  }
+
+  @Test
+  fun `test an import outside of the project root is not read`() {
+    val outside = outsideDir.resolve("outside.bazelproject")
+    outside.writeText("shard_sync: false")
+    val relativeOutside = testBazel.workspaceRoot.relativize(outside).invariantSeparatorsPathString
+    for (importPath in listOf(relativeOutside, outside.toString())) {
+      val main = testBazel.writeFile("main.bazelproject", "import $importPath").toNioPath()
+
+      val projectView = testBazel.parseProjectView(main)
+
+      projectView.isEmpty() shouldBe true
+    }
+  }
+
+  @Test
+  fun `test an import outside of the project root whose real path is inside is not read`() {
+    val shared = testBazel.writeFile("shared.bazelproject", "shard_sync: false").toNioPath()
+    val link = outsideDir.resolve("link.bazelproject")
+    link.createSymbolicLinkPointingTo(shared)
+    val main = testBazel.writeFile("main.bazelproject", "import $link").toNioPath()
+
+    val projectView = testBazel.parseProjectView(main)
+
+    projectView.isEmpty() shouldBe true
   }
 
   @Test

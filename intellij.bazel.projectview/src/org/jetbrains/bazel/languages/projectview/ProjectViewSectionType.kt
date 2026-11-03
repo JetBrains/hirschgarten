@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.projectview
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
+import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.annotations.ApiStatus
@@ -176,7 +177,7 @@ private fun pathChecker(read: (String) -> Path?, existing: Boolean, insideProjec
     }
   }
 
-  if (!existing) return@projectViewChecker
+  if (!existing || !TrustedProjects.isProjectTrusted(project)) return@projectViewChecker
 
   val resolvedPath = when {
     path.isAbsolute -> path

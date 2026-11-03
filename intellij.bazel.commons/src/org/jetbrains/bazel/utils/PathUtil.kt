@@ -104,11 +104,13 @@ fun Path.rebase(from: Path, to: Path): Path =
 
 /**
  * Checks whether the real path of this path is inside the real path of [root].
+ * The normalized path must be inside the normalized [root] first, or the function returns `false` and does not touch the file system.
  * This path does not have to exist, so the function resolves the real path of the nearest existing parent.
  * A dangling symlink counts as existing, so its real path fails and the function returns `false`.
  */
 @ApiStatus.Internal
 fun Path.isRealPathInside(root: Path): Boolean {
+  if (!normalize().startsWith(root.normalize())) return false
   val existingParent = allAncestorsSequence().firstOrNull { it.exists(LinkOption.NOFOLLOW_LINKS) } ?: return false
   val realParent = existingParent.toRealPathOrNull() ?: return false
   val realRoot = root.toRealPathOrNull() ?: return false

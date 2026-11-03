@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.projectview.imports
 
+import org.jetbrains.bazel.languages.projectview.imports.Import.OutsideOfProjectRoot
 import org.jetbrains.bazel.languages.projectview.imports.Import.Resolved
 import org.jetbrains.bazel.languages.projectview.imports.Import.Unresolved
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
@@ -10,26 +11,27 @@ import kotlin.io.path.isRegularFile
 
 internal object ImportFactory {
 
+  /**
+   * Resolves the import path of [element] against [root].
+   * The normalized path must be inside [root], or the function returns [OutsideOfProjectRoot] and does not touch the file system.
+   */
   fun from(
     root: Path,
     element: ProjectViewPsiImportBase,
   ): Import {
-    val path = element.getImportPath()?.text?.trim() ?: ""
-    val file = root.resolveImport(path)
+    val text = element.getImportPath()?.text?.trim() ?: ""
     val required = element is ProjectViewPsiImport
-    return when (file) {
-      null -> Unresolved(path, required)
-      else -> Resolved(file, required)
-    }
-  }
-
-  private fun Path.resolveImport(importPath: String): Path? {
-    if (importPath.isEmpty()) return null
+    if (text.isEmpty()) return Unresolved(text, required)
     val path = try {
-      resolve(importPath)
-    } catch (_: InvalidPathException) {
-      return null
+      root.resolve(text).normalize()
     }
-    return path.normalize().takeIf { it.isRegularFile() }
+    catch (_: InvalidPathException) {
+      return Unresolved(text, required)
+    }
+    return when {
+      !path.startsWith(root.normalize()) -> OutsideOfProjectRoot(path, required)
+      path.isRegularFile() -> Resolved(path, required)
+      else -> Unresolved(text, required)
+    }
   }
 }

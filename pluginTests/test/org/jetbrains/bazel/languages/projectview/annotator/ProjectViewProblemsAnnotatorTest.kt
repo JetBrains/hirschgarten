@@ -196,6 +196,22 @@ class ProjectViewProblemsAnnotatorTest {
   }
 
   @Test
+  fun `should report a required import outside of the project root`() {
+    val outsidePath = rootDir.parent.resolve("outside.bazelproject")
+    val message = BazelProjectViewBundle.message("annotator.path.outside.of.project.root.error", outsidePath, rootDir)
+
+    checkHighlighting("""import <error descr="$message">../outside.bazelproject</error>""")
+  }
+
+  @Test
+  fun `should report an optional import outside of the project root`() {
+    val outsidePath = rootDir.parent.resolve("outside.bazelproject")
+    val message = BazelProjectViewBundle.message("annotator.path.outside.of.project.root.error", outsidePath, rootDir)
+
+    checkHighlighting("""try_import <error descr="$message">$outsidePath</error>""")
+  }
+
+  @Test
   fun `should accept an optional import whose file does not exist`() {
     checkHighlighting("""try_import missing.bazelproject""")
   }

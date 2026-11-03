@@ -44,6 +44,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun canFormat(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
     if (!FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)) return false
+    if (!TrustedProjects.isProjectTrusted(file.project)) return false
     return file.project.bazelProjectSettings.getBuildifierPathString(file.project) != null
   }
 
