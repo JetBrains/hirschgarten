@@ -17,6 +17,17 @@ private val GNU_PROCESSORS = listOf(
   GnuCoptsProcessor("--sysroot", separator = "=") { withSysroot(it) },
 )
 
+private val MSVC_PROCESSORS = listOf(
+  MsvcCoptsProcessor("/I") { withIncludePath(it) },
+  MsvcCoptsProcessor("/external:I") { withSystemIncludePath(it) },
+)
+
+private val CLANG_CL_PROCESSORS = MSVC_PROCESSORS + listOf(
+  GnuCoptsProcessor("/clang:-I", separator = "/clang:") { withIncludePath(it) },
+  GnuCoptsProcessor("/clang:-iquote", separator = "/clang:") { withQuoteIncludePath(it) },
+  GnuCoptsProcessor("/clang:-isystem", separator = "/clang:") { withSystemIncludePath(it) },
+)
+
 /** The GNU and Clang spelling of the forward options. */
 private val GNU_FORWARDERS = listOf(
   CoptsForwardNext("-Xclang"),
@@ -75,11 +86,26 @@ private class CoptsProcessorStream(val sink: CompilerSpecificSwitchBuilder, val 
 @ApiStatus.Internal
 context(ctx: CcImportContext)
 suspend fun CompilerSpecificSwitchBuilder.applyCopts(kind: OCCompilerKind, options: List<String>) {
-  // TODO: add support for other compiler, e.g. MSVC
-  val isGnu = kind.getId() in GNU_COMPILERS
-
-  val processors = if (isGnu) GNU_PROCESSORS else emptyList()
-  val forwarders = if (isGnu) GNU_FORWARDERS else emptyList()
+  val processors: List<CoptsProcessor>
+  val forwarders: List<CoptsForwarder>
+  when (kind.id) {
+    in GNU_COMPILERS -> {
+      processors = GNU_PROCESSORS
+      forwarders = GNU_FORWARDERS
+    }
+    OCCompilerId.MSVC -> {
+      processors = MSVC_PROCESSORS
+      forwarders = emptyList()
+    }
+    OCCompilerId.CLANG_CL -> {
+      processors = CLANG_CL_PROCESSORS
+      forwarders = emptyList()
+    }
+    else -> {
+      processors = emptyList()
+      forwarders = emptyList()
+    }
+  }
 
   val stream = CoptsProcessorStream(this, processors)
   val forwardStreams = mutableMapOf<String, CoptsForwardGroup>()

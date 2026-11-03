@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.clion.workspace
 
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.jetbrains.cidr.lang.toolchains.CidrToolEnvironment
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
+import org.jetbrains.bazel.clion.workspace.environment.createToolEnvironment
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -33,17 +33,7 @@ data class CcCompilerInfo(
   val builtinIncludes: OutputLocationCollection,
   val sysroot: OutputLocation?,
 ) {
-
-  // TODO: create specialized environment for clang-cl and MSVC
-  val toolEnvironment: CidrToolEnvironment by lazy { createToolEnvironment(environment) }
-}
-
-private class CcToolEnvironment(private val environment: Map<String, String>) : CidrToolEnvironment() {
-
-  override fun prepare(commandLine: GeneralCommandLine, prepareFor: PrepareFor) {
-    super.prepare(commandLine, prepareFor)
-    commandLine.environment.putAll(environment)
-  }
+  val toolEnvironment: CidrToolEnvironment by lazy { createToolEnvironment(this) }
 }
 
 @ApiStatus.Internal
@@ -108,15 +98,6 @@ private fun resolveProcSelfCwd(value: String): String {
 
   val resolved = ctx.resolveExecutionRootPath(value) ?: return value
   return resolved.toString()
-}
-
-private fun createToolEnvironment(environment: Map<String, String>): CidrToolEnvironment {
-  return if (environment.isEmpty()) {
-    CidrToolEnvironment()
-  }
-  else {
-    CcToolEnvironment(environment)
-  }
 }
 
 private fun createXcodeEnvironment(info: CcToolchainBuildTarget): Map<String, String> {

@@ -45,6 +45,7 @@ jvm_library(
         "//CIDR/cidr-util/execution",
         "@community//platform/workspace/jps",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
+        "//CIDR/clion-toolchains",
     ],
 )
 
@@ -78,6 +79,7 @@ jvm_library(
         "//CIDR/cidr-util/execution:execution_test_lib",
         "@community//platform/workspace/jps:jps_test_lib",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk_test_lib",
+        "//CIDR/clion-toolchains:clion-toolchains_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.common` end
