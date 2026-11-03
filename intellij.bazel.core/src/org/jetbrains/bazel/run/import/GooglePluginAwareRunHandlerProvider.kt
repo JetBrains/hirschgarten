@@ -15,10 +15,15 @@ interface GooglePluginAwareRunHandlerProvider : RunHandlerProvider {
 
   companion object {
     fun getRunHandlerProvider(googleHandlerId: String, bazelCommand: String): RunHandlerProvider? {
-      val isTestCommand = bazelCommand == "test" || bazelCommand == "coverage"
+      val isTestCommand = isTestCommand(bazelCommand)
       return ep.extensionList.firstOrNull {
         it is GooglePluginAwareRunHandlerProvider && it.googleHandlerId == googleHandlerId && it.isTestHandler == isTestCommand
       }
+    }
+
+    fun isTestCommand(bazelCommand: String): Boolean {
+      val isTestCommand = bazelCommand == "test" || bazelCommand == "coverage"
+      return isTestCommand
     }
   }
 }

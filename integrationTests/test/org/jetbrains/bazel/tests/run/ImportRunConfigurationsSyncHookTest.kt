@@ -31,6 +31,7 @@ import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
 import org.jetbrains.bazel.tests.ui.consoleView
+import org.jetbrains.bazel.tests.ui.setAutoOpenProjectIfPresent
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.jetbrains.bazel.tests.ui.waitForConsoleText
@@ -48,6 +49,7 @@ private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
       context,
       createProjectView = false,
+      removeDotIdea = false,
     )
   },
 )
@@ -58,9 +60,27 @@ private const val PROFILER_HINT_ACCESSIBLE_NAME = "marker: unknown"
 class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
     createContext("importRunConfigurationsSyncHook", IdeaBazelCases.withProject(IMPORT_RUN_CONFIGURATIONS_PROJECT))
+      .setAutoOpenProjectIfPresent(true)
 
   override fun Driver.syncBazelProject() {
     syncBazelProject(buildAndSync = true)
+  }
+
+  @Test
+  @Order(0)
+  fun `run configurations with an unknown provider are imported as-is`() {
+    withDriver(bgRun) {
+      ideFrame {
+        selectRunConfiguration("Unknown handler")
+        runConfigurationsPopup {
+          list().clickItem("Edit Configurations", fullMatch = false)
+        }
+        editRunConfigurationsDialog {
+          waitOneText("@//:unknown")
+          okButton.click()
+        }
+      }
+    }
   }
 
   @Test

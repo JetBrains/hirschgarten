@@ -15,6 +15,8 @@ import org.jetbrains.bazel.languages.projectview.importRunConfigurations
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
+import org.jetbrains.bazel.run.handler.GenericRunHandlerProvider
+import org.jetbrains.bazel.run.handler.GenericTestHandlerProvider
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasProgramArguments
@@ -70,7 +72,7 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     return element.takeIf { it.name == "configuration" }
   }
 
-  private fun loadGoogleBazelRunConfiguration(project: Project, runConfigurationXml: Element): RunnerAndConfigurationSettings {
+  private fun loadGoogleBazelRunConfiguration(project: Project, runConfigurationXml: Element): RunnerAndConfigurationSettings? {
     val name = checkNotNull(runConfigurationXml.getAttributeValue("name"))
     val blazeSettings: Element = checkNotNull(runConfigurationXml.getChild("blaze-settings"))
     val googleHandlerId: String = checkNotNull(blazeSettings.getAttributeValue("handler-id"))
@@ -93,7 +95,9 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     val targets = listOf(target)
     val runHandler =
       GooglePluginAwareRunHandlerProvider.getRunHandlerProvider(googleHandlerId, bazelCommand)
-      ?: RunHandlerProvider.getRunHandlerProviderOrThrow(project, targets)
+      ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, targets)
+        ?.takeUnless { it is GenericRunHandlerProvider || it is GenericTestHandlerProvider }
+      ?: if (GooglePluginAwareRunHandlerProvider.isTestCommand(bazelCommand)) GenericTestHandlerProvider() else GenericRunHandlerProvider()
     configuration.updateTargets(targets, runHandler)
     val state = configuration.handler?.state
     (state as? HasBazelParams)?.additionalBazelParams = additionalBazelParams
