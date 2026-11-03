@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Unknown handler" type="BazelRunConfigurationType">
+    <bsp-state handler-provider-id="FooBarUnknownProvider" check-visibility="true">
+      <bsp-target>@//:unknown</bsp-target>
+      <handler-state />
+    </bsp-state>
+    <method v="2">
+      <option name="KotlinCoroutineLibraryFinderBeforeRunTaskProvider" enabled="false" />
+      <option name="BuildScriptBeforeRunTaskProvider" enabled="false" />
+    </method>
+  </configuration>
+</component>
