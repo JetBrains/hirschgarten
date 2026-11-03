@@ -1,0 +1,22 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="fleet.rpc"/>
+    <module name="intellij.bazel.clion.shared"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.frontend"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.project"/>
+    <module name="intellij.platform.rpc"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity implementation="org.jetbrains.bazel.clion.frontend.run.debug.CcDebugInfoFrontendService$StartupActivity"/>
+  </extensions>
+</idea-plugin>

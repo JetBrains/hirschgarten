@@ -12,11 +12,11 @@ import com.intellij.testFramework.junit5.fixture.testFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.assertions.findTarget
-import org.jetbrains.bazel.clion.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.clion.run.debug.CcDebugInfoDialogTestHandler
 import org.jetbrains.bazel.clion.run.debug.CcDebugInfoCheck
 import org.jetbrains.bazel.clion.run.debug.CcDebugRunner
 import org.jetbrains.bazel.clion.run.debug.setCcDebugInfoDialogHandlerInTests
+import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration

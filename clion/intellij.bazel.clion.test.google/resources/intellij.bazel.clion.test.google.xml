@@ -5,6 +5,7 @@
     <module name="intellij.bazel.clion.core"/>
     <module name="intellij.cidr.execution"/>
     <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.platform.backend"/>
     <module name="intellij.platform.core"/>
     <module name="intellij.platform.execution"/>
     <module name="intellij.platform.smRunner"/>

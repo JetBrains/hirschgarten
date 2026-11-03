@@ -28,6 +28,7 @@
     <orderEntry type="module" module-name="intellij.cidr.util.execution" />
     <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
     <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
+    <orderEntry type="module" module-name="intellij.platform.backend" />
     <orderEntry type="module" module-name="intellij.clion.toolchains" />
   </component>
 </module>
