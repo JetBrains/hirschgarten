@@ -4,10 +4,8 @@ import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
-import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
-import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.CompletableDeferred
@@ -29,8 +27,6 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
   protected val taskGroupId: TaskGroupId = TaskGroupId(environment.toString() + "-" + Random.nextBytes(8).toHexString())
 
   protected open val isIdBasedTestTree: Boolean get() = false
-
-  protected open val testRunnerEmitsServiceMessages: Boolean get() = false
 
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
@@ -90,24 +86,10 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
     val properties = configuration.createTestConsoleProperties(executor)
     properties.isIdBasedTestTree = isIdBasedTestTree
     val handler = doStartProcess(true)
-
-    val console =
-      SMTestRunnerConnectionUtil.createConsole(
-        properties,
-      )
+    val console = SMTestRunnerConnectionUtil.createConsole(properties)
     console.attachToProcess(handler)
-
-    if (!testRunnerEmitsServiceMessages) {
-      handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString() + "\n", ProcessOutputType.STDOUT)
-    }
-
-    val actions = createActions(console, handler, executor)
-
-    val executionResult = DefaultExecutionResult(console, handler, *actions)
-    val testRerunExtension = BazelTestRerunExtension.getInstance(configuration)
-    if (testRerunExtension != null) {
-      executionResult.setRestartActions(BazelRerunFailedTestsAction(console, testRerunExtension))
-    }
+    val executionResult = DefaultExecutionResult(console, handler)
+    properties.createRerunFailedTestsAction(console)?.let { executionResult.setRestartActions(it) }
     return executionResult
   }
 }

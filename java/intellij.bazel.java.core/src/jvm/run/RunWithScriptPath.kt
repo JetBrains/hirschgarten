@@ -6,6 +6,7 @@ import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.CompletableDeferred
@@ -18,9 +19,10 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
 import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
-import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.util.BspClientTestNotifier
+import org.jetbrains.bazel.utils.ExecutableInfo
+import org.jetbrains.bazel.utils.UnexpectedScriptContentException
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 import kotlin.io.path.readText
@@ -111,24 +113,22 @@ suspend fun runJvmCommandLine(
 
 private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Project) {
   val scriptContent = scriptPath.readText()
-
-  val execRoot = project.workspaceSnapshotOrNull?.bazelInfo?.execRoot ?: return
-  val xmlPath =
-    TEST_XML_OUTPUT_FILE_REGEX
-      .find(scriptContent)
-      ?.groups
-      ?.get("path")
-      ?.value ?: return
-  val absoluteXmlPath = execRoot.resolve(xmlPath)
-
+  val executableInfo = try {
+    ExecutableInfo.fromBazelRunScript(scriptContent)
+  }
+  catch (e: UnexpectedScriptContentException) {
+    LOG.warn(e)
+    return
+  }
+  val testXml = executableInfo.testXml ?: return
   val taskHandler = BazelTaskEventsService.getInstance(project)
   val testNotifier = BspClientTestNotifier(taskHandler)
 
   TestXmlParser(testNotifier).parseAndReport(
     taskId, /* ??? */
-    absoluteXmlPath,
+    testXml,
     JAVA_TEST_KIND,
   )
 }
 
-private val TEST_XML_OUTPUT_FILE_REGEX = Regex("XML_OUTPUT_FILE=(?<path>\\S+)")
+private val LOG = fileLogger()

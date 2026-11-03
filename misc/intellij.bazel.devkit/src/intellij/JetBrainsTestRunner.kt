@@ -143,8 +143,6 @@ internal class JetBrainsTestRunnerExtension : JvmTestRunnerExtension {
 
   override val isIdBasedTestTree: Boolean get() = true
 
-  override val testRunnerEmitsServiceMessages: Boolean get() = true
-
   override fun transformTestParams(params: TestParams): TestParams = transformJetBrainsTestRunnerParams(params)
 
   override fun transformScriptPathEnvAndTestFilter(env: Map<String, String>, testFilter: String?): Pair<Map<String, String>, String?> =
@@ -228,7 +226,6 @@ internal class JetBrainsTestSuiteHandler : BazelRunHandler {
 internal class JetBrainsTestSuiteState(environment: ExecutionEnvironment, state: GenericTestState) :
   BazelTestCommandLineState(environment, state) {
   override val isIdBasedTestTree: Boolean get() = true
-  override val testRunnerEmitsServiceMessages: Boolean get() = true
 
   override fun transformTestParams(params: TestParams): TestParams =
     transformJetBrainsTestRunnerParams(params)

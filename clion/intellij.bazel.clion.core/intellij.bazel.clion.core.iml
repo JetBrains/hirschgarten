@@ -48,5 +48,7 @@
     <orderEntry type="module" module-name="intellij.clion.execution" />
     <orderEntry type="module" module-name="intellij.clion.toolchains" />
     <orderEntry type="module" module-name="intellij.cidr.execution" />
+    <orderEntry type="module" module-name="intellij.platform.consoleView.impl" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" />
   </component>
 </module>

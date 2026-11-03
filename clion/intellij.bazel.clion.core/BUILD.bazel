@@ -64,6 +64,8 @@ jvm_library(
         "//CIDR/clion-execution",
         "//CIDR/clion-toolchains",
         "//CIDR/cidr-execution",
+        "@community//platform/consoleView/impl",
+        "@community//platform/execution-impl",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.core` end
