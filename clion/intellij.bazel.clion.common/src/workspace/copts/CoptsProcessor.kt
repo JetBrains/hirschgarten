@@ -32,3 +32,13 @@ internal class GnuCoptsProcessor(
   }
 }
 
+internal class MsvcCoptsProcessor(
+  override val flag: String,
+  private val body: CompilerSpecificSwitchBuilder.(String) -> Unit,
+) : CoptsProcessor {
+
+  context(ctx: CcImportContext)
+  override suspend fun apply(builder: CompilerSpecificSwitchBuilder, value: String) {
+    body(builder, ctx.resolveExecutionRootPath(value)?.toString() ?: value)
+  }
+}

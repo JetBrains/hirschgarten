@@ -45,6 +45,7 @@ jvm_library(
         "//CIDR/cidr-util/execution",
         "@community//platform/workspace/jps",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
+        "//CIDR/clion-toolchains",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.common` end

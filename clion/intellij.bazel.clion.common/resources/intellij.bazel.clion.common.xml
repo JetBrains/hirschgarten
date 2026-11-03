@@ -9,6 +9,7 @@
     <module name="intellij.cidr.psi.base"/>
     <module name="intellij.cidr.util.execution"/>
     <module name="intellij.cidr.workspaceModel"/>
+    <module name="intellij.clion.toolchains"/>
     <module name="intellij.libraries.bazel.aspect.sdk"/>
     <module name="intellij.platform.analysis"/>
     <module name="intellij.platform.backend.workspace"/>
@@ -49,5 +50,4 @@
     />
     <projectModel.resolveConfigurationDisplayNameProvider implementation="org.jetbrains.bazel.clion.workspace.CcResolveConfigurationDisplayNameProvider"/>
   </extensions>
-
 </idea-plugin>
