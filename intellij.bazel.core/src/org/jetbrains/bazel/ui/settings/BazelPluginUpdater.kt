@@ -7,6 +7,8 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.updateSettings.impl.UpdateChecker
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.settings.bazel.BazelApplicationSettingsService
+import org.jetbrains.bazel.settings.bazel.UpdateChannel
 
 @ApiStatus.Internal
 const val BAZEL_PLUGIN_ID: String = "org.jetbrains.bazel"
@@ -30,7 +32,7 @@ object BazelPluginUpdater {
       getPluginDescriptorForId(BAZEL_PLUGIN_ID)?.let { patchPluginVersion("0.0.0", it) }
     }
     val updateSettings = UpdateSettings.getInstance()
-    val nightlyRepo = UpdateChannel.NIGHTLY.getPluginUrlFromId(BAZEL_PLUGIN_ID)
+    val nightlyRepo = UpdateChannel.NIGHTLY.bazelPluginUrl
     updateSettings.storedPluginHosts.remove(nightlyRepo)
 
     when (newUpdateChannel) {

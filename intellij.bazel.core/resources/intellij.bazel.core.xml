@@ -645,7 +645,6 @@
     />
 
     <execution.processHandlerPidProvider implementation="org.jetbrains.bazel.run.BazelProcessHandlerPidProvider"/>
-    <applicationSettings service="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService"/>
     <projectSettings service="org.jetbrains.bazel.sync.environment.IJBazelProjectInfoService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService"/>
     <projectSettings service="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubGlobalCacheService"/>
