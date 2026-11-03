@@ -295,20 +295,6 @@ class BepServer(
       if (progress.stderr.isNotEmpty()) {
         val stderrLines = progress.stderr.lineSequence().map { AnsiEscapeCodes.strip(it) }.toList()
 
-        val events =
-          diagnosticsService.extractDiagnostics(
-            stderrLines,
-            SyntheticLabel(AllRuleTargets),
-            parentId,
-            isCommandLineFormattedOutput = true,
-            onlyFromParsedOutput = true,
-          )
-        events.forEach {
-          taskEventsHandler.onBuildPublishDiagnostics(
-            it,
-          )
-        }
-
         buildProgressParser.parse(stderrLines)?.let { progress ->
           rawProgressReporter?.details(progress.details)
           rawProgressReporter?.fraction(progress.fraction)
