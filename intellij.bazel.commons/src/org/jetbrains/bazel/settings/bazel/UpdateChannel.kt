@@ -1,4 +1,6 @@
-package org.jetbrains.bazel.ui.settings
+package org.jetbrains.bazel.settings.bazel
+
+import org.jetbrains.annotations.ApiStatus
 
 private const val BAZEL_PLUGIN_MARKETPLACE_ID = "22977"
 
@@ -7,7 +9,8 @@ private const val BAZEL_PLUGIN_MARKETPLACE_URL = BASE_PLUGIN_MARKETPLACE_URL + B
 
 private const val NIGHTLY_MARKETPLACE_CHANNEL = "nightly"
 
-internal enum class UpdateChannel(val displayName: String, val bazelPluginUrl: String) {
+@ApiStatus.Internal
+enum class UpdateChannel(val displayName: String, val bazelPluginUrl: String) {
   /**
    * If we don't override plugin repositories with custom URLs,
    * the IDEA will automatically use the default channel for retrieving plugin URLs.
@@ -19,10 +22,4 @@ internal enum class UpdateChannel(val displayName: String, val bazelPluginUrl: S
     BAZEL_PLUGIN_MARKETPLACE_URL.format(NIGHTLY_MARKETPLACE_CHANNEL),
   ),
   ;
-
-  fun getPluginUrlFromId(id: String): String =
-    when (id) {
-      BAZEL_PLUGIN_ID -> bazelPluginUrl
-      else -> ""
-    }
 }

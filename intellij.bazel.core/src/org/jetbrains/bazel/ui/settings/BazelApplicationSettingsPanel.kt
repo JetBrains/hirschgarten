@@ -1,11 +1,5 @@
 package org.jetbrains.bazel.ui.settings
 
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.RoamingType
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
@@ -15,34 +9,9 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.settings.bazel.BazelApplicationSettingsService
+import org.jetbrains.bazel.settings.bazel.UpdateChannel
 import javax.swing.JComponent
-
-@Service(Service.Level.APP)
-@State(
-  name = "BazelApplicationSettingsService",
-  storages = [
-    Storage(
-      "bazel.application.settings.xml",
-      roamingType = RoamingType.DISABLED,
-    ),
-  ],
-)
-internal class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicationSettings> {
-  var settings: BazelApplicationSettings = BazelApplicationSettings()
-
-  override fun getState(): BazelApplicationSettings = settings
-
-  override fun loadState(state: BazelApplicationSettings) {
-    settings = state
-  }
-
-  companion object {
-    @JvmStatic
-    fun getInstance(): BazelApplicationSettingsService = service()
-  }
-}
-
-internal data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE, var enablePhasedSync: Boolean = false)
 
 internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
   private val panelApplicationSettings = BazelApplicationSettingsService.getInstance().settings.copy()
