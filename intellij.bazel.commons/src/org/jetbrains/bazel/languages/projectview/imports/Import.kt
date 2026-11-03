@@ -10,4 +10,10 @@ sealed class Import {
 
   data class Resolved(val path: Path, override val isRequired: Boolean) : Import()
   data class Unresolved(val text: String, override val isRequired: Boolean) : Import()
+
+  /**
+   * An import whose normalized [path] is outside of the project root.
+   * The plugin does not touch the file system for such a path.
+   */
+  data class OutsideOfProjectRoot(val path: Path, override val isRequired: Boolean) : Import()
 }

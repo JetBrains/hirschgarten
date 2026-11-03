@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.formatting
 
+import com.intellij.formatting.service.FormattingServiceUtil
 import com.intellij.ide.trustedProjects.TrustedProjects
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.vfs.refreshAndFindVirtualFile
@@ -47,5 +48,25 @@ internal class StarlarkFormattingTrustTest {
     formatBuildFile(psiFile)
 
     marker.exists() shouldBe trusted
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `the formatting service handles a Starlark file only in a trusted project`(trusted: Boolean): Unit = timeoutRunBlocking {
+    val root = projectDir.get()
+    val buildifier = root.resolve("buildifier")
+    buildifier.writeText("")
+    project.bazelProjectSettings = project.bazelProjectSettings.withNewBuildifierExecutablePath(buildifier)
+    TrustedProjects.setProjectTrusted(project, trusted)
+
+    val buildFile = root.resolve("BUILD")
+    buildFile.writeText("x = 1\n")
+    val virtualFile = checkNotNull(buildFile.refreshAndFindVirtualFile())
+    val serviceName = readAction {
+      val psiFile = checkNotNull(PsiManager.getInstance(project).findFile(virtualFile))
+      FormattingServiceUtil.findService(psiFile, true, true).javaClass.simpleName
+    }
+
+    (serviceName == "StarlarkFormattingService") shouldBe trusted
   }
 }

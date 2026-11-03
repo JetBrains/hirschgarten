@@ -49,12 +49,19 @@ internal fun <T> projectViewChecker(
 
 private val unresolvedImportChecker = projectViewChecker<ProjectViewPsiImportBase> { project, subject ->
   val root = project.bazelProjectInfo.projectRootDir ?: return@projectViewChecker
-  val import = ImportFactory.from(root.toNioPath(), subject)
-  if (import !is Import.Unresolved || !import.isRequired) return@projectViewChecker
+  val rootPath = root.toNioPath()
+  val import = ImportFactory.from(rootPath, subject)
+  val message = when {
+    import is Import.OutsideOfProjectRoot ->
+      BazelProjectViewBundle.message("annotator.path.outside.of.project.root.error", import.path, rootPath)
+    import is Import.Unresolved && import.isRequired ->
+      BazelProjectViewBundle.message("annotator.import.unresolved.error", import.text)
+    else -> return@projectViewChecker
+  }
   yield(
     ProjectViewProblem(
       id = ProjectViewProblem.Id.UnresolvedImport,
-      message = BazelProjectViewBundle.message("annotator.import.unresolved.error", import.text),
+      message = message,
       severity = ProjectViewProblem.Severity.Error,
       element = subject.getImportPath() ?: subject.firstChild,
     )

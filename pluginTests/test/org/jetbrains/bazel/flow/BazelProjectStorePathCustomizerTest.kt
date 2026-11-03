@@ -79,6 +79,36 @@ internal class BazelProjectStorePathCustomizerTest {
     descriptor.dotIdea shouldBe descriptor.historicalProjectBasePath.resolve(DIRECTORY_STORE_FOLDER)
   }
 
+  @Test
+  fun `does not use a dot idea directory outside of the project whose real path is inside of the project`() {
+    outsideDir.resolve("link").createSymbolicLinkPointingTo(rootDir.resolve("custom").createDirectories())
+    writeProjectView("dot_idea_directory_location: ${outsideDir.resolve("link").resolve(DIRECTORY_STORE_FOLDER)}")
+
+    val descriptor = storeDescriptor()
+
+    descriptor.dotIdea shouldBe descriptor.historicalProjectBasePath.resolve(DIRECTORY_STORE_FOLDER)
+  }
+
+  @Test
+  fun `does not read an imported project view outside of the project`() {
+    outsideDir.resolve("outside.bazelproject").writeText("dot_idea_directory_location: custom/.idea")
+    writeProjectView("import ../outside/outside.bazelproject")
+
+    val descriptor = storeDescriptor()
+
+    descriptor.dotIdea shouldBe descriptor.historicalProjectBasePath.resolve(DIRECTORY_STORE_FOLDER)
+  }
+
+  @Test
+  fun `reads an imported project view inside of the project`() {
+    rootDir.resolve("shared.bazelproject").writeText("dot_idea_directory_location: custom/.idea")
+    writeProjectView("import shared.bazelproject")
+
+    val descriptor = storeDescriptor()
+
+    descriptor.dotIdea shouldBe descriptor.historicalProjectBasePath.resolve("custom").resolve(DIRECTORY_STORE_FOLDER)
+  }
+
   private fun writeProjectView(text: String) {
     rootDir.resolve(DOT_BAZELBSP_DIR_NAME).createDirectories().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME).writeText(text)
   }
