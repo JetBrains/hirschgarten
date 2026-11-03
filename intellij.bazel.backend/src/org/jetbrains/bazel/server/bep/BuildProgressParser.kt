@@ -22,7 +22,8 @@ class BuildProgressParser {
     var action: ActionMatch? = null
     var phaseInChunk: String? = null
     for (line in lines.asReversed()) {
-      val trimmed = line.trim()
+      val whitesapaceTrimmed = line.trim()
+      val trimmed = timestampRegex.matchEntire(whitesapaceTrimmed)?.groups["rest"]?.value ?: whitesapaceTrimmed
       if (action == null) {
         action = parseActionLine(trimmed)
       }
@@ -63,6 +64,7 @@ class BuildProgressParser {
   private data class ActionMatch(val line: String, val details: String?, val fraction: Double)
 
   companion object {
+    private val timestampRegex = Regex("(?<timestamp>\\([0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\) )(?<rest>.*)")
     private val progressOutputRegex = Regex("\\[(?<progress>[.,0-9]+)\\s*/\\s*(?<total>[.,0-9]+)]\\s*(?<details>.*)")
     private val everythingExceptDigitsRegex = Regex("[^0-9]")
   }

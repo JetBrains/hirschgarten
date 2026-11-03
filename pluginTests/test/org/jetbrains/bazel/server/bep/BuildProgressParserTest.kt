@@ -20,6 +20,19 @@ class BuildProgressParserTest {
   }
 
   @Test
+  fun `progress in the presence of time stamps`() {
+    val lines = listOf(
+      "",
+      "",
+      "(14:26:25) INFO: Analyzed 2 targets (127 packages loaded, 13908 targets configured).",
+      "(14:26:26) [1 / 4] checking cached actions",
+      "",
+    )
+    val progress = parser.parse(lines)
+    progress shouldBe BuildProgress(0.25, "checking cached actions")
+ }
+
+  @Test
   fun `returns nothing if no progress`() {
     val lines = listOf(
       "Computing main repo mapping: ",
