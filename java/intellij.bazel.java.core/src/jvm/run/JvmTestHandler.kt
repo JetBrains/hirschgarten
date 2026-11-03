@@ -88,7 +88,6 @@ internal class JvmTestCommandLineState(
 
   private val testRunner by lazy { BazelRunConfiguration.get(environment).getJvmTestRunnerExtension() }
   override val isIdBasedTestTree: Boolean get() = testRunner.isIdBasedTestTree
-  override val testRunnerEmitsServiceMessages: Boolean get() = testRunner.testRunnerEmitsServiceMessages
 
   override fun transformTestParams(params: TestParams): TestParams = testRunner.transformTestParams(params)
 
@@ -103,7 +102,6 @@ internal class ScriptPathTestCommandLineState(
 ) : JvmDebuggableCommandLineState(environment, settings.debugPort, configuration) {
   private val testRunner by lazy { BazelRunConfiguration.get(environment).getJvmTestRunnerExtension() }
   override val isIdBasedTestTree: Boolean get() = testRunner.isIdBasedTestTree
-  override val testRunnerEmitsServiceMessages: Boolean get() = testRunner.testRunnerEmitsServiceMessages
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = testRunner.createTaskListener(handler, null)
 

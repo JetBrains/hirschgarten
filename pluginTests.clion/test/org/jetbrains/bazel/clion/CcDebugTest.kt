@@ -9,11 +9,14 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.vfs.readText
 import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.common.waitUntil
 import com.intellij.testFramework.junit5.fixture.testFixture
 import com.intellij.xdebugger.XDebuggerAssertions
+import com.intellij.xdebugger.impl.XDebugSessionImpl
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
 import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
@@ -119,11 +122,16 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
     val context = startCcDebugSession("//main:test")
 
     assertTerminates(context.process.processHandler, 0)
+
+    val testTree = (context.process.session.consoleView as SMTRunnerConsoleView).resultsViewer.testsRootNode
+    waitUntil("the test tree is complete") { testTree.children.isNotEmpty() && !testTree.isInProgress }
+    assertThat(testTree.allTests.filter { it.isLeaf }.map { it.name }).containsExactly("Test")
+    assertThat((context.process.session as XDebugSessionImpl).restartActions).isNotEmpty()
   }
 
   @Test
   fun testBreakpointInTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
-    assertStopsAt("main/test.cc", "REQUIRE(1 == 1);", "//main:test", 0)
+    assertStopsAt("main/test.cc", "int debug = 1;", "//main:test", 0)
   }
 
   private suspend fun assertStopsAt(relativePath: String, lineText: String, label: String, expectedExitCode: Int) {

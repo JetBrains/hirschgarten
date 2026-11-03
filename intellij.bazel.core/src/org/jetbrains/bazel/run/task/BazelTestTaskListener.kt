@@ -1,14 +1,12 @@
 package org.jetbrains.bazel.run.task
 
 import com.intellij.execution.process.AnsiEscapeDecoder
-import com.intellij.execution.process.ProcessEvent
-import com.intellij.execution.process.ProcessListener
+import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
@@ -23,17 +21,9 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @ApiStatus.Internal
-class BazelTestTaskListener(private val handler: BazelProcessHandler, private val coverageReportListener: ((Path) -> Unit)? = null) :
+class BazelTestTaskListener(private val handler: ProcessHandler, private val coverageReportListener: ((Path) -> Unit)? = null) :
   BazelTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
-
-  init {
-    handler.addProcessListener(
-      object : ProcessListener {
-        override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {}
-      },
-    )
-  }
 
   private val testStartData = ConcurrentHashMap<TaskId, TestStart>()
 

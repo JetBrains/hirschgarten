@@ -16,8 +16,6 @@ interface JvmTestRunnerExtension {
 
   val isIdBasedTestTree: Boolean
 
-  val testRunnerEmitsServiceMessages: Boolean
-
   fun transformTestParams(params: TestParams): TestParams
 
   fun transformScriptPathEnvAndTestFilter(env: Map<String, String>, testFilter: String?): Pair<Map<String, String>, String?>
@@ -36,8 +34,6 @@ internal class DefaultJvmTestRunnerExtension : JvmTestRunnerExtension {
   override fun isApplicable(project: Project, targets: List<Label>): Boolean = true
 
   override val isIdBasedTestTree: Boolean get() = false
-
-  override val testRunnerEmitsServiceMessages: Boolean get() = false
 
   override fun transformTestParams(params: TestParams): TestParams = params
 

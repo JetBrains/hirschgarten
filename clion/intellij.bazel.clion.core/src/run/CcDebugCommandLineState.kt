@@ -2,33 +2,47 @@ package org.jetbrains.bazel.clion.run
 
 import com.intellij.cidr.debugger.profiles.CidrDebugProfile
 import com.intellij.execution.configurations.CommandLineState
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
+import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
+import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
+import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.util.system.OS
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
+import com.intellij.xdebugger.impl.XDebugSessionImpl
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
 import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
 import com.jetbrains.cidr.cpp.toolchains.CPPEnvironment
 import com.jetbrains.cidr.cpp.toolchains.CPPToolchains
 import com.jetbrains.cidr.execution.CidrCommandLineState
+import com.jetbrains.cidr.execution.CidrConsoleBuilder
 import com.jetbrains.cidr.execution.CidrLauncher
 import com.jetbrains.cidr.execution.TrivialInstaller
 import com.jetbrains.cidr.execution.TrivialRunParameters
 import com.jetbrains.cidr.execution.debugger.CidrLocalDebugProcess
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
 import com.jetbrains.cidr.execution.runOnEDT
+import org.jetbrains.bazel.clion.sync.CC_TEST_KIND
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericRunConfigurationState
 import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bazel.run.task.BazelTestTaskListener
+import org.jetbrains.bazel.server.bep.TestXmlParser
 import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bazel.utils.ExecutableInfo
+import org.jetbrains.bsp.protocol.TaskGroupId
 import java.nio.file.Path
 
 private val PROC_CWD: Path = Path.of("/proc", "self", "cwd")
@@ -39,7 +53,7 @@ private val DEBUG_ENVIRONMENT = CPPEnvironment(CPPToolchains.Toolchain(OS.CURREN
 internal class CcDebugCommandLineState(
   environment: ExecutionEnvironment,
   val bazelState: GenericRunConfigurationState,
-) : CidrCommandLineState(environment, CcCidrLauncher(environment.project, bazelState)) {
+) : CidrCommandLineState(environment, CcCidrLauncher(environment, bazelState)) {
 
   // set by org.jetbrains.bazel.clion.run.CcDebugRunner
   var targetInfo: CcDebugTargetInfo? = null
@@ -47,9 +61,10 @@ internal class CcDebugCommandLineState(
   var debugProfile: CidrDebugProfile<*>? = null
 }
 
-private class CcCidrLauncher(private val project: Project, private val bazelState: GenericRunConfigurationState) : CidrLauncher() {
+private class CcCidrLauncher(private val environment: ExecutionEnvironment, private val bazelState: GenericRunConfigurationState) :
+  CidrLauncher() {
 
-  override fun getProject(): Project = project
+  override fun getProject(): Project = environment.project
 
   override fun createDebugProcess(state: CommandLineState, session: XDebugSession): XDebugProcess {
     val ccState = state as CcDebugCommandLineState
@@ -87,21 +102,25 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
       put(Path.of(""), workspaceRoot)
     }
 
+    val isTest = bazelState is AbstractGenericTestState<*>
     val commandLine = scriptPathCommandLine(
       scriptPath = executionInfo.binary,
       env = executionInfo.envVars + bazelState.env.envs,  // custom environment variables are not preserved by the script file
-      isTest = bazelState is AbstractGenericTestState<*>,
+      isTest = isTest,
       isPassParentEnvs = bazelState.env.isPassParentEnvs,
       testFilter = (bazelState as? HasTestFilter)?.testFilter,
       additionalScriptParameters = executionInfo.args,
     ).withWorkingDirectory(executionInfo.workingDir)
 
     val parameters = TrivialRunParameters(debugDriver, TrivialInstaller(commandLine))
-
     val process = runOnEDT {
-      CidrLocalDebugProcess(parameters, session, state.consoleBuilder)
+      if (isTest) {
+        createDebugProcessForTest(parameters, session, executionInfo)
+      }
+      else {
+        CidrLocalDebugProcess(parameters, session, state.consoleBuilder)
+      }
     }
-
     process.postCommand { driver ->
       when (debugProfile.type.getId()) {
         CLionLldbDebugProfileType.ID -> configureLldbDriver(driver, sourceMappings)
@@ -112,8 +131,48 @@ private class CcCidrLauncher(private val project: Project, private val bazelStat
     return process
   }
 
+  private fun createDebugProcessForTest(
+    parameters: TrivialRunParameters,
+    session: XDebugSession,
+    executionInfo: ExecutableInfo,
+  ): CidrLocalDebugProcess {
+    val process = CidrLocalDebugProcess(parameters, session, CcTestConsoleBuilder(environment))
+    val testConsole = process.getConsole() as? SMTRunnerConsoleView
+    val properties = testConsole?.properties as? SMTRunnerConsoleProperties
+    val restartAction = properties?.createRerunFailedTestsAction(testConsole)
+    restartAction?.let { (session as? XDebugSessionImpl)?.addRestartActions(restartAction) }
+
+    val processHandler = process.processHandler
+    processHandler.addProcessListener(
+      object : ProcessListener {
+        override fun processTerminated(event: ProcessEvent) {
+          val taskHandler = BazelTaskEventsService.getInstance(project)
+          val runListener = BazelTestTaskListener(processHandler, null)
+          val taskGroupId = TaskGroupId(environment.toString())
+          taskHandler.saveListener(taskGroupId, runListener)
+          try {
+            val testXml = executionInfo.testXml ?: return
+            TestXmlParser(BspClientTestNotifier(taskHandler)).parseAndReport(taskGroupId.task("test"), testXml, CC_TEST_KIND)
+          }
+          finally {
+            taskHandler.removeListener(taskGroupId)
+          }
+        }
+      },
+    )
+    return process
+  }
+
   override fun createProcess(state: CommandLineState): ProcessHandler? {
     throw UnsupportedOperationException("run is handled by the generic Bazel handler")
+  }
+}
+
+private class CcTestConsoleBuilder(private val environment: ExecutionEnvironment) : CidrConsoleBuilder(environment.project, null, null) {
+  override fun createConsole(): ConsoleView {
+    val configuration = BazelRunConfiguration.get(environment)
+    val properties = configuration.createTestConsoleProperties(environment.executor)
+    return createConsole(configuration.type, properties)
   }
 }
 
