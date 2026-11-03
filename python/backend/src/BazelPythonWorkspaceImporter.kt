@@ -298,7 +298,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
 
   private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     /**
-     * Because of PY-86494, PythonSdkUpdater fails to add SDK paths unless there's at least one module in the project.
+     * Because of PY-86494, the interpreter update fails to add SDK paths unless there's at least one module in the project.
      * Hence, we're forced to do it in post-processing, after WSM has been applied already.
      */
     calculateAndAddSdksWithProgress(snapshot, taskId)
