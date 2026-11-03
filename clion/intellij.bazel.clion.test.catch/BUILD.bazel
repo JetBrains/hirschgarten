@@ -33,6 +33,7 @@ jvm_library(
         "//CIDR/cidr-execution",
         "@community//libraries/jetbrains/annotations",
         "@community//platform/util",
+        "@community//platform/backend",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.test.catch` end

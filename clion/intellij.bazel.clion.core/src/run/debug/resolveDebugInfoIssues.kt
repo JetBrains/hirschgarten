@@ -3,6 +3,7 @@ package org.jetbrains.bazel.clion.run.debug
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.label.Label
 
 private const val DEFAULT_PROJECT_VIEW_NAME = ".projectview"
@@ -32,8 +33,12 @@ internal suspend fun resolveDebugInfoIssues(
   val projectViewFile = findProjectViewFile(project)
   val canUseDbg = allowRetry && projectViewFile != null && result.isFixableByCompilationMode
 
-  return when (showCcDebugInfoDialog(project, label, result, projectViewFile?.name ?: DEFAULT_PROJECT_VIEW_NAME, canUseDbg)) {
+  return when (askCcDebugInfoChoice(project, label, result, projectViewFile?.name ?: DEFAULT_PROJECT_VIEW_NAME, canUseDbg)) {
     CcDebugInfoChoice.DEBUG_ANYWAY -> CcDebugInfoDecision.CONTINUE
+    CcDebugInfoChoice.ALWAYS_DEBUG -> {
+      dismissCcDebugInfoDialog(project)
+      CcDebugInfoDecision.CONTINUE
+    }
     CcDebugInfoChoice.USE_DBG -> CcDebugInfoDecision.RETRY_WITH_DBG
     CcDebugInfoChoice.OPEN_PROJECT_VIEW -> {
       if (projectViewFile != null) openProjectViewAtBuildFlags(project, projectViewFile)

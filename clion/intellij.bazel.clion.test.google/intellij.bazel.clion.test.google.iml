@@ -17,5 +17,6 @@
     <orderEntry type="module" module-name="intellij.cidr.execution" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
     <orderEntry type="module" module-name="intellij.platform.util" />
+    <orderEntry type="module" module-name="intellij.platform.backend" />
   </component>
 </module>

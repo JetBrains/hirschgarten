@@ -52,6 +52,8 @@
     <!-- cpp modules -->
     <module name="intellij.bazel.clion.common"/>
     <module name="intellij.bazel.clion.core"/>
+    <module name="intellij.bazel.clion.frontend"/>
+    <module name="intellij.bazel.clion.shared"/>
     <module name="intellij.bazel.clion.test.catch"/>
     <module name="intellij.bazel.clion.test.google"/>
 

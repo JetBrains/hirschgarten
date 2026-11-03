@@ -23,7 +23,7 @@ import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguratio
 import com.jetbrains.cidr.execution.debugger.toggleBreakpoint
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
-import org.jetbrains.bazel.clion.run.debug.CcDebugInfoChoice
+import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT

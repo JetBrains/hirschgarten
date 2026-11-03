@@ -68,6 +68,7 @@ jvm_library(
         "//plugins/bazel/intellij.bazel.languages:languages",
         "//plugins/bazel/clion/intellij.bazel.clion.common:bazel-clion-common",
         "//plugins/bazel/clion/intellij.bazel.clion.core:bazel-clion-core",
+        "//plugins/bazel/clion/intellij.bazel.clion.shared:bazel-clion-shared",
         "@community//libraries/junit6",
         "@community//platform/execution",
         "@community//platform/smRunner",

@@ -1,8 +1,10 @@
 <idea-plugin>
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
+    <module name="fleet.rpc"/>
     <module name="intellij.bazel.backend"/>
     <module name="intellij.bazel.clion.common"/>
+    <module name="intellij.bazel.clion.shared"/>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.bazel.core"/>
     <module name="intellij.bazel.projectview"/>
@@ -19,7 +21,9 @@
     <module name="intellij.clion.runFile"/>
     <module name="intellij.clion.toolchains"/>
     <module name="intellij.libraries.gson"/>
+    <module name="intellij.libraries.kotlinx.coroutines.core"/>
     <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.backend"/>
     <module name="intellij.platform.buildView"/>
     <module name="intellij.platform.concurrency"/>
     <module name="intellij.platform.consoleView"/>
@@ -38,7 +42,9 @@
     <module name="intellij.platform.ide.progress"/>
     <module name="intellij.platform.lang"/>
     <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.project"/>
     <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.rpc.backend"/>
     <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.testRunner"/>
     <module name="intellij.platform.util.ui"/>
@@ -49,6 +55,10 @@
     <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcMainRunConfigurationProducer"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.clion.run.BazelCcTestRunConfigurationProducer"/>
     <programRunner implementation="org.jetbrains.bazel.clion.run.debug.CcDebugRunner"/>
+    <platform.rpc.backend.remoteApi
+      apiInterface="org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoApi"
+      implementationClass="org.jetbrains.bazel.clion.run.debug.CcDebugInfoApiImpl"
+    />
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">

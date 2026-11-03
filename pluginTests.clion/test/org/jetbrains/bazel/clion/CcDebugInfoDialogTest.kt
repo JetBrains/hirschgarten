@@ -8,7 +8,7 @@ import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileTyp
 import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
 import com.jetbrains.cidr.execution.CidrExecutionFixture
 import org.assertj.core.api.Assertions.assertThat
-import org.jetbrains.bazel.clion.run.debug.CcDebugInfoChoice
+import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.ccDebugInfoDialogFixture
