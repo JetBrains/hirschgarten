@@ -1,70 +1,73 @@
 package org.jetbrains.bazel.bazelisk
 
+import com.intellij.diagnostic.rethrowControlFlowException
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.coroutineToIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.NioFiles
+import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.util.io.HttpRequests
+import com.intellij.util.io.sha256Hex
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
-import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
-import org.jetbrains.bazel.sync.environment.getProjectRootDirOrThrow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.workspace.BazelExecutableProvider
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.readText
+import java.nio.file.StandardCopyOption
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * The version of Bazelisk that the plugin downloads.
+ * When you change it, also change [BAZELISK_SHA256].
+ * The plugin keeps the download in `<system>/bazel-plugin/bazelisk-<version>`.
+ */
+@ApiStatus.Internal
+const val BAZELISK_VERSION: String = "1.30.0"
+
+/**
+ * The SHA-256 checksums of the release assets of Bazelisk [BAZELISK_VERSION], by asset name.
+ * The plugin keeps the checksums in its code, because a checksum from GitHub gives no protection against a changed GitHub release.
+ */
+private val BAZELISK_SHA256: Map<String, String> = mapOf(
+  "bazelisk-darwin-amd64" to "a0e6468b0c6b812f782d8cbfb05824121f6980c0bd70aaa1774fb8272bb7b2ad",
+  "bazelisk-darwin-arm64" to "555d2ff912ccd336d0060bdb5251ef2f62629c6f8fbadb59005a45d5625793ec",
+  "bazelisk-linux-amd64" to "a248ae2b2b62b5baebb748f6fba7203bff1a27e5d01b55399a8406744cb539e8",
+  "bazelisk-linux-arm64" to "b2bcc040c213b44586b121bda6d983c35df121b917c3a7a66fb16f2fa0df1a4f",
+  "bazelisk-windows-amd64.exe" to "5d14a31e9d8a363c48ba1900dbd56764d730835232eb0d113cce255856ffe3ef",
+  "bazelisk-windows-arm64.exe" to "cb832b1d157e0dc5f89108da426f9c6fe087f5b15873e072480ec49cc5afe488",
+)
+
+private val log = logger<BazeliskDownloadingBazelExecutableProvider>()
+private const val MAX_DOWNLOAD_ATTEMPTS = 3
+private val RETRY_BACKOFF = 2.seconds
 
 internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvider {
-  companion object {
-    private val log = logger<BazeliskDownloadingBazelExecutableProvider>()
-    private const val MAX_DOWNLOAD_ATTEMPTS = 3
-    private const val RETRY_BACKOFF_MS = 2000L
-  }
-
   override suspend fun computeBazelExecutable(project: Project): Path? {
-    val workspaceRoot = project.service<BazelProjectInfoService>()
-      .getProjectRootDirOrThrow().toNioPath()
-    val bazeliskVersion = readBazeliskVersion(workspaceRoot)
-    if (bazeliskVersion != null) {
-      // If requested a specific version, download it
-      return downloadBazelisk(bazeliskVersion) ?: throw IllegalStateException("Failed to download bazelisk $bazeliskVersion")
-    }
-
     if (!service<BazelApplicationContextService>().forceBazeliskDownload) {
-      // Otherwise try to find bazel or bazelisk on PATH
-      BazelEnvironmentService.getInstance(project).findInPath("bazel", "bazelisk")?.let { return it }
+      val inPath = BazelEnvironmentService.getInstance(project).findInPath("bazel", "bazelisk")
+      if (inPath != null)
+        return inPath
     }
-
-    // If not found, try to download any version of bazelisk
-    return downloadBazelisk(bazeliskVersion = null)
+    return withContext(Dispatchers.IO) {
+      downloadBazelisk(project)
+    }
   }
 
-  /**
-   * Logic specific to IntelliJ monorepo, see https://youtrack.jetbrains.com/issue/BAZEL-2573/Hermetic-workflow-.bazeliskversion
-   */
-  private fun readBazeliskVersion(workspaceRoot: Path): String? {
-    val bazeliskVersionFile = workspaceRoot.resolve(Constants.BAZELISK_VERSION_FILE_NAME)
-    val version = runCatching { bazeliskVersionFile.readText() }
-      .getOrNull()
-      ?.trim()
-      ?.takeIf { it.isNotEmpty() }
-      ?: return null
-    if (!isValidBazeliskVersion(version))
-      error("Invalid bazelisk version in $bazeliskVersionFile: '$version'")
-    return version
-  }
-
-  private fun downloadBazelisk(bazeliskVersion: String?): Path? {
-    val downloadUrl = calculateBazeliskDownloadLink(bazeliskVersion) ?: return null
+  @Suppress("BlockingMethodInNonBlockingContext")
+  private suspend fun downloadBazelisk(project: Project): Path? {
+    val assetName = bazeliskAssetName() ?: return null
+    val expectedSha256 = BAZELISK_SHA256[assetName] ?: return null
+    val downloadUrl = "https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/$assetName"
 
     // Use IntelliJ's system cache directory
     val cacheDir = Path.of(PathManager.getSystemPath(), "bazel-plugin")
@@ -76,72 +79,72 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
       return null
     }
 
-    // Download bazelisk to the cache folder
-    val targetFileName = if (bazeliskVersion == null) "bazelisk" else "bazelisk-$bazeliskVersion"
-    val bazeliskFile = cacheDir.resolve(targetFileName)
+    val bazeliskFile = cacheDir.resolve("bazelisk-$BAZELISK_VERSION")
     if (Files.exists(bazeliskFile)) {
-      log.info("Bazelisk already exists in the cache folder: ${bazeliskFile.toAbsolutePath()}")
-      return bazeliskFile
+      try {
+        checkFileSha256Checksum(bazeliskFile, expectedSha256)
+        log.trace("Bazelisk already exists in the cache folder: ${bazeliskFile.toAbsolutePath()}")
+        return bazeliskFile
+      }
+      catch (e: Exception) {
+        log.warn("Bazelisk in the cache folder failed the checksum check, downloading it again", e)
+      }
     }
 
-    log.info("Downloading bazelisk to the cache folder: ${bazeliskFile.toAbsolutePath()}")
+    log.info("Downloading Bazelisk to the cache folder: ${bazeliskFile.toAbsolutePath()}")
 
-    // Download with progress indicator
+    // Each download has its own file. The plugin moves the download to bazeliskFile only after the checksum check.
+    val downloadFile = try {
+      Files.createTempFile(cacheDir, "${bazeliskFile.fileName}-", ".download")
+    }
+    catch (e: IOException) {
+      log.error("Could not create a temporary file for the Bazelisk download", e)
+      return null
+    }
     try {
-      val task =
-        object : Task.WithResult<Unit, IOException>(null, BazelBazeliskBundle.message("bazel.project.downloading.bazelisk"), true) {
-          override fun compute(indicator: ProgressIndicator) {
-            indicator.text = BazelBazeliskBundle.message("bazel.project.downloading.bazelisk.binary")
-            indicator.isIndeterminate = false
-
-            downloadWithRetry(downloadUrl, bazeliskFile, indicator)
-
-            indicator.text = BazelBazeliskBundle.message("bazel.project.downloading.bazelisk.setting_permissions")
-            NioFiles.setExecutable(bazeliskFile)
+      withBackgroundProgress(project, BazelBazeliskBundle.message("bazel.project.downloading.bazelisk")) {
+        reportSequentialProgress { reporter ->
+          reporter.nextStep(endFraction = 95, BazelBazeliskBundle.message("bazel.project.downloading.bazelisk.binary")) {
+            downloadWithRetry(downloadUrl, downloadFile)
+          }
+          reporter.nextStep(endFraction = 100, BazelBazeliskBundle.message("bazel.project.downloading.bazelisk.setting_permissions")) {
+            checkFileSha256Checksum(downloadFile, expectedSha256)
+            NioFiles.setExecutable(downloadFile)
+            Files.move(downloadFile, bazeliskFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
           }
         }
-
-      ProgressManager.getInstance().run(task)
+      }
       log.info("Downloaded bazelisk successfully")
       return bazeliskFile
     }
-    catch (e: Exception) {
+    catch (e: Throwable) {
+      Files.deleteIfExists(downloadFile)
+      rethrowControlFlowException(e)
       log.error("Failed to download bazelisk", e)
-      Files.deleteIfExists(bazeliskFile)
       return null
     }
   }
 
-  private fun downloadWithRetry(
-    downloadUrl: String,
-    bazeliskFile: Path,
-    indicator: ProgressIndicator,
-  ) {
+  private suspend fun downloadWithRetry(downloadUrl: String, bazeliskFile: Path) {
     var attempt = 1
     while (true) {
       try {
-        HttpRequests.request(downloadUrl).saveToFile(bazeliskFile, indicator)
+        coroutineToIndicator { indicator ->
+          HttpRequests.request(downloadUrl).saveToFile(bazeliskFile, indicator)
+        }
         return
       }
       catch (e: IOException) {
         if (attempt >= MAX_DOWNLOAD_ATTEMPTS) throw e
         log.warn("Attempt $attempt of $MAX_DOWNLOAD_ATTEMPTS to download bazelisk from $downloadUrl failed, retrying", e)
         Files.deleteIfExists(bazeliskFile)
-        Thread.sleep(attempt * RETRY_BACKOFF_MS)
+        delay(RETRY_BACKOFF * attempt)
         attempt++
       }
     }
   }
 
-  private fun calculateBazeliskDownloadLink(bazeliskVersion: String?): String? {
-    val downloadSegment = if (bazeliskVersion != null) {
-      "download/v$bazeliskVersion"
-    }
-    else {
-      "latest/download"
-    }
-    val base = "https://github.com/bazelbuild/bazelisk/releases/$downloadSegment/bazelisk-"
-
+  private fun bazeliskAssetName(): String? {
     val platform =
       when (OS.CURRENT) {
         OS.Windows -> "windows"
@@ -162,17 +165,18 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
       return null
     }
 
-    val suffix = "$platform-$arch"
-    return "$base$suffix".takeIf { OS.CURRENT != OS.Windows } ?: "$base$suffix.exe"
+    val name = "bazelisk-$platform-$arch"
+    return if (OS.CURRENT == OS.Windows) "$name.exe" else name
   }
 }
 
-private val BAZELISK_VERSION_REGEX = Regex("""\d+\.\d+\.\d+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?""")
-
 /**
- * Returns `true` if [version] is a release version such as `1.26.0` or `1.26.0-rc.1`.
- * The plugin puts the version into the download URL and into the cache file name.
- * Thus the version must not contain a path separator or a `..` segment.
+ * Throws an [IOException] when the SHA-256 checksum of [file] is not [expectedSha256].
  */
 @ApiStatus.Internal
-fun isValidBazeliskVersion(version: String): Boolean = BAZELISK_VERSION_REGEX.matches(version)
+fun checkFileSha256Checksum(file: Path, expectedSha256: String) {
+  val actualSha256 = sha256Hex(file)
+  if (!actualSha256.equals(expectedSha256, ignoreCase = true)) {
+    throw IOException(BazelBazeliskBundle.message("bazel.bazelisk.checksum.mismatch", file, actualSha256, expectedSha256))
+  }
+}
