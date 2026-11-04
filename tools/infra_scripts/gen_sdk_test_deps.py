@@ -22,6 +22,7 @@ from typing import Optional
 EXCLUDED_JARS = (
   # Otherwise SpringBootProjectTest doesn't pass
   "plugins/Spring/lib/modules/intellij.spring.graph.jar",
+  "plugins/spring-core/lib/modules/intellij.spring.graph.jar",
 )
 
 PLUGIN_DIR = Path(__file__).resolve().parents[2]
