@@ -30,6 +30,7 @@ import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.ccDebugInfoDialogFixture
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.fixtures.startCcDebugSession
+import org.jetbrains.bazel.isWindows
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -46,6 +47,7 @@ private const val EXPECTED_EXIT_CODE = 60 + 61 + 62 + 64
 abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: BaseState, bazelVersion: String) {
 
   abstract class Gdb(bazelVersion: String) : CcDebugTest(CLionGdbDebugProfileType.ID, GdbDebugProfileState(), bazelVersion) {
+
     @EnabledOnOs(OS.LINUX)
     class Bazel7 : Gdb(BazelVersions.BAZEL_7)
 
@@ -63,13 +65,14 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
   }
 
   abstract class Lldb(bazelVersion: String) : CcDebugTest(CLionLldbDebugProfileType.ID, LldbDebugProfileState(), bazelVersion) {
-    @EnabledOnOs(OS.LINUX)
+
+    @EnabledOnOs(OS.LINUX, OS.WINDOWS)
     class Bazel7 : Lldb(BazelVersions.BAZEL_7)
 
-    @EnabledOnOs(OS.LINUX)
+    @EnabledOnOs(OS.LINUX, OS.WINDOWS)
     class Bazel8 : Lldb(BazelVersions.BAZEL_8)
 
-    @EnabledOnOs(OS.LINUX)
+    @EnabledOnOs(OS.LINUX, OS.WINDOWS)
     class Bazel9 : Lldb(BazelVersions.BAZEL_9)
 
     @Suppress("unused")
@@ -81,6 +84,18 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
 
   private val projectFixture = clionBazelProjectFixture("clion/debug", buildProject = true, bazelVersion = bazelVersion) {
     addBuildFlags("--compilation_mode=dbg")
+
+    if (isWindows()) {
+      addBuildFlags(
+        // the default MSVC toolchain does not support relative debug symbols
+        "--extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl",
+        "--extra_execution_platforms=//platform:x64_windows-clang-cl",
+
+        // we need relative for debug symbols as the path of the execution root might change between test runs and the symbols are stored in the build cache
+        "--copt=-fdebug-compilation-dir=.",
+        "--linkopt=/pdbsourcepath:.",
+      )
+    }
   }
 
   @Suppress("unused")
@@ -100,17 +115,17 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
 
   @Test
   fun testBreakpointInDefaultLibrary(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
-    assertStopsAt("lib/default/impl.cc", "return DEFAULT_LIB_VALUE;", "//main:main", EXPECTED_EXIT_CODE)
+    assertStopsAt("lib/default/impl.cc", "const int val = DEFAULT_LIB_VALUE;", "//main:main", EXPECTED_EXIT_CODE)
   }
 
   @Test
   fun testBreakpointInHeaderOnlyLibrary(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
-    assertStopsAt("lib/hdronly/hdr.h", "return HDRONLY_LIB_VALUE;", "//main:main", EXPECTED_EXIT_CODE)
+    assertStopsAt("lib/hdronly/hdr.h", "const int val = HDRONLY_LIB_VALUE;", "//main:main", EXPECTED_EXIT_CODE)
   }
 
   @Test
   fun testBreakpointInExternalLibrary(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
-    assertStopsAt("lib/external/impl.cc", "return EXTERNAL_LIB_VALUE;", "//main:main", EXPECTED_EXIT_CODE)
+    assertStopsAt("lib/external/impl.cc", "const int val = EXTERNAL_LIB_VALUE;", "//main:main", EXPECTED_EXIT_CODE)
   }
 
   @Test

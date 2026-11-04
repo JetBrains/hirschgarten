@@ -1,5 +1,10 @@
 bazel_dep(name = "rules_cc", version = "0.2.25")
 bazel_dep(name = "catch2", version = "3.15.1")
+bazel_dep(name = "platforms", version = "1.1.0")
+
+# the clang-cl toolchain for Windows, see //platform:x64_windows-clang-cl
+cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
+use_repo(cc_configure, "local_config_cc")
 
 # local external dependency
 bazel_dep(name = "external_lib")

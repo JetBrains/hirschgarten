@@ -93,8 +93,8 @@ private class CcCidrLauncher(private val environment: ExecutionEnvironment, priv
       put(PROC_CWD, workspaceRoot)
 
       // execution root mappings used on Windows
-      // executionRoot.resolve("external") to executionRoot.resolve("external"), this one looks weired (check them later)
-      // executionRoot to workspaceRoot,
+      put(executionRoot.resolve("external"), executionRoot.resolve("external")) // required to specialize the one below
+      put(executionRoot, workspaceRoot)
 
       // relative mappings used on macOS
       putLocalRepoMapping(Path.of(""), workspaceRoot, targetInfo.repoMapping)
@@ -190,7 +190,7 @@ private fun configureGdbDriver(driver: DebuggerDriver, sourceMappings: Map<Path,
 
 private fun configureLldbDriver(driver: DebuggerDriver, sourceMappings: Map<Path, Path>) {
   val command = buildString {
-    append("settings set --global target.source-map")
+    append("settings set --global -- target.source-map")
     for ((from, to) in sourceMappings) {
       append(" \"").append(from).append("\" \"").append(to).append('"')
     }

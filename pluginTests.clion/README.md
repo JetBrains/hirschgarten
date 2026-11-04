@@ -38,3 +38,15 @@ To filter tests add:
 ```bash
 --test_env=JB_IDE_SM_RUN=true --test_env=JB_TEST_FILTER="fully qualified class name[:test name]"
 ```
+
+On Windows msys2 (BAZEL_SH, needs to be set explicitly because some scripts in our repo overwrite it otherwise) and clang-cl (BAZEL_LLVM) are required and the following additional environment variables need to be set (copy this to your project view file):
+```
+  --test_env=BAZEL_SH=C:\msys64\usr\bin\bash.exe
+  --test_env=BAZEL_LLVM 
+  --test_env=USERPROFILE
+  --test_env=LOCALAPPDATA
+  --test_env=APPDATA
+  --test_env=ProgramFiles
+  --test_env=ProgramFiles(x86)
+  --test_env=ProgramData
+```
