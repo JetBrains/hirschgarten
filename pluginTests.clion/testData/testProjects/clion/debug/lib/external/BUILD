@@ -4,6 +4,6 @@ cc_library(
     name = "lib",
     srcs = ["impl.cc"],
     hdrs = ["hdr.h"],
-    include_prefix = "lib/external",
+    include_prefix = "external_lib",
     visibility = ["//visibility:public"],
 )

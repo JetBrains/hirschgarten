@@ -1,7 +1,7 @@
 #include "lib/default/hdr.h"
 #include "lib/hdronly/hdr.h"
 #include "lib/generated/hdr.h"
-#include "lib/external/hdr.h"
+#include "external_lib/hdr.h"
 
 int main(void) {
   int sum = 0;
