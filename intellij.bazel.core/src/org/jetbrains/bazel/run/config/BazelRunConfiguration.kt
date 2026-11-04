@@ -168,22 +168,18 @@ class BazelRunConfiguration internal constructor(
       return
     }
 
-    val provider = RunHandlerProvider.findRunHandlerProvider(providerId)
-    if (provider != null) {
-      updateHandlerIfDifferentProvider(provider)
-      // TODO the above already reads
-
-      val handlerStateElement = bspElement.getChild(HANDLER_STATE_TAG) ?: return
-
-      try {
-        handler?.state?.readExternal(handlerStateElement)
-      } catch (e: Exception) {
-        logger.error("Failed to read BSP state", e)
-      }
-    } else {
+    val provider = RunHandlerProvider.findRunHandlerProvider(providerId) ?: run {
       logger.warn("Failed to find run handler provider with ID $providerId")
-      val newProvider = RunHandlerProvider.getRunHandlerProvider(project, this.targets)
-      updateHandlerIfDifferentProvider(newProvider)
+      RunHandlerProvider.getRunHandlerProviderOrNull(project, this.targets) ?: return
+    }
+    updateHandlerIfDifferentProvider(provider)
+    // TODO the above already reads
+    val handlerStateElement = bspElement.getChild(HANDLER_STATE_TAG) ?: return
+    try {
+      handler?.state?.readExternal(handlerStateElement)
+    }
+    catch (e: Exception) {
+      logger.error("Failed to read BSP state", e)
     }
 
     doVisibilityCheck = bspElement.getAttributeValue(CHECK_VISIBILITY_ATTR)?.toBoolean() ?: true

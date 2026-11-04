@@ -35,6 +35,7 @@ import org.jetbrains.bazel.ideStarter.syncBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
+import org.jetbrains.bazel.tests.ui.setAutoOpenProjectIfPresent
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
 import org.junit.jupiter.api.Order
@@ -42,8 +43,30 @@ import org.junit.jupiter.api.Test
 import java.awt.Point
 import java.awt.event.KeyEvent
 import java.io.File
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+
+// A run configuration that points to a handler provider which is not registered.
+// The IDE must import it as-is instead of throwing.
+private val UNKNOWN_HANDLER_RUN_CONFIGURATION =
+  """
+  <component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="Unknown handler" type="BazelRunConfigurationType">
+      <bsp-state handler-provider-id="FooBarUnknownProvider" check-visibility="true">
+        <bsp-target>@//:unknown</bsp-target>
+        <handler-state />
+      </bsp-state>
+      <method v="2">
+        <option name="KotlinCoroutineLibraryFinderBeforeRunTaskProvider" enabled="false" />
+        <option name="BuildScriptBeforeRunTaskProvider" enabled="false" />
+      </method>
+    </configuration>
+  </component>
+  """.trimIndent()
 
 private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
   revision = "7b691f083b4be04f9812134e40e665586cb5fa09",
@@ -52,16 +75,39 @@ private val IMPORT_RUN_CONFIGURATIONS_PROJECT = simpleBazelProject(
     BazelProjectConfigurer.configureProjectBeforeUseWithoutBazelClean(
       context,
       createProjectView = false,
+      removeDotIdea = false,
     )
+    // The Git test project has no `.idea` directory, so write the run configuration into the downloaded copy.
+    val projectHome = context.resolvedProjectHome.let { if (it.isDirectory()) it else it.parent }
+    val runConfigurationsDir = (projectHome / ".idea" / "runConfigurations").createDirectories()
+    (runConfigurationsDir / "Unknown handler.xml").writeText(UNKNOWN_HANDLER_RUN_CONFIGURATION)
   },
 )
 
 class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
   override fun createContext(): IDETestContext =
     createContext("importRunConfigurationsSyncHook", IdeaBazelCases.withProject(IMPORT_RUN_CONFIGURATIONS_PROJECT))
+      .setAutoOpenProjectIfPresent(true)
 
   override fun Driver.syncBazelProject() {
     syncBazelProject(true)
+  }
+
+  @Test
+  @Order(0)
+  fun `run configurations with an unknown provider are imported as-is`() {
+    withDriver(bgRun) {
+      ideFrame {
+        selectRunConfiguration("Unknown handler")
+        runConfigurationsPopup {
+          list().clickItem("Edit Configurations", fullMatch = false)
+        }
+        editRunConfigurationsDialog {
+          waitOneText("@//:unknown")
+          okButton.click()
+        }
+      }
+    }
   }
 
   @Test
