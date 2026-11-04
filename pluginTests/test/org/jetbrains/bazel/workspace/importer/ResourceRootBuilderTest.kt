@@ -238,6 +238,67 @@ class ResourceRootBuilderTest {
   }
 
   @Test
+  fun `should ignore a Java root above the workspace root`() {
+    val workspaceRoot = projectRoot.resolve("src/repo")
+    val javaPrefix = workspaceRoot.resolve("res/java")
+    val resource = javaPrefix.resolve("foo/a.txt").also { it.parent.createDirectories() }.createFile()
+    val target = javaTarget(resources = listOf(resource))
+
+    val roots = resolve(target, workspaceRoot = workspaceRoot)
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(javaPrefix)
+  }
+
+  @Test
+  fun `should find a Maven layout below a nested src directory`() {
+    val srcMainJava = projectRoot.resolve("src/foo/src/main/java")
+    val resource = srcMainJava.resolve("a.txt").also { it.parent.createDirectories() }.createFile()
+    val target = javaTarget(resources = listOf(resource))
+
+    val roots = resolve(target)
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(srcMainJava)
+  }
+
+  @Test
+  fun `should find a nested src root below a java directory at the workspace root`() {
+    val nestedSrc = projectRoot.resolve("java/x/src")
+    val resource = nestedSrc.resolve("com/foo/a.txt").also { it.parent.createDirectories() }.createFile()
+    val target = javaTarget(resources = listOf(resource))
+
+    val roots = resolve(target)
+
+    roots.map { it.resourcePath } shouldContainExactlyInAnyOrder listOf(nestedSrc)
+  }
+
+  @Test
+  fun `should ignore a Kotlin marker above the workspace root`() {
+    val workspaceRoot = projectRoot.resolve("src/repo").createDirectories()
+    workspaceRoot.resolve("BUILD").createFile()
+    val resources = workspaceRoot.resolve("app/src/main/resources")
+    val flat = resources.resolve("a.txt").also { it.parent.createDirectories() }.createFile()
+    val nested = resources.resolve("x/b.txt").also { it.parent.createDirectories() }.createFile()
+    val target = kotlinTarget(resources = listOf(flat, nested))
+
+    val roots = resolve(target, workspaceRoot = workspaceRoot)
+
+    roots.map { it.resourcePath to it.relativeOutputPath } shouldContainExactlyInAnyOrder listOf(resources to "")
+  }
+
+  @Test
+  fun `should ignore a Scala marker above the workspace root`() {
+    val workspaceRoot = projectRoot.resolve("java/repo").createDirectories()
+    workspaceRoot.resolve("BUILD").createFile()
+    val resources = workspaceRoot.resolve("app/resources")
+    val resource = resources.resolve("c.txt").also { it.parent.createDirectories() }.createFile()
+    val target = scalaTarget(resources = listOf(resource))
+
+    val roots = resolve(target, workspaceRoot = workspaceRoot)
+
+    roots.map { it.resourcePath to it.relativeOutputPath } shouldContainExactlyInAnyOrder listOf(resources to "")
+  }
+
+  @Test
   fun `should detect multiple default Kotlin prefixes simultaneously`() {
     val srcMainResources = projectRoot.resolve("src/main/resources").createDirectories()
     val srcMainResourcesFile = srcMainResources.resolve("app.properties").createFile()
@@ -841,11 +902,11 @@ class ResourceRootBuilderTest {
     }
   }
 
-  private fun resolve(target: TestBuildTarget, baseDirectory: Path? = null) =
+  private fun resolve(target: TestBuildTarget, baseDirectory: Path? = null, workspaceRoot: Path = projectRoot) =
     ResourceRootBuilder.resolve(
       target = target,
       baseDirectory = baseDirectory,
-      symlinksScanner = BazelConvenienceSymlinksScanner(projectRoot),
+      symlinksScanner = BazelConvenienceSymlinksScanner(workspaceRoot),
       resolveLocation = ::resolveTestLocation,
     )
 

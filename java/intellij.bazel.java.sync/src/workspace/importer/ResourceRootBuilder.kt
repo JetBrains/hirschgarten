@@ -17,6 +17,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.symlinks.BazelConvenienceSymlinksScanner
+import org.jetbrains.bazel.sync.workspace.languages.jvm.BazelConventionalRoots
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractKotlinBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractScalaBuildTarget
@@ -25,7 +26,9 @@ import org.jetbrains.bazel.utils.findVirtualFile
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
+import org.jetbrains.bsp.protocol.toRepoRelativePath
 import java.nio.file.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
@@ -51,7 +54,8 @@ object ResourceRootBuilder {
     val rootType = target.inferRootType()
     val resourceFiles = target.resources.resolvePaths(resolveLocation)
     if (resourceFiles.isEmpty()) return emptyList()
-    val stripPrefixes = extractStripPrefixOrNull(target, resolveLocation) ?: defaultStripPrefixes(target, resourceFiles)
+    val stripPrefixes = extractStripPrefixOrNull(target, resolveLocation)
+                        ?: defaultStripPrefixes(target, resourceFiles, resolveLocation, symlinksScanner.workspaceRoot)
     val resourcesSet = resourceFiles.toSet()
     val dirtinessCache = DirtinessCache(resourcesSet, symlinksScanner)
     val result = stripPrefixes.fold(MergeResult(leftovers = resourcesSet)) { acc, prefix ->
@@ -309,21 +313,49 @@ object ResourceRootBuilder {
     ?.let(resolveLocation)
     ?.let(::setOf)
 
-  private fun defaultStripPrefixes(target: BuildTarget, resources: List<Path>): Set<Path> = when {
-    extractKotlinBuildTarget(target) != null -> defaultStripPrefixesKotlin(resources)
-    extractScalaBuildTarget(target) != null -> defaultStripPrefixesScala(resources)
-    extractJvmBuildTarget(target) != null -> defaultStripPrefixesJava(resources)
+  private fun defaultStripPrefixes(
+    target: BuildTarget,
+    resources: List<Path>,
+    resolveLocation: (OutputLocation) -> Path?,
+    workspaceRoot: Path,
+  ): Set<Path> = when {
+    extractKotlinBuildTarget(target) != null -> defaultStripPrefixesKotlin(target, resolveLocation, workspaceRoot)
+    extractScalaBuildTarget(target) != null -> defaultStripPrefixesScala(target, resources, resolveLocation, workspaceRoot)
+    extractJvmBuildTarget(target) != null -> defaultStripPrefixesJava(target, resolveLocation, workspaceRoot)
     else -> emptySet()
   }
 
-  private fun defaultStripPrefixesJava(resources: List<Path>): MutableSet<Path> =
-    resources.mapNotNullTo(mutableSetOf()) { it.takeSrcResourcesPrefixOrNull() ?: it.takeJavaLayoutPrefixOrNull() }
+  /**
+   * Returns the strip prefixes that `rules_java` uses when `resource_strip_prefix` is not set.
+   * Each prefix is the resource root that [BazelConventionalRoots.javaResourceRootIndex] finds.
+   */
+  private fun defaultStripPrefixesJava(
+    target: BuildTarget,
+    resolveLocation: (OutputLocation) -> Path?,
+    workspaceRoot: Path,
+  ): Set<Path> = stripPrefixes(target, resolveLocation, workspaceRoot, BazelConventionalRoots::javaResourceRootIndex)
 
-  private fun defaultStripPrefixesKotlin(resources: List<Path>): Set<Path> =
-    kotlinConventionalSegments
-      .flatMapTo(mutableSetOf()) { resources.findPrefixesEndingWith(it) }
+  /**
+   * Returns the strip prefixes that `rules_kotlin` uses when `resource_strip_prefix` is not set.
+   * Each prefix ends with the first marker of [KOTLIN_RESOURCE_MARKERS] that the path contains.
+   */
+  private fun defaultStripPrefixesKotlin(
+    target: BuildTarget,
+    resolveLocation: (OutputLocation) -> Path?,
+    workspaceRoot: Path,
+  ): Set<Path> = stripPrefixes(target, resolveLocation, workspaceRoot) { it.markerEndIndex(KOTLIN_RESOURCE_MARKERS) }
 
-  private fun defaultStripPrefixesScala(resources: List<Path>): Set<Path> {
+  /**
+   * Returns the strip prefixes that `rules_scala` uses when `resource_strip_prefix` is not set.
+   * Each prefix ends with the first marker of [SCALA_RESOURCE_MARKERS] that the path contains.
+   * A resource of an external repository also gets the root of that repository as a prefix.
+   */
+  private fun defaultStripPrefixesScala(
+    target: BuildTarget,
+    resources: List<Path>,
+    resolveLocation: (OutputLocation) -> Path?,
+    workspaceRoot: Path,
+  ): Set<Path> {
     val externalPrefixes = resources.mapNotNullTo(mutableSetOf()) { resource ->
       val index = resource.indexOfFirst { it.name == "external" }
       val next = index + 1
@@ -331,61 +363,49 @@ object ResourceRootBuilder {
       if (next >= resource.nameCount) return@mapNotNullTo null
       resource.rootSubpath(until = next + 1)
     }
-    val conventionalPrefixes = scalaConventionalSegments
-      .flatMapTo(mutableSetOf()) { resources.findPrefixesEndingWith(it) }
+    val conventionalPrefixes = stripPrefixes(target, resolveLocation, workspaceRoot) { it.markerEndIndex(SCALA_RESOURCE_MARKERS) }
     return externalPrefixes + conventionalPrefixes
   }
 
-  private fun Path.takeSrcResourcesPrefixOrNull(): Path? {
-    for (i in 0..<nameCount - 2) {
-      if (getName(i).name == "src" && getName(i + 2).name == "resources") {
-        return this.rootSubpath(until = i + 3)
-      }
+  /**
+   * Returns a strip prefix for each resource of [target].
+   * [rootIndex] gives the index of the resource root in the segments of a path relative to the root of the repository.
+   * Bazel uses this relative path, so a directory above the workspace root does not count.
+   */
+  private fun stripPrefixes(
+    target: BuildTarget,
+    resolveLocation: (OutputLocation) -> Path?,
+    workspaceRoot: Path,
+    rootIndex: (segments: List<String>) -> Int?,
+  ): Set<Path> = target
+    .resources
+    .getOutputLocations()
+    .mapNotNullTo(HashSet()) { location ->
+      val path = resolveLocation(location) ?: return@mapNotNullTo null
+      val relativePath = location.toRepoRelativePath()?.invariantSeparatorsPathString
+                         ?: path.relativeToRootOrNull(workspaceRoot)
+                         ?: return@mapNotNullTo null
+      // a hard link of a generated file has another path, so the prefix is unknown
+      if (!path.endsWith(relativePath)) return@mapNotNullTo null
+      val segments = relativePath.split('/').filter { it.isNotEmpty() }
+      val index = rootIndex(segments) ?: return@mapNotNullTo null
+      path.rootSubpath(until = path.nameCount - (segments.lastIndex - index))
     }
-    return null
-  }
 
-  private fun Path.takeJavaLayoutPrefixOrNull(): Path? {
-    forEachIndexed { segmentIndex, segment ->
-      when (segment.name) {
-        "javatests", "testsrc", "java" -> return this.takeSrcJavaOrNull(at = segmentIndex) ?: this.rootSubpath(until = segmentIndex + 1)
-        "src" -> {
-          for (subSegmentIndex in segmentIndex + 1..<nameCount - 1) {
-            val subSegment = getName(subSegmentIndex)
-            if (subSegment.name == "src" || subSegment.name == "java" || subSegment.name == "javatests") {
-              val packageCandidate = getName(subSegmentIndex + 1)
-              if (packageCandidate.name in javaCommonPackagePrefixes) return this.rootSubpath(until = subSegmentIndex + 1)
-              return this.takeSrcJavaOrNull(at = segmentIndex) ?: this.rootSubpath(until = segmentIndex + 1)
-            }
-          }
-          return this.takeSrcJavaOrNull(at = segmentIndex) ?: this.rootSubpath(until = segmentIndex + 1)
-        }
-      }
+  private fun Path.relativeToRootOrNull(root: Path): String? =
+    if (startsWith(root) && this != root) root.relativize(this).invariantSeparatorsPathString else null
+
+  /**
+   * Returns the index of the last segment of the first marker in [markers] that the directories of this path contain.
+   * The rules check the markers in their order, and each marker can match at any depth.
+   * A marker matches whole segments, so `kotlin` does not match `mykotlinlib`.
+   */
+  private fun List<String>.markerEndIndex(markers: List<List<String>>): Int? {
+    val directories = subList(0, lastIndex)
+    return markers.firstNotNullOfOrNull { marker ->
+      val start = directories.windowed(marker.size).indexOf(marker)
+      if (start >= 0) start + marker.lastIndex else null
     }
-    return null
-  }
-
-  private fun Path.takeSrcJavaOrNull(at: Int): Path? {
-    if (nameCount <= at + 2) return null
-    if (getName(at).name != "src") return null
-    if (getName(at + 1).name != "main" && getName(at + 1).name != "test") return null
-    if (getName(at + 2).name == "java") return this.rootSubpath(at + 3)
-    return null
-  }
-
-  private fun List<Path>.findPrefixesEndingWith(path: Path) = mapNotNullTo(mutableSetOf()) { it.takePrefixEndingWithOrNull(path) }
-
-  private fun Path.takePrefixEndingWithOrNull(suffix: Path): Path? {
-    require(!suffix.isAbsolute)
-    if (suffix.nameCount < 1) return null
-    val first = suffix.getName(0) ?: return null
-    val index = indexOf(first)
-    if (index == -1) return null
-    for (i in 1..<suffix.nameCount) {
-      if (index + i >= nameCount) return null
-      if (getName(index + i) != suffix.getName(i)) return null
-    }
-    return this.rootSubpath(until = index + suffix.nameCount)
   }
 
   private fun Path.rootSubpath(until: Int) = root?.resolve(subpath(0, until)) ?: subpath(0, until)
@@ -398,18 +418,16 @@ object ResourceRootBuilder {
   private const val DEFAULT_GENERATED = false
   private const val DEFAULT_RELATIVE_OUTPUT_PATH = ""
 
-  private val javaCommonPackagePrefixes = setOf("com", "org", "net")
+  /**
+   * The markers of `_CONVENTIONAL_RESOURCE_PATHS` in
+   * [compile.bzl](https://github.com/bazelbuild/rules_kotlin/blob/v2.4.21/kotlin/internal/jvm/compile.bzl) of `rules_kotlin`, in its order.
+   */
+  private val KOTLIN_RESOURCE_MARKERS: List<List<String>> =
+    listOf("src/main/java", "src/main/resources", "src/test/java", "src/test/resources", "kotlin").map { it.split('/') }
 
-  private val kotlinConventionalSegments: List<Path> = listOf(
-    Path.of("src/main/java"),
-    Path.of("src/main/resources"),
-    Path.of("src/test/java"),
-    Path.of("src/test/resources"),
-    Path.of("kotlin"),
-  )
-
-  private val scalaConventionalSegments: List<Path> = listOf(
-    Path.of("resources"),
-    Path.of("java"),
-  )
+  /**
+   * The markers of `_target_path_by_default_prefixes` in
+   * [resources.bzl](https://github.com/bazelbuild/rules_scala/blob/master/scala/private/resources.bzl) of `rules_scala`, in its order.
+   */
+  private val SCALA_RESOURCE_MARKERS: List<List<String>> = listOf(listOf("resources"), listOf("java"))
 }
