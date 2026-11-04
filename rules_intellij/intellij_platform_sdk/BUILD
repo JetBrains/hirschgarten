@@ -50,6 +50,7 @@ java_library(
             ":sdk",
             ":platform_images",
             ":platform_vcs",
+            ":platform_structure_view",
             ":sh",
         ],
     ),
