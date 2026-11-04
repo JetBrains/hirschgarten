@@ -53,6 +53,11 @@ java_import(
 )
 
 java_import(
+    name = "platform_structure_view",
+    jars = glob(["plugins/platform-structureView-plugin/lib/*.jar", "plugins/platform-structureView-plugin/lib/modules/*.jar"]),
+)
+
+java_import(
     name = "sh",
     jars = glob(["plugins/sh-plugin/lib/*.jar", "plugins/sh-plugin/lib/modules/*.jar"]),
 )
