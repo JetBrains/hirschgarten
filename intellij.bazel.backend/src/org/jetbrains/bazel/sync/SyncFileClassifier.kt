@@ -62,7 +62,6 @@ private val BAZEL_DOT_FILE_NAMES: Set<String> =
     Constants.BAZEL_IGNORE_FILE_NAME,
     Constants.BAZEL_VERSION_FILE_NAME,
     Constants.BAZELISK_RC_FILE_NAME,
-    Constants.BAZELISK_VERSION_FILE_NAME,
   )
 
 @ApiStatus.Internal
@@ -97,7 +96,7 @@ class SyncFileClassifier(private val repoMapping: RepoMapping, private val bazel
       // .bazelproject
       path.extension == Constants.PROJECT_VIEW_FILE_EXTENSION -> SyncFileKind.ProjectView
 
-      // .bazelrc, .bazelignore, .bazelversion, .bazeliskrc, .bazeliskversion
+      // .bazelrc, .bazelignore, .bazelversion, .bazeliskrc
       name in BAZEL_DOT_FILE_NAMES -> SyncFileKind.BazelDotFile
 
       // .bzl

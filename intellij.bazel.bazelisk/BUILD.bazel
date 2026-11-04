@@ -36,6 +36,7 @@ jvm_library(
         "@community//platform/lang-impl",
         "@community//platform/util-ex",
         "@community//platform/util/progress",
+        "@community//platform/progress/shared:ide-progress",
     ],
 )
 ### auto-generated section `build intellij.bazel.bazelisk` end
