@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.Aborted.AbortReason
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.v1.BuildEvent
 import com.google.devtools.build.v1.PublishBuildEventGrpc
@@ -18,11 +19,10 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.BazelTestFileNames
+import org.jetbrains.bazel.server.diagnostics.Diagnostic
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.sync.FALLBACK_CONFIG
 import org.jetbrains.bazel.server.sync.FALLBACK_EXEC_CONFIG
@@ -43,6 +43,9 @@ import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileTask
 import org.jetbrains.bsp.protocol.CoverageReport
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.Position
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
@@ -513,15 +516,32 @@ class BepServer(
     )
   }
 
-  private fun processAbortedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    if (event.hasAborted()) {
-      consumeAbortedEvent(event.aborted)
-    }
+  // Obtain the label for any event that can have an aborted playload, is associated to a label,
+  // and for which the aborted message can be meaningful to the user.
+  private fun getLabelForAbortedEvent(event: BuildEventStreamProtos.BuildEvent) : Label? {
+    return (listOf(
+     event.id.targetConfigured.label,
+     event.id.unconfiguredLabel.label,
+     event.id.configuredLabel.label,
+     event.id.testResult.label,
+    ) + event.id.pattern.patternList)
+      .firstOrNull { it.isNotEmpty() }
+      ?.let {Label.parse(it)}
   }
 
-  private fun consumeAbortedEvent(aborted: BuildEventStreamProtos.Aborted) {
-    if (aborted.reason != BuildEventStreamProtos.Aborted.AbortReason.NO_BUILD) {
-      LOGGER.warn("Command aborted with reason ${aborted.reason}: ${aborted.description}")
+  private fun processAbortedEvent(event: BuildEventStreamProtos.BuildEvent) {
+    if (event.hasAborted()) {
+      val reason = event.aborted.reason
+      if (abortReasonsToIgnore.contains(reason)) return
+      // Only report actionable events, i.e., those with a non-empty description of the error.
+      if (event.aborted.description.isNotEmpty()) {
+        val label = getLabelForAbortedEvent(event) ?: return
+        val message = "${reason}: ${label}\n" + event.aborted.description
+        val diagnostic = Diagnostic(Position.NONE, message, null, label,
+                                    if (abortReasonWarnOnly.contains(reason)) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR)
+        val params = PublishDiagnosticsParams(parentId, null, label, listOf(diagnostic), true)
+        taskEventsHandler.onBuildPublishDiagnostics(params)
+      }
     }
   }
 
@@ -539,5 +559,12 @@ class BepServer(
 
   companion object {
     private val LOGGER = logger<BepServer>()
+
+    private val abortReasonsToIgnore = setOf(
+      AbortReason.NO_ANALYZE, AbortReason.NO_BUILD, AbortReason.SKIPPED,
+    )
+    private val abortReasonWarnOnly = setOf(
+      AbortReason.REMOTE_ENVIRONMENT_FAILURE, AbortReason.INCOMPLETE,
+    )
   }
 }
