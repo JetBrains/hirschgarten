@@ -119,6 +119,18 @@ val OutputLocation.relativeNioPath: Path
     is OutputLocation.Host -> Path(absolutePath)
   }
 
+/**
+ * Returns the path inside the repository, without the output root and the `external/<repo>` prefix.
+ * Returns `null` for a host location.
+ */
+@ApiStatus.Internal
+fun OutputLocation.toRepoRelativePath(): Path? = when (this) {
+  is OutputLocation.Workspace -> relativeNioPath
+  is OutputLocation.External -> relativeNioPath
+  is OutputLocation.Output -> relativeNioPath.let { if (it.startsWith("external") && it.nameCount > 2) it.subpath(2, it.nameCount) else it }
+  is OutputLocation.Host -> null
+}
+
 @ApiStatus.Internal
 fun OutputLocation.mapPath(transform: (path: Path) -> Path): OutputLocation {
   fun Path.toOutputRelativePath(): String = this.invariantSeparatorsPathString.also { require(!OSAgnosticPathUtil.isAbsolute(it)) }

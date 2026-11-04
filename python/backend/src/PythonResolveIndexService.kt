@@ -33,6 +33,7 @@ import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.isSource
 import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.relativeNioPath
+import org.jetbrains.bsp.protocol.toRepoRelativePath
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicReference
@@ -372,14 +373,6 @@ private fun Path.isPythonLanguage(): Boolean =
 
 // we only care about the extension, so the relative path of the location is enough
 private fun OutputLocation.isPythonLanguage(): Boolean = relativeNioPath.isPythonLanguage()
-
-// the path inside the repository, without the output root and the `external/<repo>` prefix
-private fun OutputLocation.toRepoRelativePath(): Path? = when (this) {
-  is OutputLocation.Workspace -> relativeNioPath
-  is OutputLocation.External -> relativeNioPath
-  is OutputLocation.Output -> relativeNioPath.let { if (it.startsWith("external") && it.nameCount > 2) it.subpath(2, it.nameCount) else it }
-  is OutputLocation.Host -> null
-}
 
 @ApiStatus.Internal
 @TestOnly
