@@ -32,5 +32,4 @@ class DiagnosticsService(
         val doc = kv.key.first?.let { TextDocumentIdentifier(it) }
         PublishDiagnosticsParams(taskId, doc, kv.key.second, diagnostics, true)
       }
-
 }
