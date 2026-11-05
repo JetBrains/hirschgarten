@@ -11,10 +11,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.OutputLocation
-import org.jetbrains.bsp.protocol.nonGeneratedSources
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.extension
@@ -40,9 +37,8 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
    * also among the open projects and the IDs loaded from the workspace model cache.
    */
   fun write(
-    targets: Collection<BuildTarget>,
+    productionSources: List<Path>,
     libraries: List<LibraryItem>,
-    resolveLocation: (OutputLocation) -> Path?,
     storage: MutableEntityStorage,
     currentExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity? = null,
   ) {
@@ -51,7 +47,7 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
       return
     }
 
-    val relativePathsInsideJarToExclude = calculateSourceFilePaths(targets, resolveLocation)
+    val relativePathsInsideJarToExclude = calculateSourceFilePaths(productionSources)
 
     val nextExcludeEntityId: CompiledSourceCodeInsideJarExcludeId =
       if (currentExcludeEntity != null &&
@@ -103,16 +99,11 @@ object CompiledSourceCodeInsideJarExcludeBuilder {
    * [CompiledSourceFileIndex] approximates the package by the relative path inside the jar and matches it against them.
    */
   @VisibleForTesting
-  fun calculateSourceFilePaths(
-    targets: Collection<BuildTarget>,
-    resolveLocation: (OutputLocation) -> Path?,
-  ): Set<String> {
+  fun calculateSourceFilePaths(sources: List<Path>): Set<String> {
     val result = HashSet<String>()
-    for (target in targets) {
-      for (source in target.nonGeneratedSources().mapNotNull(resolveLocation)) {
-        if (source.extension == "java" || source.extension == "kt") {
-          result.add(source.invariantSeparatorsPathString)
-        }
+    for (source in sources) {
+      if (source.extension == "java" || source.extension == "kt") {
+        result.add(source.invariantSeparatorsPathString)
       }
     }
     return result

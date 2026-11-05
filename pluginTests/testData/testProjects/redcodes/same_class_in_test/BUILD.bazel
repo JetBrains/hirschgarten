@@ -1,0 +1,24 @@
+load("@rules_java//java:java_import.bzl", "java_import")
+load("@rules_java//java:java_library.bzl", "java_library")
+load("//:generator.bzl", "generated_source")
+
+java_library(
+    name = "production",
+    srcs = ["src/java/com/example/Production.java"],
+    deps = [":generated"],
+)
+
+java_library(
+    name = "test_generated",
+    testonly = True,
+    srcs = ["src/java/com/example/Generated.java"],
+)
+
+generated_source(
+    name = "generated_source",
+)
+
+java_library(
+    name = "generated",
+    srcs = [":generated_source"],
+)

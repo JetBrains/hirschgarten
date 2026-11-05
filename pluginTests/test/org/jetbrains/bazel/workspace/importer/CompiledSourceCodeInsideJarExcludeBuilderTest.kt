@@ -6,22 +6,13 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
-import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
-import org.jetbrains.bazel.workspace.model.test.framework.resolveTestLocation
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.invariantSeparatorsPathString
 
 class CompiledSourceCodeInsideJarExcludeBuilderTest {
 
@@ -29,9 +20,9 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   fun `should collect java and kt source file paths`() {
     val javaSource = Path("/repo/src/com/example/Foo.java")
     val kotlinSource = Path("/repo/src/com/example/main.kt")
-    val target = targetWithSources(listOf(javaSource, kotlinSource))
+    val sources = listOf(javaSource, kotlinSource)
 
-    val result = CompiledSourceCodeInsideJarExcludeBuilder.calculateSourceFilePaths(listOf(target), ::resolveTestLocation)
+    val result = CompiledSourceCodeInsideJarExcludeBuilder.calculateSourceFilePaths(sources)
 
     result shouldContainExactlyInAnyOrder setOf(
       "/repo/src/com/example/Foo.java",
@@ -40,21 +31,11 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
   }
 
   @Test
-  fun `should skip generated sources`() {
-    val sourcePath = Path("/repo/com/example/Generated.java")
-    val target = targetWithSources(sources = emptyList(), genSources = listOf(sourcePath))
-
-    val result = CompiledSourceCodeInsideJarExcludeBuilder.calculateSourceFilePaths(listOf(target), ::resolveTestLocation)
-
-    result shouldContainExactlyInAnyOrder emptySet()
-  }
-
-  @Test
   fun `should skip sources whose extension is neither java nor kt`() {
     val sourcePath = Path("/repo/com/example/script.scala")
-    val target = targetWithSources(listOf(sourcePath))
+    val sources = listOf(sourcePath)
 
-    val result = CompiledSourceCodeInsideJarExcludeBuilder.calculateSourceFilePaths(listOf(target), ::resolveTestLocation)
+    val result = CompiledSourceCodeInsideJarExcludeBuilder.calculateSourceFilePaths(sources)
 
     result shouldContainExactlyInAnyOrder emptySet()
   }
@@ -157,35 +138,35 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
 
   @Test
   fun `should reuse the exclude ID when the content is unchanged`() {
-    val target = targetWithSources(listOf(Path("/repo/src/com/example/Foo.java")))
-    val current = writeExcludeEntity(listOf(target), currentExcludeEntity = null)
+    val sources = listOf(Path("/repo/src/com/example/Foo.java"))
+    val current = writeExcludeEntity(sources, currentExcludeEntity = null)
 
-    val next = writeExcludeEntity(listOf(target), currentExcludeEntity = current)
+    val next = writeExcludeEntity(sources, currentExcludeEntity = current)
 
     next.excludeId shouldBeSameInstanceAs current.excludeId
   }
 
   @Test
   fun `should use a new exclude ID when the content changes`() {
-    val current = writeExcludeEntity(listOf(targetWithSources(listOf(Path("/repo/src/com/example/Foo.java")))), currentExcludeEntity = null)
+    val current = writeExcludeEntity(listOf(Path("/repo/src/com/example/Foo.java")), currentExcludeEntity = null)
 
-    val next = writeExcludeEntity(listOf(targetWithSources(listOf(Path("/repo/src/com/example/Bar.java")))), currentExcludeEntity = current)
+    val next = writeExcludeEntity(listOf(Path("/repo/src/com/example/Bar.java")), currentExcludeEntity = current)
 
     next.excludeId shouldNotBe current.excludeId
   }
 
   @Test
   fun `should compute the same exclude ID for the same content without the current entity`() {
-    val target = targetWithSources(listOf(Path("/repo/src/com/example/Foo.java")))
+    val sources = listOf(Path("/repo/src/com/example/Foo.java"))
 
-    val first = writeExcludeEntity(listOf(target), currentExcludeEntity = null)
-    val second = writeExcludeEntity(listOf(target), currentExcludeEntity = null)
+    val first = writeExcludeEntity(sources, currentExcludeEntity = null)
+    val second = writeExcludeEntity(sources, currentExcludeEntity = null)
 
     second.excludeId shouldBe first.excludeId
   }
 
   private fun writeExcludeEntity(
-    targets: List<BuildTarget>,
+    productionSources: List<Path>,
     currentExcludeEntity: CompiledSourceCodeInsideJarExcludeEntity?,
   ): CompiledSourceCodeInsideJarExcludeEntity {
     val internalLibrary = LibraryItem(
@@ -197,18 +178,7 @@ class CompiledSourceCodeInsideJarExcludeBuilderTest {
       containsInternalJars = true,
     )
     val storage = MutableEntityStorage.create()
-    CompiledSourceCodeInsideJarExcludeBuilder.write(targets, listOf(internalLibrary), ::resolveTestLocation, storage, currentExcludeEntity)
+    CompiledSourceCodeInsideJarExcludeBuilder.write(productionSources, listOf(internalLibrary), storage, currentExcludeEntity)
     return storage.toSnapshot().entities<CompiledSourceCodeInsideJarExcludeEntity>().single()
   }
-
-  private fun targetWithSources(sources: List<Path>, genSources: List<Path> = emptyList()): TestBuildTarget = createTestBuildTarget(
-    id = Label.parse("//target"),
-    kind = TargetKind(
-      kind = "java_library",
-      ruleType = RuleType.LIBRARY,
-      languageClasses = setOf(JavaLanguageClass.JAVA),
-    ),
-    sources = sources,
-    generatedSources = genSources.map {generatedTestLocation(it.invariantSeparatorsPathString)},
-  )
 }

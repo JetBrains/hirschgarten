@@ -188,9 +188,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     // phase 3: compute excluded sources inside Jars
     if (ctx.excludeCompiledSourceCodeInsideJars) {
       CompiledSourceCodeInsideJarExcludeBuilder.write(
-        targets = ctx.targets,
+        productionSources = plans
+          .flatMap { (it.second as? TargetPlan.Full)?.sourceRootsBeforeMerge.orEmpty() }
+          .filter { it.rootType == JAVA_SOURCE_ROOT_TYPE && !it.generated }  // Don't exclude test classes (BAZEL-3633)
+          .map { it.sourcePath },
         libraries = ctx.libraries,
-        resolveLocation = ctx.resolveLocation,
         storage = storage,
         currentExcludeEntity = ctx.currentCompiledSourceExcludeEntity,
       )
@@ -267,6 +269,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
           associates = associates,
           mainSourceRoots = mainSourceRoots,
           resourceRoots = resourceRoots,
+          sourceRootsBeforeMerge = resolvedSourceRoots,
         )
       }
     }
@@ -478,6 +481,7 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
       val associates: List<String>,
       override val mainSourceRoots: List<SourceRootBuilder.ResolvedSourceRoot>,
       val resourceRoots: List<ResourceRootBuilder.ResolvedResourceRoot>,
+      val sourceRootsBeforeMerge: List<SourceRootBuilder.ResolvedSourceRoot>,
     ) : TargetPlan
   }
 }
