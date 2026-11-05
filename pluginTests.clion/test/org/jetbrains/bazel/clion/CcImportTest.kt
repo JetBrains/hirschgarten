@@ -22,20 +22,15 @@ import org.jetbrains.bazel.test.framework.majorBazelVersion
 import org.jetbrains.bsp.protocol.extractData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedTest {
 
-  @DisabledOnOs(OS.WINDOWS)
   class Bazel7 : CcImportTest(BazelVersions.BAZEL_7)
 
-  @DisabledOnOs(OS.WINDOWS)
   class Bazel8 : CcImportTest(BazelVersions.BAZEL_8)
 
-  @DisabledOnOs(OS.WINDOWS)
   class Bazel9 : CcImportTest(BazelVersions.BAZEL_9)
 
   private val project by clionBazelProjectFixture("clion/simple", bazelVersion = bazelVersion) {

@@ -25,7 +25,6 @@ import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,7 +36,6 @@ private const val ECHO_OUTPUT_MARKER = "ECHO_OUTPUT_FILE: "
 @CcTestApplication
 @ExtendWith(CidrCloseDebugSessionsExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
 class ExecutionTest {
 
   private val projectFixture = clionBazelProjectFixture("clion/execution", buildProject = true, bazelVersion = BazelVersions.BAZEL_9) {
@@ -64,7 +62,7 @@ class ExecutionTest {
     checkTest(DefaultRunExecutor.EXECUTOR_ID)
 
     //
-    if (OS.CURRENT != OS.macOS) {
+    if (OS.CURRENT == OS.Linux) {
       checkRun(DefaultDebugExecutor.EXECUTOR_ID)
       checkArgs(DefaultDebugExecutor.EXECUTOR_ID)
       checkTest(DefaultDebugExecutor.EXECUTOR_ID)

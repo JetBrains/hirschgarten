@@ -10,14 +10,12 @@ import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
+import java.nio.file.Path
 
 private const val DEVELOPER_DIR = "/Applications/Xcode.app/Contents/Developer"
 private const val SDK_ROOT = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 
 @CcTestApplication
-@DisabledOnOs(OS.WINDOWS)
 class CcCompilerSettingsTest {
 
   private val project by projectFixture()
@@ -28,7 +26,7 @@ class CcCompilerSettingsTest {
       ccToolchain { env("QNX_HOST" to "/proc/self/cwd/external/qnx+/host") }
     }
 
-    assertThat(compiler.environment).containsEntry("QNX_HOST", "/execroot/external/qnx+/host")
+    assertThat(compiler.environment).containsEntry("QNX_HOST", Path.of("/execroot/external/qnx+/host").toString())
   }
 
   @Test
@@ -37,7 +35,7 @@ class CcCompilerSettingsTest {
       ccToolchain { env("WRAPPER" to "/proc/self/cwd/bazel-out/k8-opt/bin/tools/wrapper") }
     }
 
-    assertThat(compiler.environment).containsEntry("WRAPPER", "/execroot/bazel-out/k8-opt/bin/tools/wrapper")
+    assertThat(compiler.environment).containsEntry("WRAPPER", Path.of("/execroot/bazel-out/k8-opt/bin/tools/wrapper").toString())
   }
 
   @Test
@@ -114,10 +112,10 @@ class CcCompilerSettingsTest {
     }
 
     assertThat(compiler.cSwitches).containsExactly(
-      "-fdebug-prefix-map=/execroot=.",
+      "-fdebug-prefix-map=${Path.of("/execroot")}=.",
       "-fdebug-prefix-map=$DEVELOPER_DIR=/PLACEHOLDER_DEVELOPER_DIR",
     )
-    assertThat(compiler.cppSwitches).containsExactly("-fcoverage-prefix-map=/execroot=/execroot")
+    assertThat(compiler.cppSwitches).containsExactly("-fcoverage-prefix-map=${Path.of("/execroot")}=${Path.of("/execroot")}")
   }
 
   @Test
@@ -137,7 +135,7 @@ class CcCompilerSettingsTest {
       ccToolchain { cOptions("-isysroot", "__BAZEL_XCODE_SDKROOT__", "-fdebug-prefix-map=__BAZEL_EXECUTION_ROOT__=.") }
     }
 
-    assertThat(compiler.cSwitches).containsExactly("-isysroot", "__BAZEL_XCODE_SDKROOT__", "-fdebug-prefix-map=/execroot=.")
+    assertThat(compiler.cSwitches).containsExactly("-isysroot", "__BAZEL_XCODE_SDKROOT__", "-fdebug-prefix-map=${Path.of("/execroot")}=.")
     assertThat(compiler.environment).doesNotContainKeys("DEVELOPER_DIR", "SDKROOT")
   }
 
