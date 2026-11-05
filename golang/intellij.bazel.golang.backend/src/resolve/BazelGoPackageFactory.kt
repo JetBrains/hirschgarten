@@ -38,7 +38,8 @@ class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(packageName: String, vararg directories: PsiDirectory): GoPackage? = null
 }
 
-internal fun getGoPackageEntity(goFile: GoFile): BazelGoPackageEntity? {
+@ApiStatus.Internal
+fun getGoPackageEntity(goFile: GoFile): BazelGoPackageEntity? {
   val project = goFile.project
   val virtualFile = goFile.virtualFile ?: return null
   val workspaceModel = project.workspaceModel

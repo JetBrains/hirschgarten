@@ -15,14 +15,15 @@
  */
 package org.jetbrains.bazel.golang.sync
 
+import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.assets.BazelPluginIcons
 import javax.swing.Icon
 
-internal const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries"
+@ApiStatus.Internal
+const val GO_EXTERNAL_LIBRARY_ROOT_NAME: String = "Go Libraries"
 
 @ApiStatus.Internal
 data class GoExternalSyntheticLibrary(private val files: List<VirtualFile>) :
@@ -32,7 +33,7 @@ data class GoExternalSyntheticLibrary(private val files: List<VirtualFile>) :
 
   override fun getPresentableText(): String = GO_EXTERNAL_LIBRARY_ROOT_NAME
 
-  override fun getIcon(unused: Boolean): Icon = BazelPluginIcons.bazel
+  override fun getIcon(unused: Boolean): Icon = BazelGoOptionalIcons.bazel ?: AllIcons.Nodes.PpLib
 
   /**
    * Prevent [files] from polluting [com.intellij.util.indexing.dependenciesCache.SyntheticLibraryDescriptor.debugLibraryName]

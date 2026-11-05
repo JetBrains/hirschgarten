@@ -3,6 +3,7 @@ package org.jetbrains.bazel.golang.sync
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
@@ -14,7 +15,8 @@ import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bsp.protocol.RunParams
 
-internal val GAZELLE_TARGET_OVERRIDE_KEY: Key<Label> = Key.create("GAZELLE_TARGET_OVERRIDE_KEY")
+@ApiStatus.Internal
+val GAZELLE_TARGET_OVERRIDE_KEY: Key<Label> = Key.create("GAZELLE_TARGET_OVERRIDE_KEY")
 
 internal class RunGazelleTargetPreSyncHook : ProjectPreSyncHook {
 

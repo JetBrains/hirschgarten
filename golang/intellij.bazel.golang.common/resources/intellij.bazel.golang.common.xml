@@ -1,98 +1,17 @@
-<idea-plugin>
+<idea-plugin visibility="public">
   <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
   <dependencies>
     <module name="intellij.bazel.backend"/>
     <module name="intellij.bazel.commons"/>
-    <module name="intellij.bazel.core"/>
-    <module name="intellij.bazel.coverage"/>
-    <module name="intellij.bazel.languages"/>
-    <module name="intellij.bazel.projectview"/>
-    <module name="intellij.go.frontback"/>
-    <module name="intellij.go.impl"/>
-    <module name="intellij.go.resources"/>
-    <module name="intellij.platform.analysis"/>
-    <module name="intellij.platform.backend.workspace"/>
-    <module name="intellij.platform.buildView"/>
-    <module name="intellij.platform.concurrency"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
     <module name="intellij.platform.core"/>
-    <module name="intellij.platform.core.impl"/>
-    <module name="intellij.platform.core.ui"/>
-    <module name="intellij.platform.coverage"/>
-    <module name="intellij.platform.debugger"/>
-    <module name="intellij.platform.debugger.impl"/>
-    <module name="intellij.platform.editor.ui"/>
-    <module name="intellij.platform.execution"/>
-    <module name="intellij.platform.execution.impl"/>
-    <module name="intellij.platform.ide"/>
-    <module name="intellij.platform.ide.core"/>
-    <module name="intellij.platform.ide.impl"/>
-    <module name="intellij.platform.ide.progress"/>
-    <module name="intellij.platform.lang"/>
-    <module name="intellij.platform.lang.impl"/>
     <module name="intellij.platform.projectModel"/>
-    <module name="intellij.platform.scriptDebugger.backend"/>
-    <module name="intellij.platform.scriptDebugger.ui"/>
-    <module name="intellij.platform.smRunner"/>
-    <module name="intellij.platform.testIntegration"/>
-    <module name="intellij.platform.testRunner"/>
-    <module name="intellij.platform.util.progress"/>
-    <module name="intellij.platform.workspace.jps"/>
-    <module name="intellij.platform.workspace.storage"/>
   </dependencies>
   <!-- endregion -->
 
-  <resource-bundle>messages.BazelGoBundle</resource-bundle>
-
-  <extensions defaultExtensionNs="com.intellij">
-    <programRunner implementation="org.jetbrains.bazel.golang.debug.BazelGoDebugRunner" />
-    <runConfigurationProducer implementation="org.jetbrains.bazel.golang.run.BazelGoRunConfigurationProducer"/>
-    <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.ScriptPathDebugBeforeRunTaskProvider" />
-    <documentationProvider implementation="org.jetbrains.bazel.golang.resolve.GoPackageDocumentationProvider" />
-    <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider" />
-    <treeStructureProvider
-      implementation="org.jetbrains.bazel.golang.treeview.BazelGoTreeStructureProvider"
-      order="last"
-    />
-    <localInspection language="go"
-                     groupKey="bazel.inspection.group.name"
-                     key="inspections.display.name.go.strict.deps"
-                     enabledByDefault="true" level="ERROR"
-                     implementationClass="org.jetbrains.bazel.golang.inspections.BazelGoStrictDependenciesInspection"/>
-  </extensions>
-
   <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceImporter$Factory"/>
-    <projectPreSyncHook implementation="org.jetbrains.bazel.golang.sync.RunGazelleTargetPreSyncHook"/>
-    <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
-    <runHandlerProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoRunHandler$BazelGoRunHandlerProvider" />
-    <runHandlerProvider
-      implementation="org.jetbrains.bazel.golang.debug.BazelGoTestHandler$BazelGoTestHandlerProvider"
-    />
-    <bazelCoverageReportParser implementation="org.jetbrains.bazel.golang.coverage.BazelGoCoverageReportParser"/>
     <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules" />
     <languageClassProvider implementation="org.jetbrains.bazel.golang.GoLanguageClassProvider" />
-    <languagePlugin implementation="org.jetbrains.bazel.golang.sync.GoLanguagePlugin"/>
-    <bazelRuleSetProvider implementation="org.jetbrains.bazel.golang.sync.GoRuleSetPlugin"/>
     <workspaceTypeContributor implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceTypeContributor"/>
-    <targetsToBuildProvider implementation="org.jetbrains.bazel.golang.workspace.GoTargetsToBuildProvider"/>
-    <testLocationHintProvider implementation="org.jetbrains.bazel.golang.run.BazelGoTestLocationHintProvider"/>
-    <testLocatorProvider implementation="org.jetbrains.bazel.golang.run.BazelGoTestLocatorProvider"/>
-    <testRerunExtension implementation="org.jetbrains.bazel.golang.run.BazelGoTestRerunExtension"/>
-  </extensions>
-  <extensions defaultExtensionNs="com.goide">
-    <dlv.positionConverterFactory
-      implementation="org.jetbrains.bazel.golang.debug.BazelDlvPosConverterFactory"
-      order="first"
-    />
-    <packageFactory
-      implementation="org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory"
-      order="first"
-    />
-    <importResolver
-      id="Bazel.ImportResolver"
-      implementation="org.jetbrains.bazel.golang.resolve.BazelGoImportResolver"
-      order="first"
-    />
-    <sdk.targetSdkVersionProvider implementation="org.jetbrains.bazel.golang.resolve.BazelGoTargetSdkVersionProvider"/>
   </extensions>
 </idea-plugin>
