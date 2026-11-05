@@ -64,10 +64,18 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
   override fun isModified(): Boolean = panelApplicationSettings != BazelApplicationSettingsService.getInstance().settings
 
   override fun apply() {
-    BazelPluginUpdater.updatePluginsHost(panelApplicationSettings.updateChannel)
-    BazelPluginUpdater.updatePlugins()
+    val settingsService = BazelApplicationSettingsService.getInstance()
+    if (settingsService.settings.updateChannel != panelApplicationSettings.updateChannel) {
+      BazelPluginUpdater.updatePluginsHost(panelApplicationSettings.updateChannel)
+      BazelPluginUpdater.updatePlugins()
+    }
+    settingsService.settings = panelApplicationSettings.copy()
+  }
 
-    BazelApplicationSettingsService.getInstance().settings = panelApplicationSettings.copy()
+  override fun reset() {
+    val settings = BazelApplicationSettingsService.getInstance().settings
+    updateChannelComboBox.selectedItem = settings.updateChannel
+    enablePhasedSyncCheckBox.isSelected = settings.enablePhasedSync
   }
 
   companion object {
