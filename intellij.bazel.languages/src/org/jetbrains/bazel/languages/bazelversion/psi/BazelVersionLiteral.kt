@@ -63,8 +63,7 @@ fun String.toBazelVersionLiteral(): BazelVersionLiteral? {
 
   val latestMatch = BAZEL_VERSION_LATEST_REGEX.matchEntire(version)
   if (latestMatch != null) {
-    val (_, offset) = latestMatch.destructured
-    return BazelVersionLiteral.Latest(offset.toIntOrNull() ?: return null)
+    return BazelVersionLiteral.Latest(latestMatch.groupValues[1].toIntOrNull() ?: 0)
   }
 
   when (version) {
