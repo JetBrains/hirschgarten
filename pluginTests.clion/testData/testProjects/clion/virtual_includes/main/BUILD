@@ -23,7 +23,7 @@ cc_binary(
     ],
     # basically manual strip absolut, different flags required for MSVC
     copts = select({
-        "@platforms//os:windows": [
+        "@rules_cc//cc/compiler:msvc-cl": [
             "/Ilib/raw_files/default",
             "/external:Ilib/raw_files/system",
             "/external:Ilib/raw_files/quote",

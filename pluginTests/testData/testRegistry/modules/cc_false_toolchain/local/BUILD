@@ -6,15 +6,27 @@ filegroup(
     srcs = [],
 )
 
+filegroup(
+    name = "compiler",
+    srcs = select({
+       "@bazel_tools//src/conditions:windows": ["compiler.bat"],
+       "//conditions:default": ["compiler.sh"],
+    }),
+)
+
 cc_toolchain_config(
     name = "toolchain_config",
+    compiler = select({
+        "@bazel_tools//src/conditions:windows": "compiler.bat",
+        "//conditions:default": "compiler.sh",
+    }),
 )
 
 cc_toolchain(
     name = "cc_toolchain",
     all_files = ":empty",
     ar_files = ":empty",
-    compiler_files = ":empty",
+    compiler_files = ":compiler",
     dwp_files = ":empty",
     linker_files = ":empty",
     objcopy_files = ":empty",

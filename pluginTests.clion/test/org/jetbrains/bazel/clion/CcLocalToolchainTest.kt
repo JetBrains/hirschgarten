@@ -22,7 +22,6 @@ import org.jetbrains.bazel.test.framework.annotation.EnabledOnBazel
 import org.jetbrains.bsp.protocol.extractData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
 
@@ -30,13 +29,12 @@ import org.junit.jupiter.api.condition.OS
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVersionedTest {
 
-  @EnabledOnOs(OS.LINUX)
+  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
   class Bazel7 : CcLocalToolchainTest(BazelVersions.BAZEL_7)
 
-  @EnabledOnOs(OS.LINUX)
+  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
   class Bazel8 : CcLocalToolchainTest(BazelVersions.BAZEL_8)
 
-  @DisabledOnOs(OS.WINDOWS)
   class Bazel9 : CcLocalToolchainTest(BazelVersions.BAZEL_9)
 
   private val project by clionBazelProjectFixture("clion/simple", buildProject = true, bazelVersion = bazelVersion)
@@ -49,8 +47,10 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
     val compilerSettingsC = project.findCompilerSetting("main/util.c", language = CLanguageKind.C)
     val compilerSettingsCPP = project.findCompilerSetting("main/main.cc", language = CLanguageKind.CPP)
 
-    assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
-    assertThat(compilerSettingsC).hasCompilerKindWrapper()
+    if (!SystemInfoRt.isWindows) {
+      assertThat(compilerSettingsCPP).hasCompilerKindWrapper()
+      assertThat(compilerSettingsC).hasCompilerKindWrapper()
+    }
 
     assertThat(compilerSettingsCPP)
       .hasCompiler(platformDefaultCompiler())
@@ -116,6 +116,7 @@ private fun platformDefaultCompiler(): OCCompilerId {
   return when {
     SystemInfoRt.isLinux -> OCCompilerId.GCC
     SystemInfoRt.isMac -> OCCompilerId.APPLE_CLANG
+    SystemInfoRt.isWindows -> OCCompilerId.MSVC
     else -> fail("unsupported platform")
   }
 }

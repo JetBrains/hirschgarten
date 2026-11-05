@@ -5,7 +5,7 @@ load("@rules_cc//cc/toolchains:cc_toolchain_config_info.bzl", "CcToolchainConfig
 def _cc_toolchain_config_impl(ctx):
     tool_paths = [
         # compiler info collection needs to invoke the compiler during the sync
-        tool_path(name = "gcc", path = "compiler.sh"),
+        tool_path(name = "gcc", path = ctx.attr.compiler),
         tool_path(name = "ld", path = "/usr/bin/false"),
         tool_path(name = "ar", path = "/usr/bin/false"),
         tool_path(name = "cpp", path = "/usr/bin/false"),
@@ -31,6 +31,8 @@ def _cc_toolchain_config_impl(ctx):
 
 cc_toolchain_config = rule(
     implementation = _cc_toolchain_config_impl,
-    attrs = {},
+    attrs = {
+        "compiler": attr.string(mandatory = True),
+    },
     provides = [CcToolchainConfigInfo],
 )

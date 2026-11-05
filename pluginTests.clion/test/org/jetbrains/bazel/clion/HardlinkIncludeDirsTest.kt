@@ -9,12 +9,9 @@ import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DisabledOnOs(OS.WINDOWS)
 class HardlinkIncludeDirsTest {
 
   private val project by clionBazelProjectFixture("clion/hardlink_include_dirs", buildProject = true, bazelVersion = BazelVersions.BAZEL_8)
