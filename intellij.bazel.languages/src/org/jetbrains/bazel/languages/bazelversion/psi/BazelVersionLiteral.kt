@@ -18,6 +18,12 @@ sealed interface BazelVersionLiteral {
     LAST_RC,
     ROLLING,
   }
+  companion object {
+    @ApiStatus.Internal
+    fun fromString(s: String) : BazelVersionLiteral? {
+      return s.toBazelVersionLiteral()
+    }
+  }
 }
 
 @ApiStatus.Internal
@@ -50,11 +56,10 @@ fun BazelVersionLiteral.withNewVersionWhenPossible(newVersion: String): BazelVer
     else -> this
   }
 
-internal val BAZEL_FORK_VERSION_REGEX = """(?:([^/]+)/)?(.+)""".toRegex()
-internal val BAZEL_VERSION_LATEST_REGEX = """latest(?:-(\d+))?""".toRegex()
+private val BAZEL_FORK_VERSION_REGEX = """(?:([^/]+)/)?(.+)""".toRegex()
+private val BAZEL_VERSION_LATEST_REGEX = """latest(?:-(\d+))?""".toRegex()
 
-@ApiStatus.Internal
-fun String.toBazelVersionLiteral(): BazelVersionLiteral? {
+private fun String.toBazelVersionLiteral(): BazelVersionLiteral? {
   val forkMatch = BAZEL_FORK_VERSION_REGEX.matchEntire(trim()) ?: return null
   val (fork, version) = forkMatch.destructured
   if (fork.isNotBlank()) {

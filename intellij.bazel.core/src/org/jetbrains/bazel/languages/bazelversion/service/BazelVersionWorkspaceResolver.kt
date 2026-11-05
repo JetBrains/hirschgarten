@@ -4,7 +4,6 @@ import com.intellij.util.EnvironmentUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
-import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
@@ -19,19 +18,19 @@ object BazelVersionWorkspaceResolver {
       ?: resolveFallbackBazelVersion()
 
   private fun resolveWorkspaceBazelVersionFile(workspace: Path): BazelVersionLiteral? =
-    workspace.resolve(Constants.BAZEL_VERSION_FILE_NAME).readTextOrNull()?.toBazelVersionLiteral()
+    workspace.resolve(Constants.BAZEL_VERSION_FILE_NAME).readTextOrNull()?.let { BazelVersionLiteral.fromString(it) }
 
   private fun resolveBazelVersionEnvVariable(): BazelVersionLiteral? =
-    EnvironmentUtil.getValue("USE_BAZEL_VERSION")?.toBazelVersionLiteral()
+    EnvironmentUtil.getValue("USE_BAZEL_VERSION")?.let { BazelVersionLiteral.fromString(it) }
 
   private fun resolveFallbackBazelVersion(): BazelVersionLiteral? {
     val fallbackVersion = EnvironmentUtil.getValue("USE_BAZEL_FALLBACK_VERSION") ?: return null
     val allowedPrefixes = listOf("error:", "warn:", "silent:")
     val prefix = allowedPrefixes.firstOrNull { fallbackVersion.startsWith(it) }
     return if (prefix == null) {
-      fallbackVersion.toBazelVersionLiteral()
+      BazelVersionLiteral.fromString(fallbackVersion)
     } else {
-      fallbackVersion.substring(prefix.length).toBazelVersionLiteral()
+      fallbackVersion.substring(prefix.length).let { BazelVersionLiteral.fromString(it) }
     }
   }
 
@@ -39,7 +38,7 @@ object BazelVersionWorkspaceResolver {
     val text = workspace.resolve(Constants.BAZELISK_RC_FILE_NAME).readTextOrNull() ?: return null
     val properties = BazeliskrcParser.parse(text)
     val version = properties["USE_BAZEL_VERSION"] ?: return null
-    return version.toBazelVersionLiteral()
+    return BazelVersionLiteral.fromString(version)
   }
 
   private fun Path.readTextOrNull(): String? {
