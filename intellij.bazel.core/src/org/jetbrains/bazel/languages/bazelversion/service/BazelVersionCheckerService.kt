@@ -9,7 +9,6 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
-import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionStringLiteral
 
 @Service(Service.Level.PROJECT)
@@ -39,8 +38,8 @@ class BazelVersionCheckerService(private val project: Project) : PersistentState
 
   override fun loadState(state: BazelVersionCheckerService.State) {
     resolverId = state.resolverId
-    currentBazelVersion = state.currentBazelVersion?.toBazelVersionLiteral()
-    latestBazelVersion = state.latestBazelVersion?.toBazelVersionLiteral()
+    currentBazelVersion = state.currentBazelVersion?.let { BazelVersionLiteral.fromString(it) }
+    latestBazelVersion = state.latestBazelVersion?.let { BazelVersionLiteral.fromString(it) }
   }
 
   suspend fun refreshLatestBazelVersion(project: Project, currentVersion: BazelVersionLiteral?) {

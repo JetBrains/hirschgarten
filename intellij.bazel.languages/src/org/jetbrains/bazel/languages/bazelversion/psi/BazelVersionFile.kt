@@ -12,5 +12,5 @@ class BazelVersionFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvide
   override fun getFileType(): FileType = BazelVersionFileType
 
   val bazelVersion: BazelVersionLiteral?
-    get() = this.text.toBazelVersionLiteral()
+    get() = BazelVersionLiteral.fromString(this.text)
 }

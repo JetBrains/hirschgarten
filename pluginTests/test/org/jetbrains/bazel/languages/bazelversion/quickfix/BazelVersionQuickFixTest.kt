@@ -7,7 +7,6 @@ import com.intellij.testFramework.ExtensionTestUtil
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
-import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.withNewVersionWhenPossible
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver
@@ -38,7 +37,7 @@ class BazelVersionQuickFixTest {
   @Test
   fun testQuickfix() {
     val file = myFixture.configureByFile(".bazelversion")
-    val currentVersion = runReadActionBlocking { file.text }.toBazelVersionLiteral()
+    val currentVersion = runReadActionBlocking { file.text }.let { BazelVersionLiteral.fromString(it) }
     val project = myFixture.project
     runBlocking { project.service<BazelVersionCheckerService>().refreshLatestBazelVersion(project, currentVersion) }
     myFixture.doHighlighting()
