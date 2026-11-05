@@ -28,6 +28,7 @@ class WorkspaceImporterHelper(
   private val outputParser: OutputLocationParser,
   private val outFileHardLinks: BazelOutFileHardLinks,
   private val bazelInfo: BazelInfo,
+  private val capabilities: WorkspaceEnvironmentCapabilities
 ) {
   private val workspaceModel = WorkspaceModel.getInstance(project)
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
@@ -52,6 +53,7 @@ class WorkspaceImporterHelper(
       outputParser = outputParser,
       outFileHardLinks = outFileHardLinks,
       bazelInfo = bazelInfo,
+      capabilities = capabilities,
     )
     importers = BazelWorkspaceImporterFactory.EP_NAME.mapExtensionSafe { it.createWorkspaceImporter(context) }
     val namingBuilder = GlobalNamingContextBuilder.create(snapshot.repoMapping)

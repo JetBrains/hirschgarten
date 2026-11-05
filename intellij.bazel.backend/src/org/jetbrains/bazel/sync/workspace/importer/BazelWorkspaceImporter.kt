@@ -82,6 +82,18 @@ sealed interface WorkspaceImporterResult {
 }
 
 /**
+ * Common set of capabilities for environment workspace importer is running inside
+ */
+@ApiStatus.Internal
+data class WorkspaceEnvironmentCapabilities(
+
+  /**
+   * `true` when environment support operations on project SDK table
+   */
+  val supportSdkTable: Boolean
+)
+
+/**
  * Common [BazelWorkspaceImporter] context
  *
  * @property project Current project, don't use [project] to collect data that can change [BazelWorkspaceImporter] behavior
@@ -100,6 +112,7 @@ data class WorkspaceImporterContext(
   val outputParser: OutputLocationParser,
   val outFileHardLinks: BazelOutFileHardLinks,
   val bazelInfo: BazelInfo,
+  val capabilities: WorkspaceEnvironmentCapabilities
 )
 
 /**

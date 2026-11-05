@@ -26,6 +26,7 @@ import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.server.BazelServerService
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceEnvironmentCapabilities
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
@@ -151,6 +152,7 @@ internal suspend fun doWorkspaceModelTest(
       outputParser = OutputLocationParser(BazelPathsResolver(bazelInfo), BazelOutFileHardLinks.NONE),
       outFileHardLinks = BazelOutFileHardLinks.NONE,
       bazelInfo = bazelInfo,
+      WorkspaceEnvironmentCapabilities(supportSdkTable = true)
     )
 
     helper.invoke(reporter, workspaceSnapshot, taskId)

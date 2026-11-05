@@ -1,16 +1,19 @@
 package org.jetbrains.bazel.sync.task
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskId
 
-internal enum class SyncPhase {
+@ApiStatus.Internal
+enum class SyncPhase {
   FIRST,
   SECOND,
 }
 
-internal data class SyncWorkspaceContext(
+@ApiStatus.Internal
+data class SyncWorkspaceContext(
   val phase: SyncPhase,
   val buildProject: Boolean,
   val allKnownTargets: List<Label>?,
@@ -19,7 +22,8 @@ internal data class SyncWorkspaceContext(
   val taskId: TaskId,
 )
 
-internal enum class SyncWorkspaceStatus {
+@ApiStatus.Internal
+enum class SyncWorkspaceStatus {
   SUCCESS,
 
   // partial error
