@@ -35,4 +35,8 @@ class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicatio
 }
 
 @ApiStatus.Internal
-data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE, var enablePhasedSync: Boolean = false)
+data class BazelApplicationSettings(
+  var updateChannel: UpdateChannel = UpdateChannel.RELEASE,
+  var enablePhasedSync: Boolean = false,
+  var forwardProxySettings: Boolean = false,
+)
