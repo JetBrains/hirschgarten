@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.test.framework
 
 import com.intellij.configurationStore.ProjectStoreImpl
+import com.intellij.credentialStore.Credentials
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
@@ -17,6 +18,9 @@ import com.intellij.openapi.vfs.impl.jrt.JrtFileSystemImpl
 import com.intellij.openapi.vfs.jrt.JrtFileSystem
 import com.intellij.project.stateStore
 import com.intellij.testFramework.replaceService
+import com.intellij.util.net.ProxyConfiguration
+import com.intellij.util.net.ProxyCredentialStore
+import com.intellij.util.net.ProxySettings
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.bazelrunner.BazelCommandExecutionDescriptor
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncher
@@ -26,6 +30,7 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.flow.open.BazelProjectStoreDescriptor
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.progress.ConsoleService
+import org.jetbrains.bazel.settings.bazel.BazelApplicationSettingsService
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
@@ -79,6 +84,31 @@ internal fun installHostRcIsolation(disposable: Disposable) {
     // A test that masks the extension point launches its own processes, so it does not run the host Bazel.
     LOG.info("Skipping the host rc isolation: ${e.message}")
   }
+}
+
+/**
+ * Sets the IDE proxy configuration and turns the Bazel proxy forwarding on or off.
+ */
+internal fun installIdeProxyConfiguration(
+  disposable: Disposable,
+  protocol: ProxyConfiguration.ProxyProtocol = ProxyConfiguration.ProxyProtocol.HTTP,
+  host: String = "proxy.bazel.test",
+  port: Int = 3128,
+  exceptions: String = "",
+  credentials: Credentials? = null,
+  forward: Boolean = true,
+) {
+  val bazelSettings = BazelApplicationSettingsService.getInstance().settings
+  val savedConfiguration = ProxySettings.getInstance().getProxyConfiguration()
+  val savedForwardProxySettings = bazelSettings.forwardProxySettings
+  Disposer.register(disposable) {
+    ProxySettings.getInstance().setProxyConfiguration(savedConfiguration)
+    ProxyCredentialStore.getInstance().setCredentials(host, port, null, false)
+    BazelApplicationSettingsService.getInstance().settings.forwardProxySettings = savedForwardProxySettings
+  }
+  ProxySettings.getInstance().setProxyConfiguration(ProxyConfiguration.proxy(protocol, host, port, exceptions))
+  ProxyCredentialStore.getInstance().setCredentials(host, port, credentials, false)
+  bazelSettings.forwardProxySettings = forward
 }
 
 /**

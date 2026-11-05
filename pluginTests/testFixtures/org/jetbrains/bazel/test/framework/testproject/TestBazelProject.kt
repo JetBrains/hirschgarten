@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.test.framework.testproject
 
+import com.intellij.credentialStore.Credentials
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runWriteActionAndWait
 import com.intellij.openapi.components.service
@@ -15,6 +16,7 @@ import com.intellij.platform.workspace.storage.entities
 import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.replaceService
+import com.intellij.util.net.ProxyConfiguration
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncher
 import org.jetbrains.bazel.bazelrunner.BazelProcessLauncherProvider
 import org.jetbrains.bazel.commons.BazelInfo
@@ -37,6 +39,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotServiceIm
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.test.framework.installHostRcIsolation
+import org.jetbrains.bazel.test.framework.installIdeProxyConfiguration
 import org.jetbrains.bazel.test.framework.installStableJdkPaths
 import org.jetbrains.bazel.test.framework.installTestConsoleService
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -151,6 +154,17 @@ private fun Project.installSnapshotStore(lifetime: Disposable, persistentSnapsho
 
 fun TestBazelProject.uninstall() {
   Disposer.dispose(lifetime)
+}
+
+internal fun TestBazelProject.installIdeProxyConfiguration(
+  protocol: ProxyConfiguration.ProxyProtocol = ProxyConfiguration.ProxyProtocol.HTTP,
+  host: String = "proxy.bazel.test",
+  port: Int = 3128,
+  exceptions: String = "",
+  credentials: Credentials? = null,
+  forward: Boolean = true,
+) {
+  installIdeProxyConfiguration(lifetime, protocol, host, port, exceptions, credentials, forward)
 }
 
 fun TestBazelProject.useProjectView(projectViewFile: Path) {

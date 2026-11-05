@@ -1,13 +1,19 @@
 package org.jetbrains.bazel.ui.settings
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
+import com.intellij.ui.layout.selected
+import com.intellij.util.net.HttpProxyConfigurable
+import com.intellij.util.ui.launchOnShow
+import org.jetbrains.bazel.bazelrunner.BazelProxyForwarding
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.BazelApplicationSettingsService
 import org.jetbrains.bazel.settings.bazel.UpdateChannel
@@ -18,6 +24,8 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
 
   private val updateChannelComboBox: ComboBox<UpdateChannel> = ComboBox<UpdateChannel>()
   private val enablePhasedSyncCheckBox: JBCheckBox = initEnablePhasedSyncCheckBox()
+  private val forwardProxyCheckBox: JBCheckBox = initForwardProxyCheckBox()
+  private val proxyStatusLabel: JBLabel = JBLabel()
 
   init {
     initUpdateChannelComboBox()
@@ -41,6 +49,14 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
       }
     }
 
+  private fun initForwardProxyCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("application.settings.proxy.forward.checkbox.text")).apply {
+      isSelected = panelApplicationSettings.forwardProxySettings
+      addItemListener {
+        panelApplicationSettings.forwardProxySettings = isSelected
+      }
+    }
+
   override fun getId(): String = ID
 
   override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)
@@ -53,6 +69,25 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
             .contextHelp(BazelPluginBundle.message("application.settings.update.channel.dropdown.help.description"))
         }
       }
+      group(BazelPluginBundle.message("application.settings.proxy.title")) {
+        row {
+          cell(forwardProxyCheckBox)
+            .contextHelp(BazelPluginBundle.message("application.settings.proxy.forward.help.text"))
+        }
+        indent {
+          row {
+            cell(proxyStatusLabel).applyToComponent {
+              launchOnShow("BazelProxyStatus") { updateProxyStatus() }
+            }
+          }
+          row {
+            link(BazelPluginBundle.message("application.settings.proxy.configure.link")) { event ->
+              HttpProxyConfigurable.editConfigurable(event.source as? JComponent)
+              updateProxyStatus()
+            }
+          }
+        }.visibleIf(forwardProxyCheckBox.selected)
+      }
       group(BazelPluginBundle.message("application.settings.plugin.experimental.settings")) {
         row {
           cell(enablePhasedSyncCheckBox)
@@ -60,6 +95,17 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
         }
       }
     }
+
+  private fun updateProxyStatus() {
+    if (BazelProxyForwarding.isSupported()) {
+      proxyStatusLabel.icon = AllIcons.General.InspectionsOK
+      proxyStatusLabel.text = BazelPluginBundle.message("application.settings.proxy.status.supported")
+    }
+    else {
+      proxyStatusLabel.icon = AllIcons.General.Warning
+      proxyStatusLabel.text = BazelPluginBundle.message("application.settings.proxy.status.unsupported")
+    }
+  }
 
   override fun isModified(): Boolean = panelApplicationSettings != BazelApplicationSettingsService.getInstance().settings
 
@@ -76,6 +122,7 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
     val settings = BazelApplicationSettingsService.getInstance().settings
     updateChannelComboBox.selectedItem = settings.updateChannel
     enablePhasedSyncCheckBox.isSelected = settings.enablePhasedSync
+    forwardProxyCheckBox.isSelected = settings.forwardProxySettings
   }
 
   companion object {
@@ -88,6 +135,8 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
       listOf(
         "application.settings.updates.title",
         "application.settings.update.channel.dropdown.title",
+        "application.settings.proxy.title",
+        "application.settings.proxy.forward.checkbox.text",
       )
   }
 }

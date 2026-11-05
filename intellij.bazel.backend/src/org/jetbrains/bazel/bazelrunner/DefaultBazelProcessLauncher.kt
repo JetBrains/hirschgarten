@@ -26,7 +26,11 @@ internal class DefaultBazelProcessLauncher(private val workspaceRoot: Path, priv
     // change the environment we set.
     // While normally nothing should depend on the value `TERM`, we have to work around bazel issue
     // https://github.com/bazelbuild/bazel/issues/29956 which is not fixed in all versions of bazel in use.
-    commandLine.withEnvironment(mapOf("TERM" to "xterm-256color") + parentEnvironment + executionDescriptor.environment)
+    val environment = mapOf("TERM" to "xterm-256color") +
+                      parentEnvironment +
+                      BazelProxyForwarding.environment() +
+                      executionDescriptor.environment
+    commandLine.withEnvironment(environment)
     commandLine.withWorkingDirectory(workspaceRoot)
     commandLine.withRedirectErrorStream(false)
 
