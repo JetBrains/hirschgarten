@@ -5,6 +5,7 @@ load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
 jps_test(
     name = "pluginTests.clion_test",
     data = all_test_dep_targets,
+    env_inherit = ["RESHARPER_HOST_BIN"],
     runtime_deps = [":pluginTests.clion_test_lib"],
 )
 ### skip generation section `test intellij.bazel.pluginTests.clion`
