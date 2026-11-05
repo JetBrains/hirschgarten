@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.golang
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LanguageClassProvider
 
-internal object GoLanguageClass {
-  val GO = LanguageClass("go", setOf("go"))
+@ApiStatus.Internal
+object GoLanguageClass {
+  val GO: LanguageClass = LanguageClass("go", setOf("go"))
 }
 
 internal class GoLanguageClassProvider: LanguageClassProvider {

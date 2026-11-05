@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.golang.targetKinds
 
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.golang.GoLanguageClass
@@ -34,4 +35,5 @@ internal class GoBazelRules : TargetKindProvider {
     }.toSet()
 }
 
-internal fun TargetKind.includesGo(): Boolean = languageClasses.contains(GoLanguageClass.GO)
+@ApiStatus.Internal
+fun TargetKind.includesGo(): Boolean = languageClasses.contains(GoLanguageClass.GO)

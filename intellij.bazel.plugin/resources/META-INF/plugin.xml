@@ -59,6 +59,8 @@
 
     <!-- go modules -->
     <module name="intellij.bazel.golang.common"/>
+    <module name="intellij.bazel.golang.backend"/>
+    <module name="intellij.bazel.golang.core"/>
 
     <!-- python modules -->
     <module name="intellij.bazel.python.common"/>

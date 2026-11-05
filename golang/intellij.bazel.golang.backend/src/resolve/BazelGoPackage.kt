@@ -35,9 +35,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
@@ -94,18 +91,16 @@ class BazelGoPackage(
    * 4. `two` resolves to the directory `one/two/`.
    */
   fun getImportReferences(): Array<PsiElement>? {
+    val label = getMainLabel() ?: return null
     val navigable = getNavigableElement() ?: return null
-    return getImportReferences(getMainLabel() ?: return null, navigable, entity.importPath)
+    return getImportReferences(label, navigable, entity.importPath)
   }
 
   companion object {
     /**
-     * Resolves the import references for a given `Label`, `PsiElement`, and import path.
+     * Returns one resolve target for each component of [importPath].
      *
-     * @param label         the Bazel label associated with the import
-     * @param buildElement  the PsiElement (build file or directory) for which references are resolved
-     * @param importPath    the import path string to resolve
-     * @return an array of resolved [PsiElement]s corresponding to the components of the import path
+     * @param buildElement the target of [label] in its BUILD file, or the BUILD file itself
      */
     @VisibleForTesting
     fun getImportReferences(
@@ -114,83 +109,37 @@ class BazelGoPackage(
       importPath: String,
     ): Array<PsiElement> {
       val pathComponents = importPath.split("/")
-      val importReferences = pathComponents.indices.map { buildElement }.toTypedArray()
+      val importReferences = Array(pathComponents.size) { buildElement }
 
-      if (pathComponents.isEmpty()) {
-        return importReferences
-      }
-
-      // Get the last element (e.g., `bar` for the import path ending in `github.com/user/foo/bar`)
       val lastPathComponent = pathComponents.last()
       val lastElement = getLastElement(lastPathComponent, label, buildElement) ?: return importReferences
+      importReferences[pathComponents.lastIndex] = lastElement
 
-      importReferences[pathComponents.size - 1] = lastElement
-      var currentElement: PsiDirectory?
-      if (lastElement is PsiDirectory) {
-        currentElement = lastElement.parent
-      }
-        else {
-        val containingPackage = lastElement.containingFile?.parent
-        if (containingPackage?.name == lastPathComponent) {
-          // Package name is the same as last component -- go one level up again
-          currentElement = containingPackage.parent
-        } else {
-          currentElement = containingPackage
-        }
+      val containingPackage = lastElement.containingFile?.parent
+      var currentElement: PsiDirectory? = when {
+        lastElement is PsiDirectory -> lastElement.parent
+        // The package has the name of the last component, so the walk starts one level higher.
+        containingPackage?.name == lastPathComponent -> containingPackage.parent
+        else -> containingPackage
       }
 
-      // Iterate backwards through the path components, linking names to the proper directories or elements
+      // Walk the components and the directories backwards while their names agree.
       for (i in pathComponents.size - 2 downTo 0) {
-        if (currentElement == null) break
-
-        val name = currentElement.name
-        val pathComponent = pathComponents[i]
-        if (name == pathComponent) {
-          importReferences[i] = currentElement
-          currentElement = currentElement.parent
-        }
-        else {
-          break
-        }
+        if (currentElement == null || currentElement.name != pathComponents[i]) break
+        importReferences[i] = currentElement
+        currentElement = currentElement.parent
       }
 
       return importReferences
     }
 
-    /**
-     * Finds the last element of the import path.
-     *
-     * @param name          the name of the final component in the import path
-     * @param label         the Bazel label
-     * @param buildElement  the PsiElement representing the build file or directory
-     * @return the corresponding resolved [PsiElement], or `null` if it cannot be found
-     */
-    private fun getLastElement(
-      name: String,
-      label: Label,
-      buildElement: PsiElement,
-    ): PsiElement? {
-      return when (buildElement) {
-        is StarlarkCallExpression -> {
-          if (name == label.targetName) {
-            buildElement
-          }
-          else {
-            buildElement.containingFile?.parent?.takeIf {
-              it.name == name
-            }
-          }
-        }
-
-        is StarlarkFile -> {
-          if (!buildElement.isBuildFile()) return null
-          buildElement.parent?.takeIf { it.name == name }
-          ?: buildElement
-        }
-
-        else -> null
+    /** Returns the resolve target of the last import path component [name], or `null` if [buildElement] does not give one. */
+    private fun getLastElement(name: String, label: Label, buildElement: PsiElement): PsiElement? =
+      when {
+        buildElement is PsiFile -> if (buildElement.isBuildFile()) buildElement.parent?.takeIf { it.name == name } ?: buildElement else null
+        name == label.targetName -> buildElement
+        else -> buildElement.containingFile?.parent?.takeIf { it.name == name }
       }
-    }
 
     /**
      * Package name is determined by package declaration in the source files.
@@ -257,13 +206,13 @@ class BazelGoPackage(
    * navigates to the target in the BUILD file or just the BUILD file
    */
   override fun getNavigableElement(): PsiElement? =
-    resolveLabel(project, getMainLabel() ?: return null)
+    BazelGoPackageNavigationProvider.findTargetDefinitionPsi(this)
 
   /**
    * A package can actually correspond to several labels in case of `embed`.
    * Unfortunately, [getNavigableElement] allows for only one option, so we just take the first option.
    */
-  private fun getMainLabel(): Label? {
+  fun getMainLabel(): Label? {
     val targetUtils = project.targetStorage
     val labels = project.workspaceModel.currentSnapshot.referrers(entity.symbolicId, BazelGoTargetEntity::class.java)
       .map { it.targetKey.label }

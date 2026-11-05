@@ -48,6 +48,8 @@ intellij_plugin_zip_and_debug_target(
         "//misc/intellij.bazel.devkit",
         "//misc/intellij.bazel.devkit.monorepo",
         "//golang/intellij.bazel.golang.common",
+        "//golang/intellij.bazel.golang.backend",
+        "//golang/intellij.bazel.golang.core",
         "//java/intellij.bazel.java.common",
         "//java/intellij.bazel.java.common.performancePlugin",
         "//java/intellij.bazel.java.core",

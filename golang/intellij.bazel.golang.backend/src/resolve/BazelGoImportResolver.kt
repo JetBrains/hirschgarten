@@ -19,24 +19,15 @@ package org.jetbrains.bazel.golang.resolve
 import com.goide.psi.impl.GoPackage
 import com.goide.psi.impl.imports.GoImportReference
 import com.goide.psi.impl.imports.GoImportResolver
-import com.intellij.codeInsight.navigation.CtrlMouseHandler
-import com.intellij.lang.documentation.DocumentationProviderEx
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementResolveResult
-import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.ResolveResult
 import com.intellij.psi.ResolveState
-import com.intellij.psi.impl.SyntheticFileSystemItem
-import com.intellij.psi.search.PsiElementProcessor
 import com.intellij.util.ThreeState
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.ImportPathId
 
@@ -79,50 +70,6 @@ internal class BazelGoImportResolver : GoImportResolver {
     project.isBazelProject
 }
 
-/**
- * [GoImportReference] must resolve to a [PsiFileSystemItem], but we might want it to
- * resolve to a build rule in a [BuildFile]. We'll just return the [BuildFile] with a
- * navigation redirect.
- */
-private class GoPackageFileSystemItem private constructor(private val name: String, private val rule: StarlarkCallExpression) :
-  SyntheticFileSystemItem(rule.project) {
-    companion object {
-      @JvmStatic
-      fun getInstance(element: PsiElement): PsiFileSystemItem? =
-        when (element) {
-          is PsiFileSystemItem -> element
-          is StarlarkCallExpression -> element.getCalledFunctionName()?.let { GoPackageFileSystemItem(it, element) }
-          else -> null
-        }
-    }
-
-    override fun getName(): String = name
-
-    override fun getNavigationElement(): PsiElement = rule
-
-    override fun getParent(): PsiFileSystemItem? = (rule.containingFile as? StarlarkFile)?.takeIf { it.isBuildFile() }?.parent
-
-    override fun getVirtualFile(): VirtualFile? = null
-
-    override fun isValid(): Boolean = true
-
-    override fun isPhysical(): Boolean = false
-
-    override fun isDirectory(): Boolean = false
-
-    override fun processChildren(psiElementProcessor: PsiElementProcessor<in PsiFileSystemItem>): Boolean = false
-  }
-
-/** Redirects quick navigation text on the fake file system item back to the build rule. */
-internal class GoPackageDocumentationProvider : DocumentationProviderEx() {
-  override fun getQuickNavigateInfo(element: PsiElement, originalElement: PsiElement): String? =
-    if (element is GoPackageFileSystemItem) {
-      CtrlMouseHandler.getInfo(element.navigationElement, originalElement)
-    } else {
-      null
-    }
-}
-
 private fun resolveGoPackage(project: Project, importPath: String): BazelGoPackage? {
   val entity: BazelGoPackageEntity = project.workspaceModel.currentSnapshot.resolve(ImportPathId(importPath)) ?: return null
   return BazelGoPackage(project, entity)
@@ -133,7 +80,7 @@ private fun doResolve(goPackage: BazelGoPackage, index: Int): Array<ResolveResul
     .asSequence()
     .mapNotNull { it.getImportReferences() }
     .filter { index < it.size }
-    .mapNotNull { it[index] }
+    .map { it[index] }
     .mapNotNull { GoPackageFileSystemItem.getInstance(it) }
     .map { PsiElementResolveResult(it) }
     .toList()

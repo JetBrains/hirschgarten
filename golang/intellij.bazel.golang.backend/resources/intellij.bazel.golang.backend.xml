@@ -1,0 +1,59 @@
+<idea-plugin visibility="public">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.bazel.backend"/>
+    <module name="intellij.bazel.commons"/>
+    <module name="intellij.bazel.golang.common"/>
+    <module name="intellij.bazel.projectview"/>
+    <module name="intellij.go.frontback"/>
+    <module name="intellij.go.impl"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.analysis.impl"/>
+    <module name="intellij.platform.backend.workspace"/>
+    <module name="intellij.platform.buildView"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.projectModel.impl"/>
+    <module name="intellij.platform.util.progress"/>
+    <module name="intellij.platform.util.ui"/>
+    <module name="intellij.platform.workspace.jps"/>
+    <module name="intellij.platform.workspace.storage"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <resource-bundle>messages.BazelGoBundle</resource-bundle>
+
+  <extensionPoints>
+    <extensionPoint
+      dynamic="true"
+      interface="org.jetbrains.bazel.golang.resolve.BazelGoPackageNavigationProvider"
+      qualifiedName="org.jetbrains.bazel.goPackageNavigationProvider"
+    />
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider" />
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.golang.sync.GoWorkspaceImporter$Factory"/>
+    <projectPreSyncHook implementation="org.jetbrains.bazel.golang.sync.RunGazelleTargetPreSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoModuleSupportPostSyncHook" />
+    <languagePlugin implementation="org.jetbrains.bazel.golang.sync.GoLanguagePlugin"/>
+    <bazelRuleSetProvider implementation="org.jetbrains.bazel.golang.sync.GoRuleSetPlugin"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.goide">
+    <packageFactory
+      implementation="org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory"
+      order="first"
+    />
+    <importResolver
+      id="Bazel.ImportResolver"
+      implementation="org.jetbrains.bazel.golang.resolve.BazelGoImportResolver"
+      order="first"
+    />
+    <sdk.targetSdkVersionProvider implementation="org.jetbrains.bazel.golang.resolve.BazelGoTargetSdkVersionProvider"/>
+  </extensions>
+</idea-plugin>

@@ -72,6 +72,8 @@ jvm_library(
         "//misc/intellij.bazel.coverage.performancePlugin:bazel-coverage-performancePlugin",
         "//misc/intellij.bazel.devkit:bazel-devkit",
         "//golang/intellij.bazel.golang.common:bazel-golang-common",
+        "//golang/intellij.bazel.golang.backend:bazel-golang-backend",
+        "//golang/intellij.bazel.golang.core:bazel-golang-core",
         "//java/intellij.bazel.java.core:bazel-java-core",
         "//java/intellij.bazel.java.common.performancePlugin:bazel-java-common-performancePlugin",
         "//java/intellij.bazel.java.coverage:bazel-java-coverage",

@@ -1,0 +1,93 @@
+load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.bazel.golang.backend` start
+content_module_jar(module = ":bazel-golang-backend")
+### auto-generated section `dev intellij.bazel.golang.backend` end
+
+### auto-generated section `build intellij.bazel.golang.backend` start
+jvm_library(
+    name = "bazel-golang-backend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.golang.backend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/bazel/golang/intellij.bazel.golang.common:bazel-golang-common",
+        "//plugins/bazel/intellij.bazel.commons:commons",
+        "//plugins/bazel/intellij.bazel.backend:backend",
+        "//plugins/bazel/intellij.bazel.projectview:projectview",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/buildView",
+        "@community//platform/ide-core",
+        "@community//platform/util/progress",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/projectModel-impl",
+        "@community//platform/workspace/storage",
+        "@community//platform/backend/workspace",
+        "@community//platform/workspace/jps",
+        "//goland/intellij-go/go-frontback",
+        "//goland/intellij-go/impl",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/analysis-impl",
+        "@community//platform/util:util-ui",
+    ],
+)
+
+jvm_library(
+    name = "bazel-golang-backend_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.golang.backend",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-golang-backend",
+        "//plugins/bazel/golang/intellij.bazel.golang.common:bazel-golang-common_test_lib",
+        "//plugins/bazel/intellij.bazel.commons:commons_test_lib",
+        "//plugins/bazel/intellij.bazel.backend:backend_test_lib",
+        "//plugins/bazel/intellij.bazel.projectview:projectview_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/buildView:buildView_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/util/progress:progress_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/projectModel-impl:projectModel-impl_test_lib",
+        "@community//platform/workspace/storage:storage_test_lib",
+        "@community//platform/backend/workspace:workspace_test_lib",
+        "@community//platform/workspace/jps:jps_test_lib",
+        "//goland/intellij-go/go-frontback:go-frontback_test_lib",
+        "//goland/intellij-go/impl:impl_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/analysis-impl:analysis-impl_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bazel.golang.backend` end
+
+### auto-generated section `iml intellij.bazel.golang.backend` start
+exports_files(
+    [
+        "intellij.bazel.golang.backend.iml",
+        "resources/intellij.bazel.golang.backend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bazel.golang.backend` end

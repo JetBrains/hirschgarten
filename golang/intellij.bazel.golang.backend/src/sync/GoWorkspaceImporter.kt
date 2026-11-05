@@ -16,8 +16,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.util.containers.Interner
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.golang.resolve.BazelGoBundle
 import org.jetbrains.bazel.golang.workspace.GO_WORKSPACE_MODULE_NAME
 import org.jetbrains.bazel.progress.syncConsole
 import org.jetbrains.bazel.progress.withSubtask
@@ -48,7 +48,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   private val importPathInterner = Interner.createWeakInterner<String>()
 
   override val importerName: @NlsContexts.ProgressTitle String
-    get() = BazelPluginBundle.message("console.task.model.go.importer")
+    get() = BazelGoBundle.message("console.task.model.go.importer")
 
   override suspend fun import(phase: WorkspaceImporterPhase, snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
     when (phase) {
@@ -213,7 +213,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   ) = project.syncConsole.withSubtask(
     reporter = context.progressReporter,
     subtaskId = taskId.subTask("calculate-and-add-go-sdk"),
-    text = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
+    text = BazelGoBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
   ) {
     goTargets
       .values
