@@ -163,7 +163,7 @@ class BazelRunner(
 
     val taskLogger = taskId?.let { taskEventsHandler?.asLogger(it) }
     if (taskLogger != null) {
-      val log = "${envToString(environment)} ${processArgs.joinToString(" ")}"
+      val log = "${envToString(environment)} ${argsToString(processArgs)}"
       taskLogger.info(log)
     }
     val outputLogger = taskLogger?.let { if (logProcessOutput) it else BazelTaskLoggerWithoutProcessOutput(delegate = it) }
@@ -178,13 +178,17 @@ class BazelRunner(
       finishCallback,
     ).also {
       BazelLog.write {
-        appendLine(executionDescriptor.command.joinToString(" "))
+        appendLine(argsToString(executionDescriptor.command))
         appendLine(envToString(environment))
       }
     }
   }
 
-  private fun envToString(environment: Map<String, String>): String = environment.entries.joinToString(" ") { "${it.key}=${it.value}" }
+  private fun argsToString(args: List<String>): String = BazelLogMasking.maskArguments(args).joinToString(" ")
+
+  private fun envToString(environment: Map<String, String>): String = environment
+    .entries
+    .joinToString(" ") { "${it.key}=${BazelLogMasking.maskEnvValue(it.key, it.value)}" }
 }
 
 private class BazelTaskLoggerWithoutProcessOutput(private val delegate: BazelTaskLogger) : BazelTaskLogger by delegate {
