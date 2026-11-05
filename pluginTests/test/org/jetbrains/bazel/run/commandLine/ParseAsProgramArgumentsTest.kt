@@ -105,4 +105,10 @@ class ParseAsProgramArgumentsTest {
     val args = parseAsProgramArguments("-a\tb\n-c")
     args shouldBe listOf("-a", "b", "-c")
   }
+
+  @Test
+  fun `parse options on separate lines with CRLF and empty lines`() {
+    val args = parseAsProgramArguments("-Xmx2g\r\n\r\n-Dfoo=\"a b\"\n\n-ea\n")
+    args shouldBe listOf("-Xmx2g", "-Dfoo=a b", "-ea")
+  }
 }
