@@ -36,6 +36,7 @@ object BazelFeatureFlags {
   private const val HIGHLIGHT_IGNORED_SOURCE_FILES = "bazel.highlight.ignored.source.files"
 
   const val ENABLE_LOG: String = "bazel.enable.log"
+  private const val MASK_SECRETS_IN_LOG = "bazel.log.mask.secrets"
   private const val KILL_TREE_ON_CANCEL = "bazel.kill.tree.on.cancel"
   private const val KILL_SERVER_ON_CANCEL = "bazel.kill.server.on.cancel"
 
@@ -101,6 +102,9 @@ object BazelFeatureFlags {
 
   val isLogEnabled: Boolean
     get() = Registry.`is`(ENABLE_LOG)
+
+  val maskSecretsInLog: Boolean
+    get() = Registry.`is`(MASK_SECRETS_IN_LOG)
 
   private fun isEnabled(key: String): Boolean {
     System.getProperty(key)?.let { value ->

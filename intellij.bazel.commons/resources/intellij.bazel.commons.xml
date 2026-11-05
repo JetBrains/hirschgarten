@@ -132,6 +132,12 @@
       key="bazel.enable.log"
       restartRequired="false"
     />
+    <registryKey
+      defaultValue="true"
+      description="If true, the Bazel command in the Build tool window and in bazel.log masks passwords, tokens and other secrets. If false, these logs show secrets in plain text. Turn it off only to debug."
+      key="bazel.log.mask.secrets"
+      restartRequired="false"
+    />
 
     <registryKey defaultValue="false"
                  description="Enable running non-binary bazel targets using synthetically generated targets"
