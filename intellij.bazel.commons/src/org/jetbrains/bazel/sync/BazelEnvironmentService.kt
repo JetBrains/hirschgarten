@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync
 
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -18,10 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
-import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.isExecutable
 import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<BazelEnvironmentService>()
@@ -55,18 +53,8 @@ class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
     environmentDeferred.await()
 
   suspend fun findInPath(vararg executableNames: String): Path? {
-    return getEnvironment()["PATH"]
-      ?.split(File.pathSeparator)
-      .orEmpty()
-      .asSequence()
-      .flatMap { pathStr ->
-        executableNames.mapNotNull { executableName ->
-          val actualExecutableName = if (OS.CURRENT == OS.Windows) "$executableName.exe" else executableName
-          val path = Path.of(pathStr, actualExecutableName)
-          path.takeIf { it.exists() && path.isExecutable() }
-        }
-      }
-      .firstOrNull()
+    val pathValue = getEnvironment()["PATH"] ?: return null
+    return findExecutableInPath(pathValue, *executableNames)
   }
 
   internal class StartupActivity : ProjectActivity {
@@ -80,5 +68,21 @@ class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
   companion object {
     @JvmStatic
     fun getInstance(project: Project): BazelEnvironmentService = project.service()
+  }
+}
+
+/**
+ * Returns the first executable regular file with one of [executableNames] in the directories of [pathValue].
+ * The directory order comes first, as in a shell: the first directory with any of the names wins.
+ * In one directory, the order of [executableNames] decides.
+ * The search skips a directory with a matching name, and an empty or a relative entry of [pathValue].
+ * On Windows, the search accepts only `<name>.exe`.
+ * A Windows process cannot run a file without an extension, and every file on Windows is executable.
+ */
+@ApiStatus.Internal
+fun findExecutableInPath(pathValue: String, vararg executableNames: String): Path? {
+  val fileNames = if (OS.CURRENT == OS.Windows) executableNames.map { "$it.exe" } else executableNames.asList()
+  return PathEnvironmentVariableUtil.getPathDirs(pathValue).firstNotNullOfOrNull { dir ->
+    fileNames.firstNotNullOfOrNull { name -> PathEnvironmentVariableUtil.findFirst(name, dir) }
   }
 }
