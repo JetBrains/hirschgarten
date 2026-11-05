@@ -38,6 +38,8 @@ class BazelVersionLiteralParserTest {
 
   @Test
   fun `test special cases`() {
+    "latest".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Latest(0)
+    "latest-2".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Latest(2)
     "last_green".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Special.LAST_GREEN
     "last_rc".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Special.LAST_RC
     "rolling".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Special.ROLLING
