@@ -94,7 +94,7 @@ private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId(PYTHON_MODULE_ID)
 private val NAME_PRODUCER = NameProducer(id = "python")
 
-internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
   companion object {
     internal val logger = logger<BazelPythonWorkspaceImporter>()
   }

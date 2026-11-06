@@ -38,7 +38,7 @@ import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
   class Factory : BazelWorkspaceImporterFactory {
     override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
       GoWorkspaceImporter(context)

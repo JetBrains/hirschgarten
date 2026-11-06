@@ -112,16 +112,11 @@ class WorkspaceImporterHelper(
     phase: WorkspaceImporterPhase,
     snapshot: WorkspaceSnapshot,
   ): WorkspaceImporterResult? = taskConsole.isolateSubtaskFailure(taskId) {
-    if (this is BazelWorkspaceImporter.Named) {
-      taskConsole.withSubtask(
-        taskId.uniqueSubTask("importer"),
-        BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
-      ) { importerTaskId ->
-        this.import(phase, snapshot, importerTaskId)
-      }
-    }
-    else {
-      this.import(phase, snapshot, taskId)
+    taskConsole.withSubtask(
+      taskId.uniqueSubTask("importer"),
+      BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
+    ) { importerTaskId ->
+      this.import(phase, snapshot, importerTaskId)
     }
   }
 }

@@ -2,7 +2,9 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.application.edtWriteAction
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
+import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.config.BazelJavaBackendBundle
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
@@ -23,6 +25,9 @@ internal class ScalaBazelWorkspaceImporter(val context: WorkspaceImporterContext
     override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
       ScalaBazelWorkspaceImporter(context)
   }
+
+  override val importerName: @NlsContexts.ProgressTitle String
+    get() = BazelJavaBackendBundle.message("workspace.scala.importer.name")
 
   private var scalaSdks: Set<ScalaSdk>? = null
 

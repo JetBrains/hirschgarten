@@ -32,7 +32,7 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
 
-internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
   class Factory : BazelWorkspaceImporterFactory {
     override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
       JavaBazelWorkspaceImporter(context)

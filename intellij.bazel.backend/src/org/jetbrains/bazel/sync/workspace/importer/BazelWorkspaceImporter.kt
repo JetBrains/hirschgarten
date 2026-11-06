@@ -35,17 +35,10 @@ import org.jetbrains.bsp.protocol.TaskId
  */
 @ApiStatus.Internal
 interface BazelWorkspaceImporter {
-
   /**
-   * Mark [BazelWorkspaceImporter] as named
+   * Internalized [BazelWorkspaceImporter] importer name
    */
-  interface Named : BazelWorkspaceImporter {
-
-    /**
-     * Internalized [BazelWorkspaceImporter] importer name
-     */
-    val importerName: @NlsContexts.ProgressTitle String
-  }
+  val importerName: @NlsContexts.ProgressTitle String
 
   /**
    * Perform phased workspace import. Adhear to rules found in [WorkspaceImporterPhase] documentation.
