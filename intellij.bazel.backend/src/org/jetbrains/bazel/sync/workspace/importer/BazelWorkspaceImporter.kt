@@ -88,7 +88,7 @@ sealed interface WorkspaceImporterResult {
 data class WorkspaceEnvironmentCapabilities(
 
   /**
-   * `true` when environment support operations on project SDK table
+   * `true` when environment support operations on project SDK table.
    */
   val supportSdkTable: Boolean
 )
