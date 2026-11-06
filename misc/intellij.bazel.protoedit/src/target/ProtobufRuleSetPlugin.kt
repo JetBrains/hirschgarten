@@ -12,6 +12,8 @@ val ProtobufRuleSet: BazelRuleSet = BazelRuleSet(
   isBundled = true,
   autoloadHints = listOf(),
   hostLocations = listOf("https://github.com/protocolbuffers/protobuf/"),
+  minimalVersion = 27,
+  versionRegex = ".*/download/v(\\d+)\\..*".toRegex(),
 )
 
 private val LegacyProtoRuleSet: BazelRuleSet = BazelRuleSet(
@@ -20,7 +22,7 @@ private val LegacyProtoRuleSet: BazelRuleSet = BazelRuleSet(
   isBundled = false,
   autoloadHints = listOf(),
   hostLocations = listOf("https://github.com/bazelbuild/rules_proto"),
-  deprecated = "`rules_proto` is deprecated and should be replaced by `protobuf`"
+  deprecated = "`rules_proto` is deprecated and should be replaced by `protobuf` version at least 27.0"
 )
 
 internal class ProtobufRuleSetPlugin : BazelRuleSetProvider {
