@@ -57,11 +57,11 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.id
 import java.util.concurrent.CancellationException
+import kotlin.collections.map
 import kotlin.random.Random
 
 private val log = logger<ProjectSyncTask>()
@@ -264,7 +264,7 @@ class ProjectSyncTask(
         Constants.BAZEL_DISPLAY_NAME,
       )
     val saveAndSyncHandler = serviceAsync<SaveAndSyncHandler>()
-    val phaseDurations = mutableListOf<ProjectSyncPhaseDuration>()
+    val phaseDurations = mutableMapOf<ProjectSyncPhase, Long>()
     var syncResult = ProjectSyncResult(ProjectSyncCompletionResult.FAILURE)
     return try {
       preSync()
@@ -284,27 +284,22 @@ class ProjectSyncTask(
         }
       }
       saveAndSyncHandler.scheduleProjectSave(project = project)
-      syncResult.copy(phaseDurations = phaseDurations.toList())
+      syncResult.withPhaseDurations(phaseDurations)
     }
     catch (e: CancellationException) {
       syncResult.copy(
         completionResult = ProjectSyncCompletionResult.CANCELLED,
-        phaseDurations = phaseDurations.toList(),
         failureCause = e,
-      )
+      ).withPhaseDurations(phaseDurations)
     }
     catch (_: ProjectSyncAbortException) {
-      syncResult.copy(
-        completionResult = ProjectSyncCompletionResult.FAILURE,
-        phaseDurations = phaseDurations.toList(),
-      )
+      syncResult.copy(completionResult = ProjectSyncCompletionResult.FAILURE).withPhaseDurations(phaseDurations)
     }
     catch (e: Exception) {
       syncResult.copy(
         completionResult = ProjectSyncCompletionResult.FAILURE,
-        phaseDurations = phaseDurations.toList(),
         failureCause = e,
-      )
+      ).withPhaseDurations(phaseDurations)
     }
   }
 
@@ -313,7 +308,7 @@ class ProjectSyncTask(
     taskId: TaskId,
     phase: SyncPhase,
     buildProject: Boolean,
-    phaseDurations: MutableList<ProjectSyncPhaseDuration>,
+    phaseDurations: MutableMap<ProjectSyncPhase, Long>,
   ): ProjectSyncResult {
     var shouldUpdateProjectModel = false
     var syncScope: ProjectSyncScope = scope
@@ -375,16 +370,11 @@ class ProjectSyncTask(
           // If this bazel build fails, we still want the sync hooks to be executed.
           // A fatal resolve republished the previous snapshot, so nothing was synced, and it must not be counted
           if (syncWorkspace.status == SyncWorkspaceStatus.FATAL) {
-            return@withOutFileHardLinksSync ProjectSyncResult(
-              ProjectSyncCompletionResult.FAILURE,
-              statistics =
-                emptyList<BuildTarget>().syncStatistics(),
-            )
+            return@withOutFileHardLinksSync ProjectSyncResult(ProjectSyncCompletionResult.FAILURE)
           }
 
           val workspaceSnapshot = syncWorkspace.snapshot
           val syncedTargets = workspaceSnapshot.targets.allTargets().toList()
-          val statistics = syncedTargets.syncStatistics()
           if (phase == SyncPhase.FIRST) {
             allKnownTargets = syncedTargets.map { it.id }
             knownRepoMapping = workspaceSnapshot.repoMapping
@@ -435,11 +425,15 @@ class ProjectSyncTask(
           syncScope = syncWorkspace.scope
           shouldUpdateProjectModel = true
           ProjectSyncResult(
-            if (syncWorkspace.status == SyncWorkspaceStatus.PARTIAL)
+            completionResult = if (syncWorkspace.status == SyncWorkspaceStatus.PARTIAL)
               ProjectSyncCompletionResult.PARTIAL_SUCCESS
             else
               ProjectSyncCompletionResult.SUCCESS,
-            statistics = statistics,
+            statistics = ProjectSyncStatistics(
+              resolvedTargetCount = syncedTargets.size,
+              targetLanguageClasses = syncedTargets.map { it.kind.languageClasses },
+              importerDurations = importerHelper.timePerImporter,
+            )
           )
         }
       }
@@ -537,5 +531,15 @@ class ProjectSyncTask(
 
   private suspend fun <T> List<T>.forEachSubtask(taskId: TaskId, action: suspend (T) -> Unit) {
     forEach { item -> project.syncConsole.isolateSubtaskFailure(taskId) { action(item) } }
+  }
+
+  private suspend fun <T> MutableMap<ProjectSyncPhase, Long>.trackSyncPhase(phase: ProjectSyncPhase, action: suspend () -> T): T {
+    val startedAt = System.currentTimeMillis()
+    try {
+      return action()
+    }
+    finally {
+      merge(phase, System.currentTimeMillis() - startedAt, Long::plus)
+    }
   }
 }

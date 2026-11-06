@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.fus
 
 import com.intellij.internal.statistic.StructuredIdeActivity
+import com.intellij.internal.statistic.collectors.fus.ClassNameRuleValidator
 import com.intellij.internal.statistic.eventLog.EventLogGroup
 import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.internal.statistic.service.fus.collectors.CounterUsagesCollector
@@ -15,7 +16,7 @@ import org.jetbrains.bazel.sync.task.SyncPhase as SyncTaskPhase
 import java.util.concurrent.CancellationException
 
 internal object BazelSyncCollector : CounterUsagesCollector() {
-  private val GROUP = EventLogGroup("bazel.sync", 1, "FUS")
+  private val GROUP = EventLogGroup("bazel.sync", 2, "FUS")
 
   private val SYNC_PHASE = EventFields.Enum("sync_phase", SyncPhase::class.java, description = "Which sync phase was run (first/second phase or a partial sync).")
   private val BUILD_PROJECT = EventFields.Boolean("build_project", description = "Whether the sync also built the project's targets.")
@@ -26,6 +27,8 @@ internal object BazelSyncCollector : CounterUsagesCollector() {
   private val LANGUAGE =
     EventFields.StringValidatedByCustomRule("language", BazelSyncLanguageValidationRule::class.java, description = "A language discovered in the resolved Bazel target set.")
   private val LANGUAGE_TARGET_COUNT = EventFields.RoundedInt("target_count", description = "Number of resolved targets attributed to the language, rounded.")
+  private val IMPORTER =
+    EventFields.StringValidatedByCustomRule("importer", ClassNameRuleValidator::class.java, description = "The class name of the workspace importer.")
 
   private val SYNC_ACTIVITY = GROUP.registerIdeActivity(
     "sync",
@@ -44,6 +47,13 @@ internal object BazelSyncCollector : CounterUsagesCollector() {
     "phase.finished",
     EventFields.IdeActivityIdField,
     PHASE,
+    EventFields.DurationMs,
+  )
+
+  private val WORKSPACE_IMPORTER_FINISHED = GROUP.registerEvent(
+    "workspace.importer.finished",
+    EventFields.IdeActivityIdField,
+    IMPORTER,
     EventFields.DurationMs,
   )
 
@@ -89,13 +99,16 @@ internal object BazelSyncCollector : CounterUsagesCollector() {
     activity: StructuredIdeActivity,
     result: ProjectSyncResult,
   ) {
-    result.phaseDurations.forEach { duration ->
-      logPhaseFinished(project, activity, duration.phase, duration.durationMs)
+    result.statistics?.phaseDurations.orEmpty().forEach { (phase, durationMs) ->
+      logPhaseFinished(project, activity, phase, durationMs)
+    }
+    result.statistics?.importerDurations.orEmpty().forEach { (importer, durationMs) ->
+      WORKSPACE_IMPORTER_FINISHED.log(project, activity, importer, durationMs)
     }
     activity.finished {
       buildList {
         add(COMPLETION_RESULT.with(result.completionResult))
-        result.statistics?.let { add(RESOLVED_TARGET_COUNT.with(it.resolvedTargetCount)) }
+        result.statistics?.resolvedTargetCount?.let { add(RESOLVED_TARGET_COUNT.with(it)) }
       }
     }
     result.statistics?.languageTargetCountsForReporting()

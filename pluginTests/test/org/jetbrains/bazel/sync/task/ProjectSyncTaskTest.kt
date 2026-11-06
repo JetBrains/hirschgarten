@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.sync.task
 
 import com.intellij.internal.statistic.FUCollectorTestCase
+import io.kotest.matchers.collections.shouldBeUnique
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.constants.Constants
@@ -156,6 +158,14 @@ class ProjectSyncTaskTest {
       "kotlin" to 1,
     )
     languages.forEach { it.data["ide_activity_id"] shouldBe activityId }
+
+    val importers = events.filter { it.id == "workspace.importer.finished" }
+    importers.map { it.data["importer"] } shouldContain "org.jetbrains.bazel.workspace.importer.JavaBazelWorkspaceImporter"
+    importers.map { it.data["importer"] }.shouldBeUnique()
+    importers.forEach {
+      it.data["ide_activity_id"] shouldBe activityId
+      ("duration_ms" in it.data) shouldBe true
+    }
   }
 
   @Test
