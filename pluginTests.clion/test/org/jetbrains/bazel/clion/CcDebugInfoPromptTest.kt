@@ -95,7 +95,7 @@ class CcDebugInfoPromptTest {
 }
 
 private fun result(vararg issues: Pair<Label, CompilationMode>): CcDebugInfoCheck.Result {
-  return CcDebugInfoCheck.Result(issues.map { [label, mode] -> CcDebugInfoCheck.Issue(label, ACTION, mode) })
+  return CcDebugInfoCheck.Result(issues.map { (label, mode) -> CcDebugInfoCheck.Issue(label, ACTION, mode) })
 }
 
 private val ACTION: CcDebugInfo.Action = CcDebugInfo.Action.newBuilder()

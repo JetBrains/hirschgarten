@@ -38,7 +38,7 @@ class CcDebugTargetInfoTest {
   @Test
   fun testUsesConfigurationOfDebugBuild() {
     for (configuration in listOf(HOST, TARGET)) {
-      val [events, target] = find(MAIN, listOf(debugTarget(configuration)))
+      val (events, target) = find(MAIN, listOf(debugTarget(configuration)))
 
       assertThat(events).isEmpty()
       assertThat(target?.key?.configuration).isEqualTo(WorkspaceConfigurationId.of(configuration))
@@ -47,7 +47,7 @@ class CcDebugTargetInfoTest {
 
   @Test
   fun testFallsBackToOtherConfiguration() {
-    val [events, target] = find(MAIN, listOf(debugTarget("3333333")))
+    val (events, target) = find(MAIN, listOf(debugTarget("3333333")))
     assertThat(target?.key?.label).isEqualTo(MAIN)
 
     val event = events.single()
@@ -57,7 +57,7 @@ class CcDebugTargetInfoTest {
 
   @Test
   fun testFallsBackWithoutWarning() {
-    val [events, target] = find(MAIN, listOf(debugTarget("3333333")), reportUnknownConfiguration = false)
+    val (events, target) = find(MAIN, listOf(debugTarget("3333333")), reportUnknownConfiguration = false)
 
     assertThat(events).isEmpty()
     assertThat(target?.key?.label).isEqualTo(MAIN)
@@ -65,7 +65,7 @@ class CcDebugTargetInfoTest {
 
   @Test
   fun testWithoutDebugTargets() {
-    val [events, target] = find(MAIN, null)
+    val (events, target) = find(MAIN, null)
 
     assertThat(events).isEmpty()
     assertThat(target?.key?.label).isEqualTo(MAIN)
@@ -73,7 +73,7 @@ class CcDebugTargetInfoTest {
 
   @Test
   fun testUnknownTarget() {
-    val [events, target] = find(Label.parse("@@//other:other"), listOf(debugTarget(TARGET)))
+    val (events, target) = find(Label.parse("@@//other:other"), listOf(debugTarget(TARGET)))
 
     assertThat(events).isEmpty()
     assertThat(target).isNull()
@@ -87,7 +87,7 @@ class CcDebugTargetInfoTest {
     // the lookup does not use the project, thus the default project is sufficient
     val project = ProjectManager.getInstance().defaultProject
 
-    val [ctx, result] = withTestDebugContext(project, label) { findSnapshotTarget(snapshot, debugTargets, reportUnknownConfiguration) }
+    val (ctx, result) = withTestDebugContext(project, label) { findSnapshotTarget(snapshot, debugTargets, reportUnknownConfiguration) }
     ctx.events to result
   }
 }

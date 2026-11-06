@@ -80,6 +80,7 @@ jvm_library(
         "//CIDR/cidr-util/execution:execution_test_lib",
         "@community//platform/workspace/jps:jps_test_lib",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk_test_lib",
+        "@community//platform/backend:backend_test_lib",
         "//CIDR/clion-toolchains:clion-toolchains_test_lib",
     ],
 )

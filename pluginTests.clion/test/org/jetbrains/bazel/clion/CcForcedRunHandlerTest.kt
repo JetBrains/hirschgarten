@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.run.CcRunHandler
-import org.jetbrains.bazel.clion.run.CcDebugRunner
+import org.jetbrains.bazel.clion.run.debug.CcDebugRunner
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.ccProject

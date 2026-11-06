@@ -29,9 +29,33 @@ jvm_library(
         "@community//platform/project/shared:project",
         "@community//platform/kernel/rpc",
         "@community//fleet/rpc",
+        "@community//fleet/util/core",
         "@community//libraries/kotlinx/serialization/core",
         "@community//libraries/kotlinx/coroutines/core",
         "//CIDR/clion",
+    ],
+)
+
+jvm_library(
+    name = "bazel-clion-shared_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bazel.clion.shared",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":bazel-clion-shared",
+        "@community//libraries/jetbrains/annotations:annotations_test_lib",
+        "@community//platform/project/shared:project_test_lib",
+        "@community//platform/kernel/rpc:rpc_test_lib",
+        "@community//fleet/rpc:rpc_test_lib",
+        "@community//fleet/util/core:core_test_lib",
+        "@community//libraries/kotlinx/serialization/core:core_test_lib",
+        "@community//libraries/kotlinx/coroutines/core:core_test_lib",
+        "//CIDR/clion:clion_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.shared` end

@@ -153,7 +153,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testNoIssues() {
-    val [events, result] = check(
+    val (events, result) = check(
       CcCompilerKind.GCC,
       target(MAIN, compile = listOf(compileAction("-g")), link = listOf(linkAction("-lstdc++"))),
       target(LIB, compile = listOf(compileAction("-g"))),
@@ -165,7 +165,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testCompileIssues() {
-    val [events, result] = check(
+    val (events, result) = check(
       CcCompilerKind.GCC,
       target(MAIN, compile = listOf(compileAction("-g"))),
       target(LIB, compile = listOf(compileAction("-O2"), compileAction("-O2", "-c", "other.cc"))),
@@ -181,7 +181,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testLinkIssuesOfEachTarget() {
-    val [_, result] = check(
+    val (_, result) = check(
       CcCompilerKind.APPLE_CLANG,
       target(MAIN, compile = listOf(compileAction("-g")), link = listOf(linkAction("-lc++")), os = PlatformInfo.OS.MACOS),
       target(LIB, link = listOf(linkAction("-lc++")), os = PlatformInfo.OS.MACOS),
@@ -192,7 +192,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testChecksExternalTargets() {
-    val [_, result] = check(
+    val (_, result) = check(
       CcCompilerKind.GCC,
       target(MAIN, compile = listOf(compileAction("-g"))),
       target(EXTERNAL_LIB, compile = listOf(compileAction("-O2"))),
@@ -204,7 +204,7 @@ class CcDebugInfoCheckTest {
   @Test
   fun testMissingMainTarget() {
     // for example, the target to debug is a py_test that starts a cc_binary
-    val [_, result] = check(
+    val (_, result) = check(
       CcCompilerKind.APPLE_CLANG,
       target(
         LIB,
@@ -221,7 +221,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testTargetsWithoutDebugInfo() {
-    val [events, result] = check(
+    val (events, result) = check(
       CcCompilerKind.GCC,
       TargetIdeInfo.newBuilder().setKey(TargetKey.newBuilder().setLabel(MAIN.toString())).build(),
     )
@@ -232,7 +232,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testCompilationModeOfEachIssue() {
-    val [_, result] = check(
+    val (_, result) = check(
       CcCompilerKind.GCC,
       target(LIB, compile = listOf(compileAction("-O2")), mode = CompilationMode.OPT),
       target(MAIN, compile = listOf(compileAction("-O2")), mode = CompilationMode.DBG),
@@ -258,7 +258,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testCompilerKindByExecutable() {
-    val [_, result] = check(
+    val (_, result) = check(
       listOf(compiler(CC, CcCompilerKind.GCC), compiler(CL, MSVCCompilerKind)),
       target(MAIN, compile = listOf(compileAction("/Zi", executable = CL))),
       target(LIB, compile = listOf(compileAction("/Zi"))),
@@ -269,7 +269,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testUnknownExecutable() {
-    val [events, result] = check(
+    val (events, result) = check(
       emptyList(),
       target(MAIN, compile = listOf(compileAction("/Zi")), link = listOf(linkAction("-lc++")), os = PlatformInfo.OS.MACOS),
       target(LIB, compile = listOf(compileAction("-g"))),
@@ -281,7 +281,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testRelativeExecutable() {
-    val [_, result] = check(
+    val (_, result) = check(
       listOf(compiler("/output/external/cc/cc_wrapper.sh", CcCompilerKind.APPLE_CLANG)),
       target(MAIN, link = listOf(linkAction("-lc++", executable = "external/cc/cc_wrapper.sh")), os = PlatformInfo.OS.MACOS),
     )
@@ -293,14 +293,14 @@ class CcDebugInfoCheckTest {
   fun testActionWithoutArguments() {
     val action = CcDebugInfo.Action.newBuilder().setMnemonic("CppCompile").build()
 
-    val [_, result] = check(CcCompilerKind.GCC, target(MAIN, compile = listOf(action)))
+    val (_, result) = check(CcCompilerKind.GCC, target(MAIN, compile = listOf(action)))
 
     assertThat(result.issues.map { it.label }).containsExactly(MAIN)
   }
 
   @Test
   fun testToolchainsShareCompiler() {
-    val [_, result] = check(
+    val (_, result) = check(
       listOf(compiler(CC, CcCompilerKind.CLANG), compiler(CC, CcCompilerKind.CLANG), compiler(CL, MSVCCompilerKind)),
       target(MAIN, compile = listOf(compileAction("/Zi", executable = CL))),
       target(LIB, compile = listOf(compileAction("/Zi"))),
@@ -311,7 +311,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testLinkerKindFromCompileAction() {
-    val [_, result] = check(
+    val (_, result) = check(
       listOf(compiler(CL, MSVCCompilerKind)),
       target(
         MAIN,
@@ -326,7 +326,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testLinkerKindFromLinkAction() {
-    val [_, result] = check(
+    val (_, result) = check(
       CcCompilerKind.GCC,
       target(MAIN, compile = listOf(compileAction("-g", executable = "/opt/bin/cc")), link = listOf(linkAction("-Wl,-S"))),
     )
@@ -336,7 +336,7 @@ class CcDebugInfoCheckTest {
 
   @Test
   fun testUnknownLinkerKind() {
-    val [events, result] = check(
+    val (events, result) = check(
       emptyList(),
       target(MAIN, link = listOf(linkAction("-Wl,-S", executable = "/opt/bin/ld"))),
       target(LIB, link = listOf(linkAction("/OPT:REF", executable = LINK)), os = PlatformInfo.OS.WINDOWS),
