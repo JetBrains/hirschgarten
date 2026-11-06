@@ -8,7 +8,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 internal data class ProjectSyncResult(
   val completionResult: ProjectSyncCompletionResult,
   val statistics: ProjectSyncStatistics? = null,
-  val phaseDurations: List<ProjectSyncPhaseDuration> = emptyList(),
   val failureCause: Throwable? = null,
 ) {
   fun toOutcome(): ProjectSyncOutcome = ProjectSyncOutcome(completionResult, failureCause)
@@ -19,30 +18,16 @@ internal enum class ProjectSyncPhase {
   APPLY_PROJECT_MODEL,
 }
 
-internal data class ProjectSyncPhaseDuration(
-  val phase: ProjectSyncPhase,
-  val durationMs: Long,
-)
-
+/**
+ * @property resolvedTargetCount The number of resolved targets, or `null` when the sync stopped before it resolved the targets.
+ * @property phaseDurations The duration of each sync phase that ran, in milliseconds.
+ */
 internal data class ProjectSyncStatistics(
-  val resolvedTargetCount: Int,
-  val targetLanguageClasses: List<Set<LanguageClass>>,
+  val resolvedTargetCount: Int? = null,
+  val targetLanguageClasses: List<Set<LanguageClass>> = emptyList(),
+  val importerDurations: Map<String, Long> = emptyMap(),
+  val phaseDurations: Map<ProjectSyncPhase, Long> = emptyMap(),
 )
 
-internal suspend fun <T> MutableList<ProjectSyncPhaseDuration>.trackSyncPhase(
-  phase: ProjectSyncPhase,
-  action: suspend () -> T,
-): T {
-  val startedAt = System.currentTimeMillis()
-  try {
-    return action()
-  }
-  finally {
-    add(ProjectSyncPhaseDuration(phase, System.currentTimeMillis() - startedAt))
-  }
-}
-
-internal fun List<BuildTarget>.syncStatistics(): ProjectSyncStatistics {
-  val targetLanguageClasses = map { it.kind.languageClasses }
-  return ProjectSyncStatistics(size, targetLanguageClasses)
-}
+internal fun ProjectSyncResult.withPhaseDurations(phaseDurations: Map<ProjectSyncPhase, Long>): ProjectSyncResult =
+  copy(statistics = (statistics ?: ProjectSyncStatistics()).copy(phaseDurations = phaseDurations.toMap()))

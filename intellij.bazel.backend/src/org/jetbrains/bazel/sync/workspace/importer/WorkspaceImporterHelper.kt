@@ -33,6 +33,14 @@ class WorkspaceImporterHelper(
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
   private lateinit var importers: List<BazelWorkspaceImporter>
 
+  private val importerToTime = HashMap<String, Long>()
+
+  /**
+   * Time spent by each [BazelWorkspaceImporter] in milliseconds
+   */
+  val timePerImporter: Map<String, Long>
+    get() = importerToTime
+
   suspend fun invoke(reporter: SequentialProgressReporter, snapshot: WorkspaceSnapshot, taskId: TaskId) {
     val context = WorkspaceImporterContext(
       project = project,
@@ -112,11 +120,19 @@ class WorkspaceImporterHelper(
     phase: WorkspaceImporterPhase,
     snapshot: WorkspaceSnapshot,
   ): WorkspaceImporterResult? = taskConsole.isolateSubtaskFailure(taskId) {
-    taskConsole.withSubtask(
-      taskId.uniqueSubTask("importer"),
-      BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
-    ) { importerTaskId ->
-      this.import(phase, snapshot, importerTaskId)
+    val startTime = System.currentTimeMillis()
+    try {
+      taskConsole.withSubtask(
+        taskId.uniqueSubTask("importer"),
+        BazelBackendBundle.message("workspace.importer.phase.executing", this.importerName),
+      ) { importerTaskId ->
+        this.import(phase, snapshot, importerTaskId)
+      }
+    }
+    finally {
+      val endTime = System.currentTimeMillis()
+      val importerName = this.javaClass.name
+      importerToTime[importerName] = (importerToTime[importerName] ?: 0L) + (endTime - startTime)
     }
   }
 }
