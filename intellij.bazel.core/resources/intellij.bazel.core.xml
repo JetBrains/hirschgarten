@@ -304,6 +304,9 @@
     />
 
     <statistics.counterUsagesCollector implementationClass="org.jetbrains.bazel.fus.BazelBuildInvocationCollector"/>
+    <statistics.collectorExtension implementation="org.jetbrains.bazel.fus.BazelRunConfigurationUsageCollectorExtension"/>
+    <statistics.collectorExtension implementation="org.jetbrains.bazel.fus.BazelRunConfigurationTypeCollectorExtension"/>
+    <statistics.validation.customValidationRule implementation="org.jetbrains.bazel.fus.BazelRunHandlerProviderValidationRule"/>
     <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector"/>
 
     <projectService
