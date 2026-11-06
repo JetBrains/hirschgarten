@@ -20,6 +20,12 @@ data class BazelRuleSet(
   val autoloadHints: List<String> = emptyList(),
   val hostLocations: List<String> = emptyList(),
   val deprecated: String? = null,
+  /**
+   * An optional requirement that only a certain minimal version of this rule set can be used, together
+   * with a regular expression describing how the version can be read off from the URL.
+   */
+  val minimalVersion: Int? = null,
+  val versionRegex: Regex? = null,
 )
 
 @ApiStatus.Internal

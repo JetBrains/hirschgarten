@@ -94,6 +94,15 @@ class BazelBspAspectsManager(
       .mapNotNull { ruleSet ->
         ruleSet.hostLocations.firstNotNullOfOrNull { location -> canonicalRepoByHostLocation.keys.firstOrNull { it.startsWith(location) } }
           ?.let {
+            if (!versionMatch(ruleSet,it)) {
+              // We have identified the rule, but it is the wrong version. If it cannot be used in bundled form,
+              // we cannot use it at all.
+              if (ruleSet.isBundledFor(bazelRelease, externalAutoloads)) {
+                return@mapNotNull RulesetInstance(null, ruleSet)
+              } else {
+                return@mapNotNull null
+              }
+            }
             return@mapNotNull RulesetInstance(canonicalRepoByHostLocation[it]?.let { CanonicalRulesetName(it) }, ruleSet)
           }
         val rulesetName = ruleSet.rulesetNames.firstOrNull { it in externalRulesetNames }
@@ -105,6 +114,14 @@ class BazelBspAspectsManager(
         }
         null
       }
+  }
+
+  private fun versionMatch(ruleSet: BazelRuleSet, hostLocation: String): Boolean {
+    if (ruleSet.versionRegex == null || ruleSet.minimalVersion == null) return true // no version constraint
+    val match = ruleSet.versionRegex.matchEntire(hostLocation)
+    if (match == null) return false // versioning scheme outside  the supported one
+    val version = match.groupValues[1].toIntOrNull() ?: 0
+    return version >= ruleSet.minimalVersion
   }
 
   fun deployIntelliJAspect(
