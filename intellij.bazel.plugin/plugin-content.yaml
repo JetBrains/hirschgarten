@@ -58,6 +58,9 @@
 - name: lib/modules/intellij.bazel.java.sync.jar
   contentModules:
   - name: intellij.bazel.java.sync
+- name: lib/modules/intellij.bazel.javascript.common.jar
+  contentModules:
+  - name: intellij.bazel.javascript.common
 - name: lib/modules/intellij.bazel.kotlin.common.jar
   contentModules:
   - name: intellij.bazel.kotlin.common

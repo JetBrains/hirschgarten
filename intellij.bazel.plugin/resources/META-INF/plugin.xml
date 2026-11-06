@@ -50,6 +50,9 @@
     <!-- go modules -->
     <module name="intellij.bazel.golang.common"/>
 
+    <!-- javascript modules -->
+    <module name="intellij.bazel.javascript.common"/>
+
     <!-- python modules -->
     <module name="intellij.bazel.python.common"/>
     <module name="intellij.bazel.python.common.performancePlugin"/>

@@ -37,6 +37,7 @@ object BazelFeatureFlags {
   private const val QUERY_ON_FILE_EVENTS = "bazel.query.on.file.events"
   private const val HIGHLIGHT_UNSYNCED_SOURCE_FILES = "bazel.highlight.unsynced.source.files"
   private const val HIGHLIGHT_IGNORED_SOURCE_FILES = "bazel.highlight.ignored.source.files"
+  private const val JAVASCRIPT_SUPPORT = "bazel.javascript.support.enabled"
 
   const val ENABLE_LOG: String = "bazel.enable.log"
   private const val KILL_TREE_ON_CANCEL = "bazel.kill.tree.on.cancel"
@@ -110,6 +111,9 @@ object BazelFeatureFlags {
 
   val highlightIgnoredSourceFiles: Boolean
     get() = isEnabled(HIGHLIGHT_IGNORED_SOURCE_FILES)
+
+  val isJavaScriptSupportEnabled: Boolean
+    get() = isEnabled(JAVASCRIPT_SUPPORT)
 
   val killServerOnCancel: Boolean
     get() = Registry.`is`(KILL_SERVER_ON_CANCEL)

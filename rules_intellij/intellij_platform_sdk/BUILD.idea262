@@ -64,6 +64,11 @@ java_import(
 )
 
 java_import(
+    name = "javascript",
+    jars = glob(["plugins/javascript-plugin/lib/*.jar", "plugins/javascript-plugin/lib/modules/*.jar"]),
+)
+
+java_import(
     name = "testrunner",
     jars = glob(["plugins/platform-testRunner-plugin/lib/*.jar", "plugins/platform-testRunner-plugin/lib/modules/*.jar"]),
 )
