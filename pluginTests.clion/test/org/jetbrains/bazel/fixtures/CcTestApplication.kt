@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.fixtures
 
+import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrCloseDebugSessionsExtension
 import com.intellij.testFramework.junit5.SystemPropertyClassLevel
 import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.junit.jupiter.api.extension.ExtendWith
 import java.lang.annotation.Inherited
 
 // order of annotations here matters!
@@ -12,3 +14,8 @@ import java.lang.annotation.Inherited
 @SystemPropertyClassLevel(BazelFeatureFlags.USE_PTY, "false") // otherwise tests fail due to a leaked timer
 @BazelTestApplication
 annotation class CcTestApplication
+
+@Inherited
+@ExtendWith(CidrCloseDebugSessionsExtension::class)
+@CcTestApplication
+annotation class CcDebugTestApplication

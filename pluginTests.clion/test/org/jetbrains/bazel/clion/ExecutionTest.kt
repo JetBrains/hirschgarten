@@ -1,45 +1,44 @@
 package org.jetbrains.bazel.clion
 
-import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrCloseDebugSessionsExtension
 import com.intellij.clion.testFramework.nolang.junit5.debugger.debugProfileFixture
 import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.util.system.LowLevelLocalMachineAccess
-import com.intellij.util.system.OS
-import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
-import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
+import com.intellij.testFramework.junit5.fixture.testFixture
+import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
+import com.jetbrains.cidr.cpp.execution.debugger.backend.LldbDebugProfileState
+import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.fixtures.BazelExecutionResult
-import org.jetbrains.bazel.fixtures.CcTestApplication
+import org.jetbrains.bazel.fixtures.CcDebugTestApplication
+import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.fixtures.createBazelConfiguration
 import org.jetbrains.bazel.fixtures.executeBazelConfiguration
+import org.jetbrains.bazel.isWindows
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.time.Duration.Companion.minutes
 
 private const val ECHO_OUTPUT_MARKER = "ECHO_OUTPUT_FILE: "
 
-@OptIn(LowLevelLocalMachineAccess::class)
-@CcTestApplication
-@ExtendWith(CidrCloseDebugSessionsExtension::class)
+@CcDebugTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ExecutionTest {
+abstract class ExecutionTest(private val executorId: String) {
 
-  private val projectFixture = clionBazelProjectFixture("clion/execution", buildProject = true, bazelVersion = BazelVersions.BAZEL_9) {
-    if (OS.CURRENT == OS.Windows) {
+  protected val projectFixture = clionBazelProjectFixture("clion/execution", buildProject = true, bazelVersion = BazelVersions.BAZEL_9) {
+    if (isWindows()) {
       addBuildFlags("--cxxopt=/std:c++17")
     }
     else {
@@ -50,100 +49,101 @@ class ExecutionTest {
     addBuildFlags("--test_output=streamed")
   }
 
-  @Suppress("unused")
-  private val debugProfile = debugProfileFixture(projectFixture, CLionGdbDebugProfileType.ID, GdbDebugProfileState())
 
   private val project by projectFixture
 
-  @Test
-  fun doTest(): Unit = timeoutRunBlocking(30.minutes) {
-    checkRun(DefaultRunExecutor.EXECUTOR_ID)
-    checkArgs(DefaultRunExecutor.EXECUTOR_ID)
-    checkTest(DefaultRunExecutor.EXECUTOR_ID)
+  class Default : ExecutionTest(DefaultRunExecutor.EXECUTOR_ID)
 
-    //
-    if (OS.CURRENT == OS.Linux) {
-      checkRun(DefaultDebugExecutor.EXECUTOR_ID)
-      checkArgs(DefaultDebugExecutor.EXECUTOR_ID)
-      checkTest(DefaultDebugExecutor.EXECUTOR_ID)
+  @DisabledOnOs(OS.MAC, OS.WINDOWS)
+  class Debug : ExecutionTest(DefaultDebugExecutor.EXECUTOR_ID) {
+
+    @Suppress("unused")
+    private val debugProfile = debugProfileFixture(projectFixture, CLionLldbDebugProfileType.ID, LldbDebugProfileState())
+
+    @Suppress("unused")
+    private val bundledLldb = testFixture {
+      assertThat(LLDBDriverConfiguration.hasBundledLLDB()).withFailMessage("bundled LLDB not found").isTrue()
+      initialized(Unit) {}
     }
   }
 
-  private suspend fun checkRun(executorId: String) {
-    val echo = execute(Label.parse("//main:echo0"), executorId)
-    echo.assertSuccess()
-
-    val gtest = execute(Label.parse("//main:gtest"), executorId)
-    gtest.assertSuccess()
-
-    val catch2 = execute(Label.parse("//main:catch"), executorId)
-    catch2.assertSuccess()
+  @Test
+  fun runEcho0Test() = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    execute(Label.parse("//main:echo0")).assertSuccess()
   }
 
-  private suspend fun checkArgs(executorId: String) {
-    assertThat(executeEcho("echo0", executorId, "'one argument with spaces'")).containsExactly(
-      "one argument with spaces",
-    )
-
-    assertThat(executeEcho("echo0", executorId, "'one argument' 'another argument'")).containsExactly(
-      "one argument",
-      "another argument",
-    )
-
-    assertThat(executeEcho("echo1", executorId, "CONFIG_ARGUMENT")).containsExactly(
-      "BUILD_FILE_STRING",
-      "CONFIG_ARGUMENT",
-    )
-
-    assertThat(executeEcho("echo2", executorId, "CONFIG_ARGUMENT")).containsExactly(
-      "main/echo.cc",
-      "CONFIG_ARGUMENT",
-    )
+  @Test
+  fun runGtestTest() = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    execute(Label.parse("//main:gtest")).assertSuccess()
   }
 
-  private suspend fun checkTest(executorId: String) {
-    // filter gtest by suite name
-    val gtestFiltered = execute(
-      Label.parse("//main:gtest"), executorId,
-      testFilter = "FilterSuite.*",
-    )
-    gtestFiltered.assertSuccess()
-    assertThat(gtestFiltered.output).contains("FilterSuite.FilteredTest")
-    assertThat(gtestFiltered.output).contains("FilterSuite.SkippedTest")
-    assertThat(gtestFiltered.output).doesNotContain("SampleSuite.SampleTest")
-    assertThat(gtestFiltered.output).doesNotContain("SampleSuite.AnotherTest")
+  @Test
+  fun runCatchTest() = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    execute(Label.parse("//main:catch")).assertSuccess()
+  }
 
-    // filter gtest by specific test
-    val gtestSingleTest = execute(
-      Label.parse("//main:gtest"), executorId,
-      testFilter = "FilterSuite.FilteredTest",
-    )
-    gtestSingleTest.assertSuccess()
-    assertThat(gtestSingleTest.output).contains("FilterSuite.FilteredTest")
-    assertThat(gtestSingleTest.output).doesNotContain("FilterSuite.SkippedTest")
+  @Test
+  fun argsWithSpacesTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = executeEcho("echo0", "'one argument with spaces'")
+    assertThat(result).containsExactly("one argument with spaces", )
+  }
 
-    // filter catch2 tests
-    val catchFiltered = execute(
-      Label.parse("//main:catch"), executorId,
-      testFilter = "FilteredTest",
-    )
-    catchFiltered.assertSuccess()
-    assertThat(catchFiltered.output).contains("FilteredTest")
-    assertThat(catchFiltered.output).doesNotContain("SkippedTest")
-    assertThat(catchFiltered.output).doesNotContain("Test0")
+  @Test
+  fun argsMultipleTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = executeEcho("echo0", "'one argument' 'another argument'")
+    assertThat(result).containsExactly("one argument", "another argument")
+  }
 
+  @Test
+  fun argsFromBuildFileTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = executeEcho("echo1", "CONFIG_ARGUMENT")
+    assertThat(result).containsExactly("BUILD_FILE_STRING", "CONFIG_ARGUMENT")
+  }
+
+  @Test
+  fun argsWithLocationExpansionTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = executeEcho("echo2", "CONFIG_ARGUMENT")
+    assertThat(result).containsExactly("main/echo.cc", "CONFIG_ARGUMENT")
+  }
+
+  @Test
+  fun testFilterGtestSuiteTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = execute(Label.parse("//main:gtest"), testFilter = "FilterSuite.*")
+    result.assertSuccess()
+    assertThat(result.output).contains("FilterSuite.FilteredTest")
+    assertThat(result.output).contains("FilterSuite.SkippedTest")
+    assertThat(result.output).doesNotContain("SampleSuite.SampleTest")
+    assertThat(result.output).doesNotContain("SampleSuite.AnotherTest")
+  }
+
+  @Test
+  fun testFilterGtestSingleTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = execute(Label.parse("//main:gtest"), testFilter = "FilterSuite.FilteredTest")
+    result.assertSuccess()
+    assertThat(result.output).contains("FilterSuite.FilteredTest")
+    assertThat(result.output).doesNotContain("FilterSuite.SkippedTest")
+  }
+
+  @Test
+  fun testFilterCatchTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
+    val result = execute(Label.parse("//main:catch"), testFilter = "FilteredTest")
+    result.assertSuccess()
+    assertThat(result.output).contains("FilteredTest")
+    assertThat(result.output).doesNotContain("SkippedTest")
+    assertThat(result.output).doesNotContain("Test0")
+  }
+
+  @Test
+  fun testArgsGtestTest(): Unit = timeoutRunBlocking(EXECUTION_TIMEOUT) {
     // arguments for the test binary must be passed as --test_arg
-    val gtestArgs = execute(
-      Label.parse("//main:gtest"), executorId,
-      args = listOf("--gtest_filter=FilterSuite.*"),
-    )
-    gtestArgs.assertSuccess()
-    assertThat(gtestArgs.output).contains("FilterSuite.FilteredTest")
-    assertThat(gtestArgs.output).doesNotContain("SampleSuite.SampleTest")
+    val result = execute(Label.parse("//main:gtest"), args = listOf("--gtest_filter=FilterSuite.*"))
+    result.assertSuccess()
+    assertThat(result.output).contains("FilterSuite.FilteredTest")
+    assertThat(result.output).doesNotContain("SampleSuite.SampleTest")
   }
 
-  private suspend fun executeEcho(target: String, executorId: String, args: String): List<String> {
-    val result = execute(Label.parse("//main:$target"), executorId, args = listOf(args))
+  private suspend fun executeEcho(target: String, args: String): List<String> {
+    val result = execute(Label.parse("//main:$target"), args = listOf(args))
     result.assertSuccess()
 
     val line = result.output.lines().firstOrNull { it.startsWith(ECHO_OUTPUT_MARKER) }
@@ -155,12 +155,7 @@ class ExecutionTest {
     return withContext(Dispatchers.IO) { Files.readAllLines(path) }
   }
 
-  private suspend fun execute(
-    label: Label,
-    executorId: String,
-    testFilter: String? = null,
-    args: List<String> = emptyList(),
-  ): BazelExecutionResult {
+  private suspend fun execute(label: Label, testFilter: String? = null, args: List<String> = emptyList()): BazelExecutionResult {
     val executor = ExecutorRegistry.getInstance().getExecutorById(executorId)
     requireNotNull(executor) { "executor not found: $executorId" }
 

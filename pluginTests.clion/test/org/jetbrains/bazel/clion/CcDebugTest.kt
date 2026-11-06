@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.clion
 
-import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrCloseDebugSessionsExtension
 import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrDebugSessionContext
 import com.intellij.clion.testFramework.nolang.junit5.debugger.debugProfileFixture
 import com.intellij.execution.process.ProcessHandler
@@ -25,7 +24,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.fixtures.CcTestApplication
+import org.jetbrains.bazel.fixtures.CcDebugTestApplication
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.ccDebugInfoDialogFixture
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
@@ -36,13 +35,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
-import org.junit.jupiter.api.extension.ExtendWith
 
 // the sum of the values that the library functions return in //main:main
 private const val EXPECTED_EXIT_CODE = 60 + 61 + 62 + 64
 
-@CcTestApplication
-@ExtendWith(CidrCloseDebugSessionsExtension::class)
+/**
+ * On Windows, the TeamCity build for `CcDebugTest$...` are executed in a separate
+ * config that has the bundled debuggers. No other windows tests can use debuggers.
+ */
+@CcDebugTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: BaseState, bazelVersion: String) {
 
