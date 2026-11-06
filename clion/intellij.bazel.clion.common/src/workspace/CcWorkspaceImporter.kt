@@ -25,7 +25,7 @@ private const val CLIENT_VERSION = 0
 
 private val LOG = logger<CcWorkspaceImporter>()
 
-internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter, BazelWorkspaceImporter.Named {
+internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
 
   class Factory : BazelWorkspaceImporterFactory {
     override fun createWorkspaceImporter(context: WorkspaceImporterContext): BazelWorkspaceImporter =
