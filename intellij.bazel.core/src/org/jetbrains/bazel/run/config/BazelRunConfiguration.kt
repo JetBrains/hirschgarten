@@ -7,9 +7,11 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.execution.impl.statistics.FusAwareRunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
+import com.intellij.internal.statistic.eventLog.events.EventPair
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.options.SettingsEditor
@@ -19,6 +21,7 @@ import com.intellij.openapi.util.NlsActions
 import org.jdom.Element
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle.message
+import org.jetbrains.bazel.fus.BazelRunConfigurationFusFields
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -34,8 +37,9 @@ class BazelRunConfiguration internal constructor(
   name: String,
   configurationType: BazelRunConfigurationType,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
-  RunConfigurationWithSuppressedDefaultDebugAction,
-    SMRunnerConsolePropertiesProvider {
+    RunConfigurationWithSuppressedDefaultDebugAction,
+    SMRunnerConsolePropertiesProvider,
+    FusAwareRunConfiguration {
 
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
@@ -227,6 +231,8 @@ class BazelRunConfiguration internal constructor(
     BazelTestConsoleProperties(this, executor)
 
   override fun suggestedName(): @NlsActions.ActionText String = targets.joinToString(" ")
+
+  override fun getAdditionalUsageData(): List<EventPair<*>> = BazelRunConfigurationFusFields.usageData(handlerProvider)
 
   private fun createBspElement(): Element? {
     val provider = handlerProvider ?: return null

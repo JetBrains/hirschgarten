@@ -33,6 +33,7 @@ jvm_library(
         "@community//java/java-psi-api:psi",
         "@community//plugins/coverage",
         "@community//platform/execution",
+        "@community//platform/execution-impl",
         "//plugins/bazel/java/intellij.bazel.java.core:bazel-java-core",
         "@community//platform/ide-core",
         "@community//platform/platform-api:ide",

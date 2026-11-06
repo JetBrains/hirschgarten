@@ -35,6 +35,7 @@ jvm_library(
         "@community//platform/lang-api:lang",
         "@community//platform/lang-impl",
         "@community//platform/execution",
+        "@community//platform/execution-impl",
         "@community//platform/projectModel-api:projectModel",
         "@community//platform/analysis-api:analysis",
         "@community//platform/smRunner",
