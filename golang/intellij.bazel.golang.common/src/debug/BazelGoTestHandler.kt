@@ -8,8 +8,10 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.golang.resolve.BazelGoBundle
 import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
 import org.jetbrains.bazel.label.Label
@@ -41,8 +43,8 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
     )
   }
 
-  override val name: String
-    get() = "Bazel Go Test Handler"
+  override val name: @Nls String
+    get() = BazelGoBundle.message("go.test.handler.name")
 
   override val isTestHandler: Boolean = true
 
@@ -75,13 +77,17 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
     override val id: String
       get() = "BazelGoTestHandlerProvider"
 
+    override val providedRunHandlerName: @Nls String
+      get() = BazelGoBundle.message("go.test.handler.name")
+
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelGoTestHandler = BazelGoTestHandler(configuration)
 
     override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
       targets.all { it.kind.includesGo() && it.kind.ruleType == RuleType.TEST }
 
     override val googleHandlerId: String = "BlazeGoTestConfigurationHandlerProvider"
-    override val isTestHandler: Boolean = false
+
+    override val isTestHandler: Boolean = true
   }
 }
 

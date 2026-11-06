@@ -10,14 +10,12 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsActions
-import com.intellij.util.EventDispatcher
 import org.jdom.Element
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle.message
@@ -28,7 +26,6 @@ import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
-import java.util.EventListener
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 @ApiStatus.Internal
@@ -66,6 +63,7 @@ class BazelRunConfiguration internal constructor(
       target
     }
     if (selectedTargets.isEmpty()) throw RuntimeConfigurationError(message("runconfig.bazel.errors.no.targets"))
+    if (findForcedHandlerProvider() != null) return
     val providers = selectedTargets
       .mapTo(mutableSetOf()) { target ->
         RunHandlerProvider
@@ -85,10 +83,24 @@ class BazelRunConfiguration internal constructor(
     if (newTargets.isEmpty()) return
     // `updateTargets` is called by the editor on each change. It must not fail, because it will spam with errors while editing
     // `RunHandlerProvider.getRunHandlerProviderOrNull` is used as a workaround
-    val provider = runHandlerProvider ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
+    val provider = runHandlerProvider ?: findForcedHandlerProvider() ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
     if (provider == null) return
     updateHandlerIfDifferentProvider(provider)
   }
+
+  /** Run handler manually chosen by the user in the run config editor */
+  var forcedHandlerProviderId: String? = null
+    private set
+
+  fun updateForcedHandlerProvider(providerId: String?) {
+    if (providerId == forcedHandlerProviderId) return
+    forcedHandlerProviderId = providerId
+    val provider = findForcedHandlerProvider() ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, targets) ?: return
+    updateHandlerIfDifferentProvider(provider)
+  }
+
+  private fun findForcedHandlerProvider(): RunHandlerProvider? =
+    forcedHandlerProviderId?.let { RunHandlerProvider.findRunHandlerProvider(it) }
 
   fun updateRunProvider(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider) {
     targets = newTargets
@@ -99,12 +111,11 @@ class BazelRunConfiguration internal constructor(
     doVisibilityCheck = false
   }
 
-  private var handlerProvider: RunHandlerProvider? = null
+  var handlerProvider: RunHandlerProvider? = null
+    private set
 
   var handler: BazelRunHandler? = null
     private set
-
-  private val handlerChangedEventDispatcher = EventDispatcher.create(BazelRunHandlerChangedListener::class.java)
 
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider::class.java == handlerProvider?.let { it::class.java }) return
@@ -113,7 +124,6 @@ class BazelRunConfiguration internal constructor(
 
   private fun updateHandler(newProvider: RunHandlerProvider) {
     val bspBeforeChange = createBspElement()
-    val providerChanged = newProvider != handlerProvider
     handlerProvider = newProvider
     val newRunHandler = newProvider.createRunHandler(this)
     this.handler = newRunHandler
@@ -125,10 +135,6 @@ class BazelRunConfiguration internal constructor(
       catch (e: Exception) {
         logger.error("Failed to read BSP state", e)
       }
-    }
-
-    if (providerChanged) {
-      handlerChangedEventDispatcher.multicaster.onRunHandlerChanged(newRunHandler)
     }
   }
 
@@ -158,6 +164,7 @@ class BazelRunConfiguration internal constructor(
     }
 
     this.targets = targets.map { Label.parse(it) }
+    forcedHandlerProviderId = bspElement.getAttributeValue(FORCED_HANDLER_PROVIDER_ATTR)
 
     // It should be possible to load the configuration before the project is synchronized,
     // so we can't access targets' data here. Instead, we have to use the stored provider ID.
@@ -231,6 +238,7 @@ class BazelRunConfiguration internal constructor(
         addContent(targetElement)
       }
       setAttribute(HANDLER_PROVIDER_ATTR, provider.id)
+      forcedHandlerProviderId?.let { setAttribute(FORCED_HANDLER_PROVIDER_ATTR, it) }
       val handlerState = Element(HANDLER_STATE_TAG)
       handler.state.writeExternal(handlerState)
       addContent(handlerState)
@@ -239,19 +247,12 @@ class BazelRunConfiguration internal constructor(
     }
   }
 
-  fun addOnRunHandlerChangedListener(listener: BazelRunHandlerChangedListener, parentDisposable: Disposable) {
-    handlerChangedEventDispatcher.addListener(listener, parentDisposable)
-  }
-
-  interface BazelRunHandlerChangedListener : EventListener {
-    fun onRunHandlerChanged(newRunHandler: BazelRunHandler)
-  }
-
   companion object {
     private const val TARGET_TAG = "bsp-target"
     private const val BSP_STATE_TAG = "bsp-state"
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
+    private const val FORCED_HANDLER_PROVIDER_ATTR = "forced-handler-provider-id"
     private const val CHECK_VISIBILITY_ATTR = "check-visibility"
 
     private val logger: Logger = logger<BazelRunConfiguration>()

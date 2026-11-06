@@ -13,7 +13,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
@@ -38,8 +40,8 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
     )
   }
 
-  override val name: String
-    get() = "Jvm Test Handler"
+  override val name: @Nls String
+    get() = BazelPluginBundle.message("jvm.test.handler.name")
 
   override val isTestHandler: Boolean = true
 
@@ -64,6 +66,9 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
   class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String
       get() = "JvmTestHandlerProvider"
+
+    override val providedRunHandlerName: @Nls String
+      get() = BazelPluginBundle.message("jvm.test.handler.name")
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler(configuration)
 

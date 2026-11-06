@@ -15,6 +15,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.SlowOperations
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -43,8 +44,8 @@ internal class IntellijPluginRunHandler(private val configuration: BazelRunConfi
 
   override val state: IntellijPluginRunHandlerState = IntellijPluginRunHandlerState()
 
-  override val name: String
-    get() = "IntelliJ Plugin Run Handler"
+  override val name: @Nls String
+    get() = BazelDevKitBundle.message("intellij.plugin.run.handler.name")
 
   override val isTestHandler: Boolean = false
 
