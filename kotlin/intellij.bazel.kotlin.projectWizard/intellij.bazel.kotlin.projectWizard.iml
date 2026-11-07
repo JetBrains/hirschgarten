@@ -16,9 +16,9 @@
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
-    <orderEntry type="module" module-name="intellij.platform.ide.core" />
-    <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
-    <orderEntry type="module" module-name="intellij.kotlin.projectWizard.core" />
+    <orderEntry type="module" module-name="intellij.platform.ide.core" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.ide.core.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.projectWizard.core" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.kotlin.projectWizard.idea" />
     <orderEntry type="module" module-name="intellij.java.ui" />
   </component>

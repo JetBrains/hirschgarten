@@ -10,69 +10,69 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
     <orderEntry type="module" module-name="intellij.bazel.backend" />
-    <orderEntry type="module" module-name="intellij.bazel.bazelisk" />
+    <orderEntry type="module" module-name="intellij.bazel.bazelisk" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.opentelemetry" />
-    <orderEntry type="module" module-name="intellij.libraries.protobuf" />
+    <orderEntry type="module" module-name="intellij.libraries.protobuf" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
-    <orderEntry type="module" module-name="intellij.bazel.protobuf" />
+    <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.performanceTesting" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
-    <orderEntry type="module" module-name="intellij.platform.codeStyle" />
-    <orderEntry type="module" module-name="intellij.platform.macro" />
-    <orderEntry type="module" module-name="intellij.platform.backend.observation" />
+    <orderEntry type="module" module-name="intellij.platform.codeStyle" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.macro" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.backend.observation" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.backend.workspace" />
-    <orderEntry type="module" module-name="intellij.platform.codeStyle.impl" />
-    <orderEntry type="module" module-name="intellij.platform.concurrency" />
+    <orderEntry type="module" module-name="intellij.platform.codeStyle.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.concurrency" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
-    <orderEntry type="module" module-name="intellij.platform.debugger" />
-    <orderEntry type="module" module-name="intellij.platform.debugger.impl" />
+    <orderEntry type="module" module-name="intellij.platform.debugger" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.debugger.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" />
     <orderEntry type="module" module-name="intellij.platform.editor.ui" />
     <orderEntry type="module" module-name="intellij.platform.execution" />
-    <orderEntry type="module" module-name="intellij.platform.execution.impl" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem" />
-    <orderEntry type="module" module-name="intellij.platform.externalSystem.impl" />
+    <orderEntry type="module" module-name="intellij.platform.externalSystem.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
     <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide.playback" />
-    <orderEntry type="module" module-name="intellij.platform.ide.observable" />
-    <orderEntry type="module" module-name="intellij.platform.indexing" />
-    <orderEntry type="module" module-name="intellij.platform.jps.model" />
+    <orderEntry type="module" module-name="intellij.platform.ide.observable" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.indexing" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.jps.model" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.lang.core" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
-    <orderEntry type="module" module-name="intellij.platform.markdown.utils" />
+    <orderEntry type="module" module-name="intellij.platform.markdown.utils" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
-    <orderEntry type="module" module-name="intellij.platform.scriptDebugger.backend" />
-    <orderEntry type="module" module-name="intellij.platform.scriptDebugger.ui" />
-    <orderEntry type="module" module-name="intellij.platform.smRunner" />
-    <orderEntry type="module" module-name="intellij.platform.syntax" />
-    <orderEntry type="module" module-name="intellij.platform.usageView" />
-    <orderEntry type="module" module-name="intellij.platform.usageView.impl" />
+    <orderEntry type="module" module-name="intellij.platform.scriptDebugger.backend" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.scriptDebugger.ui" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.smRunner" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.syntax" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.usageView" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.usageView.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.util" />
     <orderEntry type="module" module-name="intellij.platform.util.base" />
-    <orderEntry type="module" module-name="intellij.platform.util.jdom" />
-    <orderEntry type="module" module-name="intellij.platform.util.progress" />
-    <orderEntry type="module" module-name="intellij.platform.util.ui" />
+    <orderEntry type="module" module-name="intellij.platform.util.jdom" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.util.progress" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.util.ui" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
-    <orderEntry type="module" module-name="intellij.platform.vcs" />
+    <orderEntry type="module" module-name="intellij.platform.vcs" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
-    <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
-    <orderEntry type="module" module-name="intellij.platform.util.text.matching" />
+    <orderEntry type="module" module-name="intellij.platform.util.coroutines" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.util.text.matching" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.platform.searchEverywhere" />
-    <orderEntry type="module" module-name="intellij.platform.ide.rpc" />
-    <orderEntry type="module" module-name="intellij.platform.refactoring" />
+    <orderEntry type="module" module-name="intellij.platform.ide.rpc" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.refactoring" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
-    <orderEntry type="module" module-name="intellij.platform.eel.provider" />
+    <orderEntry type="module" module-name="intellij.platform.eel.provider" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.lang" />
   </component>
 </module>

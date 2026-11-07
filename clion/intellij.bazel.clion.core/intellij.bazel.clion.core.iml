@@ -49,7 +49,7 @@
     <orderEntry type="module" module-name="intellij.clion.execution" />
     <orderEntry type="module" module-name="intellij.clion.toolchains" />
     <orderEntry type="module" module-name="intellij.cidr.execution" />
-    <orderEntry type="module" module-name="intellij.platform.backend" />
+    <orderEntry type="module" module-name="intellij.platform.backend" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.clion.shared" />
     <orderEntry type="module" module-name="intellij.platform.project" />
     <orderEntry type="module" module-name="intellij.platform.rpc.backend" />

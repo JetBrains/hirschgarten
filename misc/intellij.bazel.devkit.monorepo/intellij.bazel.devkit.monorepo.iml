@@ -27,10 +27,10 @@
     <orderEntry type="module" module-name="intellij.bazel.kotlin.common" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem.impl" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinc.kotlin.compiler.common" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.psi" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.psi" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.core.impl" />
     <orderEntry type="module" module-name="intellij.java.psi" />
     <orderEntry type="module" module-name="intellij.platform.lang" />

@@ -11,10 +11,10 @@
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
     <orderEntry type="module" module-name="intellij.bazel.core.performancePlugin" />
-    <orderEntry type="module" module-name="intellij.bazel.kotlin.common" />
+    <orderEntry type="module" module-name="intellij.bazel.kotlin.common" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.core" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
-    <orderEntry type="module" module-name="intellij.bazel.java.core" />
+    <orderEntry type="module" module-name="intellij.bazel.java.core" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.performanceTesting" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="module" module-name="intellij.platform.core" />
@@ -25,34 +25,34 @@
     <orderEntry type="module" module-name="intellij.platform.ide.core" />
     <orderEntry type="module" module-name="intellij.platform.ide.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
-    <orderEntry type="module" module-name="intellij.platform.execution" />
-    <orderEntry type="module" module-name="intellij.java.execution" />
-    <orderEntry type="module" module-name="intellij.java.execution.impl" />
+    <orderEntry type="module" module-name="intellij.platform.execution" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.execution" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.execution.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.java" />
     <orderEntry type="module" module-name="intellij.java.psi" />
-    <orderEntry type="module" module-name="intellij.java.debugger" />
-    <orderEntry type="module" module-name="intellij.java.debugger.impl" />
-    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" />
+    <orderEntry type="module" module-name="intellij.java.debugger" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.debugger.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api.platform.interface" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinc.kotlin.compiler.common" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinc.analysis.api" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinc.symbol.light.classes" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.facet" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.projectStructure" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.psi" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.indices" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.resources" />
-    <orderEntry type="module" module-name="intellij.kotlin.base.util" />
-    <orderEntry type="module" module-name="intellij.kotlin.preferences" />
-    <orderEntry type="module" module-name="intellij.kotlin.projectConfiguration" />
-    <orderEntry type="module" module-name="intellij.platform.execution.impl" />
-    <orderEntry type="module" module-name="intellij.platform.projectModel" />
-    <orderEntry type="module" module-name="intellij.kotlin.jvm.debugger.coroutines" />
-    <orderEntry type="module" module-name="intellij.platform.debugger" />
-    <orderEntry type="module" module-name="intellij.platform.debugger.impl" />
-    <orderEntry type="module" module-name="intellij.platform.smRunner" />
-    <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
-    <orderEntry type="module" module-name="intellij.platform.backend.workspace" />
-    <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.facet" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.projectStructure" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.psi" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.indices" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.resources" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.base.util" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.preferences" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.projectConfiguration" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.projectModel" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.kotlin.jvm.debugger.coroutines" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.debugger" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.debugger.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.smRunner" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.workspace.storage" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.backend.workspace" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.workspace.jps" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" />
     <orderEntry type="module" module-name="intellij.platform.analysis" />
     <orderEntry type="module" module-name="intellij.platform.editor.ui" />

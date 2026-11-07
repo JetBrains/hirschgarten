@@ -15,13 +15,13 @@
     <orderEntry type="module" module-name="intellij.bazel.backend" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.ide" />
-    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
+    <orderEntry type="module" module-name="intellij.platform.ide.util.io" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.ide.core" />
     <orderEntry type="module" module-name="intellij.platform.util.ex" />
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
     <orderEntry type="module" module-name="intellij.platform.backend.workspace" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
-    <orderEntry type="module" module-name="intellij.protoeditor" />
+    <orderEntry type="module" module-name="intellij.protoeditor" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.protoeditor.core" />
     <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
   </component>

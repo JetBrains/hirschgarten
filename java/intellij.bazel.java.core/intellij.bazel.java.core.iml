@@ -41,7 +41,7 @@
     <orderEntry type="module" module-name="intellij.platform.util.progress" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
     <orderEntry type="module" module-name="intellij.platform.concurrency" />
-    <orderEntry type="module" module-name="intellij.platform.externalSystem" />
+    <orderEntry type="module" module-name="intellij.platform.externalSystem" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.java.impl" />
     <orderEntry type="module" module-name="intellij.java.psi" />
     <orderEntry type="module" module-name="intellij.java.psi.impl" />
@@ -57,13 +57,13 @@
     <orderEntry type="module" module-name="intellij.platform.externalSystem.impl" />
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
-    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
-    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" />
+    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.jps.model" />
     <orderEntry type="module" module-name="intellij.platform.jps.model.serialization" />
     <orderEntry type="module" module-name="intellij.platform.editor.ui" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
-    <orderEntry type="module" module-name="intellij.java.backend" />
+    <orderEntry type="module" module-name="intellij.java.backend" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.junit" />
   </component>
 </module>

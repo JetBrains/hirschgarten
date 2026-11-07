@@ -9,13 +9,13 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.bazel.backend" />
-    <orderEntry type="module" module-name="intellij.bazel.bazelisk" />
+    <orderEntry type="module" module-name="intellij.bazel.bazelisk" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.bazel.projectview" />
     <orderEntry type="module" module-name="intellij.libraries.gson" />
     <orderEntry type="module" module-name="intellij.libraries.jetbrains.annotations" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.platform.smRunner" />
-    <orderEntry type="module" module-name="intellij.platform.rd.community" />
+    <orderEntry type="module" module-name="intellij.platform.rd.community" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.libraries.opentelemetry" />
     <orderEntry type="module" module-name="intellij.libraries.protobuf" />
     <orderEntry type="module" module-name="intellij.libraries.caffeine" />
@@ -27,15 +27,15 @@
     <orderEntry type="module" module-name="intellij.platform.macro" />
     <orderEntry type="module" module-name="intellij.platform.backend.observation" />
     <orderEntry type="module" module-name="intellij.platform.backend.workspace" />
-    <orderEntry type="module" module-name="intellij.platform.codeStyle.impl" />
+    <orderEntry type="module" module-name="intellij.platform.codeStyle.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.concurrency" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.core.impl" />
     <orderEntry type="module" module-name="intellij.platform.core.ui" />
     <orderEntry type="module" module-name="intellij.platform.debugger" />
-    <orderEntry type="module" module-name="intellij.platform.debugger.impl" />
+    <orderEntry type="module" module-name="intellij.platform.debugger.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
-    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" />
+    <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry.exporters" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.editor.ui" />
     <orderEntry type="module" module-name="intellij.platform.execution" />
     <orderEntry type="module" module-name="intellij.platform.execution.impl" />
@@ -54,7 +54,7 @@
     <orderEntry type="module" module-name="intellij.platform.markdown.utils" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" />
     <orderEntry type="module" module-name="intellij.platform.structureView" />
-    <orderEntry type="module" module-name="intellij.platform.syntax" />
+    <orderEntry type="module" module-name="intellij.platform.syntax" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.usageView" />
     <orderEntry type="module" module-name="intellij.platform.usageView.impl" />
     <orderEntry type="module" module-name="intellij.platform.util" />
@@ -64,7 +64,7 @@
     <orderEntry type="module" module-name="intellij.platform.util.ui" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
     <orderEntry type="module" module-name="intellij.platform.vcs" />
-    <orderEntry type="module" module-name="intellij.platform.vcs.impl" />
+    <orderEntry type="module" module-name="intellij.platform.vcs.impl" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.workspace.jps" />
     <orderEntry type="module" module-name="intellij.platform.workspace.storage" />
     <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
@@ -73,7 +73,7 @@
     <orderEntry type="module" module-name="intellij.platform.util.ex" />
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.platform.searchEverywhere" />
-    <orderEntry type="module" module-name="intellij.platform.ide.rpc" />
+    <orderEntry type="module" module-name="intellij.platform.ide.rpc" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.indexing.impl" />
     <orderEntry type="module" module-name="intellij.platform.refactoring" />
     <orderEntry type="module" module-name="intellij.platform.ide.updateChecker" />
@@ -81,11 +81,11 @@
     <orderEntry type="module" module-name="intellij.libraries.jediterm.core" />
     <orderEntry type="module" module-name="intellij.libraries.jediterm.ui" />
     <orderEntry type="module" module-name="intellij.libraries.kotlinx.coroutines.core" />
-    <orderEntry type="module" module-name="intellij.platform.eel.provider" />
+    <orderEntry type="module" module-name="intellij.platform.eel.provider" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.lang" />
     <orderEntry type="module" module-name="intellij.platform.buildView" />
     <orderEntry type="module" module-name="intellij.platform.statistics" />
     <orderEntry type="module" module-name="intellij.platform.testRunner" />
-    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" />
+    <orderEntry type="module" module-name="intellij.libraries.bazel.aspect.sdk" scope="RUNTIME" />
   </component>
 </module>
