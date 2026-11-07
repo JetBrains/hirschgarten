@@ -22,6 +22,7 @@ jvm_library(
         ["resources/**/*"],
     ),
     visibility = ["//visibility:public"],
+    runtime_deps = ["//CIDR/clion"],
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
@@ -31,7 +32,6 @@ jvm_library(
         "@community//fleet/rpc",
         "@community//libraries/kotlinx/serialization/core",
         "@community//libraries/kotlinx/coroutines/core",
-        "//CIDR/clion",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.shared` end

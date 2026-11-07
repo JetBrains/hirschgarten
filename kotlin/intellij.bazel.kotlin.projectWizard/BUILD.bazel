@@ -22,6 +22,12 @@ jvm_library(
         ["resources/**/*"],
     ),
     visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "@community//platform/ide-core",
+        "@community//platform/ide-core-impl",
+        "@community//plugins/kotlin/project-wizard/core",
+    ],
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
@@ -32,9 +38,6 @@ jvm_library(
         "@community//platform/core-api:core",
         "@community//platform/platform-impl:ide-impl",
         "@community//platform/platform-api:ide",
-        "@community//platform/ide-core",
-        "@community//platform/ide-core-impl",
-        "@community//plugins/kotlin/project-wizard/core",
         "@community//plugins/kotlin/project-wizard/idea",
         "@community//java/idea-ui:ui",
     ],

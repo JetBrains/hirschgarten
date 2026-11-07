@@ -22,6 +22,7 @@ jvm_library(
         ["resources/**/*"],
     ),
     visibility = ["//visibility:public"],
+    runtime_deps = ["@community//platform/backend"],
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
@@ -65,7 +66,6 @@ jvm_library(
         "//CIDR/clion-execution",
         "//CIDR/clion-toolchains",
         "//CIDR/cidr-execution",
-        "@community//platform/backend",
         "//plugins/bazel/clion/intellij.bazel.clion.shared:bazel-clion-shared",
         "@community//platform/project/shared:project",
         "@community//platform/kernel/rpc.backend",

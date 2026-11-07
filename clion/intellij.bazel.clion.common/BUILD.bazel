@@ -24,6 +24,12 @@ jvm_library(
         ["resources/**/*"],
     ),
     visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//CIDR/clion",
+        "//CIDR/cidr-workspaceModel",
+        "@community//platform/backend",
+    ],
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
@@ -38,14 +44,11 @@ jvm_library(
         "@community//platform/workspace/storage",
         "@community//platform/backend/workspace",
         "@community//platform/platform-util-io:ide-util-io",
-        "//CIDR/clion",
         "//CIDR/cidr-projectModel",
-        "//CIDR/cidr-workspaceModel",
         "//CIDR/cidr-psi-base",
         "//CIDR/cidr-util/execution",
         "@community//platform/workspace/jps",
         "//plugins/bazel/aspect-sdk:libraries-bazel-aspect-sdk",
-        "@community//platform/backend",
         "//CIDR/clion-toolchains",
     ],
 )

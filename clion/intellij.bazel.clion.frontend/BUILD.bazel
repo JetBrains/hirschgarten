@@ -22,11 +22,11 @@ jvm_library(
         ["resources/**/*"],
     ),
     visibility = ["//visibility:public"],
+    runtime_deps = ["@community//platform/platform-frontend:frontend"],
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
         "//plugins/bazel/clion/intellij.bazel.clion.shared:bazel-clion-shared",
-        "@community//platform/platform-frontend:frontend",
         "@community//libraries/jetbrains/annotations",
         "@community//platform/util",
         "@community//platform/core-api:core",

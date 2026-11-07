@@ -22,9 +22,9 @@ jvm_library(
         ["resources/**/*"],
     ),
     visibility = ["//visibility:public"],
+    runtime_deps = ["@community//libraries/kotlinx/coroutines/core"],
     deps = [
         # do not sort,
-        "@community//libraries/kotlinx/coroutines/core",
         "//plugins/bazel/intellij.bazel.core:core",
         "//plugins/bazel/intellij.bazel.commons:commons",
         "@community//platform/core-api:core",
