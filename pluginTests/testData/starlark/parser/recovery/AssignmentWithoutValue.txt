@@ -1,0 +1,8 @@
+FILE
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('x')
+      PsiElement(identifier)('x')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiErrorElement:Expression expected
+      <empty list>

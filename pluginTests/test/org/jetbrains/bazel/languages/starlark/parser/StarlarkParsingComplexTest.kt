@@ -7,5 +7,8 @@ import org.junit.jupiter.api.Test
 @TestApplication
 class StarlarkParsingComplexTest : StarlarkParsingTestCase("complex") {
   @Test
-  fun testAspects() = doTest(false, true)
+  fun testAspects() = doTest(true, true)
+
+  @Test
+  fun testBuild() = doTest(true, true)
 }

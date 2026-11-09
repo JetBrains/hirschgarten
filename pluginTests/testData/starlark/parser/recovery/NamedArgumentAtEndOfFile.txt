@@ -1,0 +1,12 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkCallExpression(CALL_EXPRESSION)
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('f')
+      StarlarkArgumentList(ARGUMENT_LIST)
+        PsiElement(()('(')
+        StarlarkNamedArgumentExpression(NAMED_ARGUMENT_EXPRESSION)
+          PsiElement(identifier)('a')
+          PsiElement(=)('=')
+          PsiErrorElement:Expression expected
+            <empty list>

@@ -1,0 +1,18 @@
+FILE
+  StarlarkLoadStatement(LOAD_STATEMENT)
+    PsiElement(load)('load')
+    PsiElement(()('(')
+    StarlarkFilenameLoadValue(FILENAME_LOAD_VALUE)
+      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+        PsiElement(string)('"a.bzl"')
+    PsiErrorElement:',' or ')' expected
+      <empty list>
+  PsiWhiteSpace(' ')
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+      PsiElement(string)('"b"')
+    PsiErrorElement:End of statement expected
+      <empty list>
+  PsiElement())(')')
+  PsiErrorElement:Statement expected, found )
+    <empty list>

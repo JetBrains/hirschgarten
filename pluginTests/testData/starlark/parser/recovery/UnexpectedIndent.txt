@@ -1,0 +1,9 @@
+FILE
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('x')
+      PsiElement(identifier)('x')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(integer)('1')

@@ -1,0 +1,21 @@
+FILE
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('deps')
+      PsiElement(identifier)('deps')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkListLiteralExpression(LIST_LITERAL_EXPRESSION)
+      PsiElement([)('[')
+      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+        PsiElement(string)('":a"')
+      PsiErrorElement:']' or ',' expected
+        <empty list>
+      PsiWhiteSpace(' ')
+      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+        PsiElement(string)('":b"')
+      PsiElement(,)(',')
+      PsiWhiteSpace(' ')
+      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+        PsiElement(string)('":c"')
+      PsiElement(])(']')

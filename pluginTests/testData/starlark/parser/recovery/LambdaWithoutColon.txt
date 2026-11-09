@@ -1,0 +1,13 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkLambdaExpression(LAMBDA_EXPRESSION)
+      PsiElement(lambda)('lambda')
+      PsiWhiteSpace(' ')
+      StarlarkParameterList(PARAMETER_LIST)
+        StarlarkMandatoryParameter(MANDATORY_PARAMETER)('x')
+          PsiElement(identifier)('x')
+        PsiErrorElement:',' or '(' or ')' expected
+          <empty list>
+      PsiWhiteSpace(' ')
+      StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+        PsiElement(integer)('1')

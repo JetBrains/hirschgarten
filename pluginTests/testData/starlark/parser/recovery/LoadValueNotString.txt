@@ -1,0 +1,13 @@
+FILE
+  StarlarkLoadStatement(LOAD_STATEMENT)
+    PsiElement(load)('load')
+    PsiElement(()('(')
+    StarlarkFilenameLoadValue(FILENAME_LOAD_VALUE)
+      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+        PsiElement(string)('"a.bzl"')
+    PsiElement(,)(',')
+    PsiWhiteSpace(' ')
+    StarlarkStringLoadValue(STRING_LOAD_VALUE)
+      PsiErrorElement:String expected
+        PsiElement(integer)('5')
+    PsiElement())(')')

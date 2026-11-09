@@ -1,0 +1,29 @@
+FILE
+  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)('f')
+    PsiElement(def)('def')
+    PsiWhiteSpace(' ')
+    PsiElement(identifier)('f')
+    StarlarkParameterList(PARAMETER_LIST)
+      PsiElement(()('(')
+      StarlarkMandatoryParameter(MANDATORY_PARAMETER)('a')
+        PsiElement(identifier)('a')
+      PsiErrorElement:',' or '(' or ')' expected
+        <empty list>
+    PsiWhiteSpace(' ')
+    StarlarkStatementList(STATEMENT_LIST)
+      StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+          PsiElement(identifier)('b')
+        PsiErrorElement:End of statement expected
+          <empty list>
+  PsiElement())(')')
+  PsiErrorElement:Statement expected, found )
+    <empty list>
+  PsiElement(:)(':')
+  PsiErrorElement:Statement expected, found :
+    <empty list>
+  PsiWhiteSpace('\n    ')
+  PsiErrorElement:Unexpected indent
+    <empty list>
+  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+    PsiElement(pass)('pass')

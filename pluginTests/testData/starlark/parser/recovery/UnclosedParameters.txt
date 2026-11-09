@@ -1,0 +1,13 @@
+FILE
+  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)('f')
+    PsiElement(def)('def')
+    PsiWhiteSpace(' ')
+    PsiElement(identifier)('f')
+    StarlarkParameterList(PARAMETER_LIST)
+      PsiElement(()('(')
+      PsiErrorElement:Formal parameter name expected
+        <empty list>
+    PsiErrorElement:':' expected
+      <empty list>
+    StarlarkStatementList(STATEMENT_LIST)
+      <empty list>
