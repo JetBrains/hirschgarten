@@ -9,9 +9,8 @@ FILE
         PsiElement(identifier)('x')
       PsiElement(,)(',')
       PsiWhiteSpace(' ')
-      PsiElement(*)('*')
-      PsiErrorElement:',' or identifier expected, got ')'
-        <empty list>
+      StarlarkKeywordOnlyBoundary(KEYWORD_ONLY_BOUNDARY)
+        PsiElement(*)('*')
       PsiElement())(')')
     PsiElement(:)(':')
     PsiWhiteSpace('\n    ')
