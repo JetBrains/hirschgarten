@@ -404,18 +404,19 @@ class BepServer(
 
   private fun processActionCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasAction()) {
-      consumeActionCompletedEvent(event.action)
+      consumeActionCompletedEvent(event)
     }
   }
 
-  private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.ActionExecuted) {
-    val label = Label.parse(event.label)
-    when (event.stderr.fileCase) {
+  private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
+    val label = Label.parse(event.id.actionCompleted.label)
+    val payload = event.action
+    when (payload.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
-          val path = bazelPathsResolver.resolve(event.stderr)
+          val path = bazelPathsResolver.resolve(payload.stderr)
           val stdErrText = Files.readString(path)
-          processDiagnosticText(stdErrText, label, parentId)
+          processActionDiagnosticText(stdErrText, label, parentId, payload.success)
         }
         catch (e: FileSystemNotFoundException) {
           LOGGER.warn("Failed to process diagnostic text", e)
@@ -426,17 +427,18 @@ class BepServer(
       }
 
       BuildEventStreamProtos.File.FileCase.CONTENTS -> {
-        processDiagnosticText(event.stderr.contents.toStringUtf8(), label, parentId)
+        processActionDiagnosticText(payload.stderr.contents.toStringUtf8(), label, parentId, payload.success)
       }
 
       else -> {}
     }
   }
 
-  private fun processDiagnosticText(
+  private fun processActionDiagnosticText(
     stdErrText: String,
     targetLabel: Label,
     taskId: TaskId,
+    success: Boolean,
   ) {
     if (stdErrText.isNotEmpty()) {
       val events =
@@ -447,7 +449,9 @@ class BepServer(
         )
       events.forEach {
         taskEventsHandler.onBuildPublishDiagnostics(
-          it,
+          if ((!success) && (context != BazelInvocationContext.SYNC)) it else it.copy(
+            diagnostics = it.diagnostics.map { it.demoteErrors() }
+          )
         )
       }
     }
