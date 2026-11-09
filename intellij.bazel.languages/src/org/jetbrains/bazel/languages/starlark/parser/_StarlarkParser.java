@@ -1381,25 +1381,14 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '*' &','
+  // '*'
   public static boolean keyword_only_boundary(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "keyword_only_boundary")) return false;
     if (!nextTokenIs(b, MULT)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, MULT);
-    r = r && keyword_only_boundary_1(b, l + 1);
     exit_section_(b, m, KEYWORD_ONLY_BOUNDARY, r);
-    return r;
-  }
-
-  // &','
-  private static boolean keyword_only_boundary_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "keyword_only_boundary_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _AND_);
-    r = consumeToken(b, COMMA);
-    exit_section_(b, l, m, r, false, null);
     return r;
   }
 

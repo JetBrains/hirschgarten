@@ -189,7 +189,7 @@ private parameter ::=
   | optional_parameter
   | mandatory_parameter
 variadic_parameter ::= '*' IDENTIFIER
-keyword_only_boundary ::= '*' &','
+keyword_only_boundary ::= '*'
 keyword_variadic_parameter ::= '**' IDENTIFIER { pin=1 }
 optional_parameter ::= keyword_prefix test { pin=1 }
 mandatory_parameter ::= IDENTIFIER

@@ -167,6 +167,18 @@ class StarlarkFunctionParameterValidationInspectionTest {
   }
 
   @Test
+  fun `bare star at the end should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      def f(a, <error descr="$descriptionAsterisk">*</error>):
+          pass
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `bare star followed by variadic should be highlighted`() {
     myFixture.configureByText(
       "test.bzl",
