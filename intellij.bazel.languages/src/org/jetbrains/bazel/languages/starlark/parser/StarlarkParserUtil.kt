@@ -62,8 +62,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   /** True when the current member chain has no subscription, so its last `.name` can be a target. */
   private val CHAIN_TARGETABLE = Key.create<Boolean>("starlark.parser.chain.targetable")
 
-  private val PENDING_DEDENT = Key.create<Boolean>("starlark.parser.pending.dedent")
-
   /**
    * Consumes the `,` between two items of a list. When the `,` is missing and [start] can start the next item,
    * reports the missing `,`, and the list goes on with that item.
@@ -194,23 +192,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
         in StarlarkTokenSets.ENDS_OF_STATEMENT -> return false
       }
     }
-  }
-
-  /** Records that an indented block ended. The DEDENT after it belongs to the statement that [blockDedent] ends. */
-  @JvmStatic
-  fun blockEnd(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
-    builder.putUserData(PENDING_DEDENT, true)
-    return true
-  }
-
-  /** Consumes the DEDENT of the block that ended last. A block without an indent has no DEDENT. */
-  @JvmStatic
-  fun blockDedent(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
-    if (builder.getUserData(PENDING_DEDENT) == true) {
-      builder.putUserData(PENDING_DEDENT, false)
-      if (builder.tokenType === StarlarkTokenTypes.DEDENT) builder.advanceLexer()
-    }
-    return true
   }
 
   @JvmStatic
