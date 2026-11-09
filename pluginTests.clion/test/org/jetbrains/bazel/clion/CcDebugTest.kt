@@ -1,32 +1,25 @@
 package org.jetbrains.bazel.clion
 
 import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrDebugSessionContext
-import com.intellij.clion.testFramework.nolang.junit5.debugger.debugProfileFixture
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
-import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.vfs.readText
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.common.waitUntil
-import com.intellij.testFramework.junit5.fixture.testFixture
 import com.intellij.xdebugger.XDebuggerAssertions
 import com.intellij.xdebugger.impl.XDebugSessionImpl
-import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
-import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
-import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
-import com.jetbrains.cidr.cpp.execution.debugger.backend.LldbDebugProfileState
 import com.jetbrains.cidr.execution.CidrExecutionFixture
-import com.jetbrains.cidr.execution.debugger.CidrDebuggerPathManager
 import com.jetbrains.cidr.execution.debugger.CidrDebuggingFixture.DebuggerState
-import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguration
 import com.jetbrains.cidr.execution.debugger.toggleBreakpoint
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.fixtures.CcDebugTestApplication
+import org.jetbrains.bazel.fixtures.CcDebugger
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.ccDebugInfoDialogFixture
+import org.jetbrains.bazel.fixtures.ccDebuggerFixture
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.fixtures.startCcDebugSession
 import org.jetbrains.bazel.isWindows
@@ -45,9 +38,9 @@ private const val EXPECTED_EXIT_CODE = 60 + 61 + 62 + 64
  */
 @CcDebugTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: BaseState, bazelVersion: String) {
+abstract class CcDebugTest(debugger: CcDebugger, bazelVersion: String) {
 
-  abstract class Gdb(bazelVersion: String) : CcDebugTest(CLionGdbDebugProfileType.ID, GdbDebugProfileState(), bazelVersion) {
+  abstract class Gdb(bazelVersion: String) : CcDebugTest(CcDebugger.GDB, bazelVersion) {
 
     @EnabledOnOs(OS.LINUX)
     class Bazel7 : Gdb(BazelVersions.BAZEL_7)
@@ -57,30 +50,15 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
 
     @EnabledOnOs(OS.LINUX)
     class Bazel9 : Gdb(BazelVersions.BAZEL_9)
-
-    @Suppress("unused")
-    private val bundledGdb = testFixture {
-      assertThat(CidrDebuggerPathManager.bundledGDBBinary).withFailMessage("bundled GDB not found").exists()
-      initialized(Unit) {}
-    }
   }
 
-  abstract class Lldb(bazelVersion: String) : CcDebugTest(CLionLldbDebugProfileType.ID, LldbDebugProfileState(), bazelVersion) {
+  abstract class Lldb(bazelVersion: String) : CcDebugTest(CcDebugger.LLDB, bazelVersion) {
 
-    @EnabledOnOs(OS.LINUX, OS.WINDOWS)
     class Bazel7 : Lldb(BazelVersions.BAZEL_7)
 
-    @EnabledOnOs(OS.LINUX, OS.WINDOWS)
     class Bazel8 : Lldb(BazelVersions.BAZEL_8)
 
-    @EnabledOnOs(OS.LINUX, OS.WINDOWS)
     class Bazel9 : Lldb(BazelVersions.BAZEL_9)
-
-    @Suppress("unused")
-    private val bundledLldb = testFixture {
-      assertThat(LLDBDriverConfiguration.hasBundledLLDB()).withFailMessage("bundled LLDB not found").isTrue()
-      initialized(Unit) {}
-    }
   }
 
   private val projectFixture = clionBazelProjectFixture("clion/debug", buildProject = true, bazelVersion = bazelVersion) {
@@ -99,7 +77,7 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
   }
 
   @Suppress("unused")
-  private val debugProfile = debugProfileFixture(projectFixture, debugProfileTypeId, debugProfileSettings)
+  private val debuggerFixture = ccDebuggerFixture(projectFixture, debugger)
 
   private val debugInfoDialogFixture = ccDebugInfoDialogFixture(projectFixture, choice = CcDebugInfoChoice.DEBUG_ANYWAY)
 

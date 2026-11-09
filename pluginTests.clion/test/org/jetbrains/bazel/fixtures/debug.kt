@@ -1,14 +1,22 @@
 package org.jetbrains.bazel.fixtures
 
 import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrDebugSessionContext
+import com.intellij.clion.testFramework.nolang.junit5.debugger.debugProfileFixture
 import com.intellij.clion.testFramework.nolang.junit5.debugger.startDebugSession
 import com.intellij.execution.RunManager
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
+import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
+import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
+import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
+import com.jetbrains.cidr.cpp.execution.debugger.backend.LldbDebugProfileState
+import com.jetbrains.cidr.execution.debugger.CidrDebuggerPathManager
+import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.assertions.findTarget
@@ -21,6 +29,48 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
+
+/** A bundled debugger of the IDE and its debug profile type. */
+sealed interface CcDebugger {
+
+  val debugProfileTypeId: String
+
+  fun createDebugProfileSettings(): BaseState
+
+  fun isBundled(): Boolean
+
+  object GDB : CcDebugger {
+
+    override val debugProfileTypeId: String get() = CLionGdbDebugProfileType.ID
+
+    override fun createDebugProfileSettings(): BaseState = GdbDebugProfileState()
+
+    override fun isBundled(): Boolean = CidrDebuggerPathManager.bundledGDBBinary.exists()
+  }
+
+  object LLDB : CcDebugger {
+
+    override val debugProfileTypeId: String get() = CLionLldbDebugProfileType.ID
+
+    override fun createDebugProfileSettings(): BaseState = LldbDebugProfileState()
+
+    override fun isBundled(): Boolean = LLDBDriverConfiguration.hasBundledLLDB()
+  }
+}
+
+/**
+ * Makes the [debugger] the current debug profile of the project. Fails when
+ * the current build does not bundle the [debugger].
+ */
+internal fun ccDebuggerFixture(projectFixture: TestFixture<Project>, debugger: CcDebugger): TestFixture<Unit> {
+  val debugProfileFixture = debugProfileFixture(projectFixture, debugger.debugProfileTypeId, debugger.createDebugProfileSettings())
+
+  return testFixture {
+    assertThat(debugger.isBundled()).withFailMessage("bundled $debugger not found").isTrue()
+    debugProfileFixture.init()
+    initialized(Unit) {}
+  }
+}
 
 /** Starts a debug session for the [label] with the [CcDebugRunner]. */
 internal suspend fun Project.startCcDebugSession(label: String): CidrDebugSessionContext {

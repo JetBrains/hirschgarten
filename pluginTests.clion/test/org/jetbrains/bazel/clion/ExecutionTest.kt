@@ -1,21 +1,18 @@
 package org.jetbrains.bazel.clion
 
-import com.intellij.clion.testFramework.nolang.junit5.debugger.debugProfileFixture
 import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.testFramework.junit5.fixture.testFixture
-import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileType
-import com.jetbrains.cidr.cpp.execution.debugger.backend.LldbDebugProfileState
-import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.fixtures.BazelExecutionResult
 import org.jetbrains.bazel.fixtures.CcDebugTestApplication
+import org.jetbrains.bazel.fixtures.CcDebugger
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
+import org.jetbrains.bazel.fixtures.ccDebuggerFixture
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.fixtures.createBazelConfiguration
 import org.jetbrains.bazel.fixtures.executeBazelConfiguration
@@ -54,17 +51,11 @@ abstract class ExecutionTest(private val executorId: String) {
 
   class Default : ExecutionTest(DefaultRunExecutor.EXECUTOR_ID)
 
-  @DisabledOnOs(OS.MAC, OS.WINDOWS)
+  @DisabledOnOs(OS.WINDOWS, disabledReason = "only the CcDebugTest build on Windows has the bundled debuggers")
   class Debug : ExecutionTest(DefaultDebugExecutor.EXECUTOR_ID) {
 
     @Suppress("unused")
-    private val debugProfile = debugProfileFixture(projectFixture, CLionLldbDebugProfileType.ID, LldbDebugProfileState())
-
-    @Suppress("unused")
-    private val bundledLldb = testFixture {
-      assertThat(LLDBDriverConfiguration.hasBundledLLDB()).withFailMessage("bundled LLDB not found").isTrue()
-      initialized(Unit) {}
-    }
+    private val debuggerFixture = ccDebuggerFixture(projectFixture, CcDebugger.LLDB)
   }
 
   @Test
