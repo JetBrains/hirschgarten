@@ -12,6 +12,7 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.bazelInfo
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
+import org.jetbrains.bsp.protocol.BazelInvocationContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -60,6 +61,7 @@ class BepDiagnosticsTest {
       diagnosticsService = DiagnosticsService(testBazel.workspaceRoot),
       parentId = TaskGroupId("originId").task(""),
       bazelPathsResolver = BazelPathsResolver(testBazel.bazelInfo),
+      context = BazelInvocationContext.BUILD,
     )
 
   @ParameterizedTest
