@@ -641,7 +641,19 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'for' loop_targets 'in' range_test range_tuple? comprehension_if*
+  // lambda_expression | or_level
+  static boolean comprehension_condition(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "comprehension_condition")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, null, "<expression>");
+    r = lambda_expression(b, l + 1);
+    if (!r) r = or_level(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // 'for' loop_targets 'in' or_level comprehension_if*
   static boolean comprehension_for(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "comprehension_for")) return false;
     if (!nextTokenIs(b, FOR_KEYWORD)) return false;
@@ -651,33 +663,25 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     p = r; // pin = 1
     r = r && report_error_(b, loop_targets(b, l + 1));
     r = p && report_error_(b, consumeToken(b, IN_KEYWORD)) && r;
-    r = p && report_error_(b, range_test(b, l + 1)) && r;
-    r = p && report_error_(b, comprehension_for_4(b, l + 1)) && r;
-    r = p && comprehension_for_5(b, l + 1) && r;
+    r = p && report_error_(b, or_level(b, l + 1)) && r;
+    r = p && comprehension_for_4(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
 
-  // range_tuple?
+  // comprehension_if*
   private static boolean comprehension_for_4(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "comprehension_for_4")) return false;
-    range_tuple(b, l + 1);
-    return true;
-  }
-
-  // comprehension_if*
-  private static boolean comprehension_for_5(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "comprehension_for_5")) return false;
     while (true) {
       int c = current_position_(b);
       if (!comprehension_if(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "comprehension_for_5", c)) break;
+      if (!empty_element_parsed_guard_(b, "comprehension_for_4", c)) break;
     }
     return true;
   }
 
   /* ********************************************************** */
-  // 'if' range_test
+  // 'if' comprehension_condition
   static boolean comprehension_if(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "comprehension_if")) return false;
     if (!nextTokenIs(b, IF_KEYWORD)) return false;
@@ -685,7 +689,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _NONE_);
     r = consumeToken(b, IF_KEYWORD);
     p = r; // pin = 1
-    r = r && range_test(b, l + 1);
+    r = r && comprehension_condition(b, l + 1);
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
@@ -749,16 +753,15 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   // comprehension
   public static boolean dict_comp_suffix(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "dict_comp_suffix")) return false;
-    if (!nextTokenIs(b, FOR_KEYWORD)) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_ | _UPPER_, DICT_COMP_EXPRESSION, null);
+    Marker m = enter_section_(b, l, _UPPER_, DICT_COMP_EXPRESSION, "<dict comp suffix>");
     r = comprehension(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
+    exit_section_(b, l, m, r, false, _StarlarkParser::list_comp_recover);
     return r;
   }
 
   /* ********************************************************** */
-  // !'}' dict_item (dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?)
+  // !'}' dict_item (&'for' dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?)
   static boolean dict_content(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "dict_content")) return false;
     boolean r, p;
@@ -781,14 +784,35 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?
+  // &'for' dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?
   private static boolean dict_content_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "dict_content_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = dict_comp_suffix(b, l + 1);
+    r = dict_content_2_0(b, l + 1);
     if (!r) r = dict_content_2_1(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'for' dict_comp_suffix
+  private static boolean dict_content_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "dict_content_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = dict_content_2_0_0(b, l + 1);
+    r = r && dict_comp_suffix(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'for'
+  private static boolean dict_content_2_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "dict_content_2_0_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeToken(b, FOR_KEYWORD);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -1139,58 +1163,13 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // generator_for+
-  static boolean generator_comprehension(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generator_comprehension")) return false;
-    if (!nextTokenIs(b, FOR_KEYWORD)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = generator_for(b, l + 1);
-    while (r) {
-      int c = current_position_(b);
-      if (!generator_for(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "generator_comprehension", c)) break;
-    }
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // 'for' loop_targets 'in' or_level comprehension_if*
-  static boolean generator_for(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generator_for")) return false;
-    if (!nextTokenIs(b, FOR_KEYWORD)) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_);
-    r = consumeToken(b, FOR_KEYWORD);
-    p = r; // pin = 1
-    r = r && report_error_(b, loop_targets(b, l + 1));
-    r = p && report_error_(b, consumeToken(b, IN_KEYWORD)) && r;
-    r = p && report_error_(b, or_level(b, l + 1)) && r;
-    r = p && generator_for_4(b, l + 1) && r;
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
-  }
-
-  // comprehension_if*
-  private static boolean generator_for_4(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generator_for_4")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!comprehension_if(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "generator_for_4", c)) break;
-    }
-    return true;
-  }
-
-  /* ********************************************************** */
-  // generator_comprehension
+  // comprehension
   public static boolean generator_suffix(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generator_suffix")) return false;
     if (!nextTokenIs(b, FOR_KEYWORD)) return false;
     boolean r;
     Marker m = enter_section_(b, l, _UPPER_, GENERATOR_EXPRESSION, null);
-    r = generator_comprehension(b, l + 1);
+    r = comprehension(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -1520,19 +1499,39 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // comprehension
-  public static boolean list_comp_suffix(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "list_comp_suffix")) return false;
-    if (!nextTokenIs(b, FOR_KEYWORD)) return false;
+  // !(close_bracket | header_colon | STATEMENT_BREAK)
+  static boolean list_comp_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "list_comp_recover")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_ | _UPPER_, LIST_COMP_EXPRESSION, null);
-    r = comprehension(b, l + 1);
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !list_comp_recover_0(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
+  // close_bracket | header_colon | STATEMENT_BREAK
+  private static boolean list_comp_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "list_comp_recover_0")) return false;
+    boolean r;
+    r = close_bracket(b, l + 1);
+    if (!r) r = header_colon(b, l + 1);
+    if (!r) r = consumeToken(b, STATEMENT_BREAK);
+    return r;
+  }
+
   /* ********************************************************** */
-  // !']' list_item (list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?)
+  // comprehension
+  public static boolean list_comp_suffix(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "list_comp_suffix")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _UPPER_, LIST_COMP_EXPRESSION, "<list comp suffix>");
+    r = comprehension(b, l + 1);
+    exit_section_(b, l, m, r, false, _StarlarkParser::list_comp_recover);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !']' list_item (&'for' list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?)
   static boolean list_content(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "list_content")) return false;
     boolean r, p;
@@ -1555,14 +1554,35 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?
+  // &'for' list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?
   private static boolean list_content_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "list_content_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = list_comp_suffix(b, l + 1);
+    r = list_content_2_0(b, l + 1);
     if (!r) r = list_content_2_1(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'for' list_comp_suffix
+  private static boolean list_content_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "list_content_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = list_content_2_0_0(b, l + 1);
+    r = r && list_comp_suffix(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'for'
+  private static boolean list_content_2_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "list_content_2_0_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeToken(b, FOR_KEYWORD);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -2431,69 +2451,6 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     if (!r) r = dict_literal_expression(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
-  }
-
-  /* ********************************************************** */
-  // lambda_expression | or_level
-  static boolean range_test(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "range_test")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, null, "<expression>");
-    r = lambda_expression(b, l + 1);
-    if (!r) r = or_level(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // ',' range_test? (',' range_test)* ','?
-  public static boolean range_tuple(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "range_tuple")) return false;
-    if (!nextTokenIs(b, COMMA)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _LEFT_, TUPLE_EXPRESSION, null);
-    r = consumeToken(b, COMMA);
-    r = r && range_tuple_1(b, l + 1);
-    r = r && range_tuple_2(b, l + 1);
-    r = r && range_tuple_3(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // range_test?
-  private static boolean range_tuple_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "range_tuple_1")) return false;
-    range_test(b, l + 1);
-    return true;
-  }
-
-  // (',' range_test)*
-  private static boolean range_tuple_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "range_tuple_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!range_tuple_2_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "range_tuple_2", c)) break;
-    }
-    return true;
-  }
-
-  // ',' range_test
-  private static boolean range_tuple_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "range_tuple_2_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, COMMA);
-    r = r && range_test(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ','?
-  private static boolean range_tuple_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "range_tuple_3")) return false;
-    consumeToken(b, COMMA);
-    return true;
   }
 
   /* ********************************************************** */

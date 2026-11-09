@@ -26,6 +26,9 @@ class StarlarkParsingExpressionTest {
   fun testComprehension() = parsing.doTest(true)
 
   @Test
+  fun testComprehensionWithLambdaCondition() = parsing.doTest(true)
+
+  @Test
   fun testConditional() = parsing.doTest(true)
 
   @Test
