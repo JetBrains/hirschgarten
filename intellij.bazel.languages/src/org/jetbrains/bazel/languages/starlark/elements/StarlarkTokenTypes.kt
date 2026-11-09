@@ -19,33 +19,33 @@ object StarlarkTokenTypes {
 
   // Significant whitespaces
   @JvmField
-  val INDENT = StarlarkTokenType("INDENT")
+  val INDENT = StarlarkTokenType("indent")
 
   @JvmField
-  val DEDENT = StarlarkTokenType("DEDENT")
+  val DEDENT = StarlarkTokenType("dedent")
 
   @JvmField
-  val INCONSISTENT_DEDENT = StarlarkTokenType("INCONSISTENT_DEDENT")
+  val INCONSISTENT_DEDENT = StarlarkTokenType("inconsistent dedent")
 
   @JvmField
-  val STATEMENT_BREAK = StarlarkTokenType("STATEMENT_BREAK")
+  val STATEMENT_BREAK = StarlarkTokenType("end of statement")
 
   // Comment
   @JvmField
-  val COMMENT = StarlarkTokenType("COMMENT")
+  val COMMENT = StarlarkTokenType("comment")
 
   // Literals
   @JvmField
-  val STRING = StarlarkTokenType("STRING")
+  val STRING = StarlarkTokenType("string")
 
   @JvmField
-  val BYTES = StarlarkTokenType("BYTES")
+  val BYTES = StarlarkTokenType("bytes")
 
   @JvmField
-  val INT = StarlarkTokenType("INT")
+  val INT = StarlarkTokenType("integer")
 
   @JvmField
-  val FLOAT = StarlarkTokenType("FLOAT")
+  val FLOAT = StarlarkTokenType("float")
 
   // Keywords
   @JvmField
@@ -159,7 +159,7 @@ object StarlarkTokenTypes {
 
   // Identifier
   @JvmField
-  val IDENTIFIER = StarlarkTokenType("IDENTIFIER")
+  val IDENTIFIER = StarlarkTokenType("identifier")
 
   // Punctuation
   @JvmField
