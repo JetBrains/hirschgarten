@@ -107,6 +107,29 @@ internal class BazelOutFileHardLinksTest {
   }
 
   @Test
+  fun `virtual header of a local repository links to the workspace`(): Unit = timeoutRunBlocking {
+    val info = testBazel.bazelInfo
+    val links = DefaultBazelOutputFileHardLinks(testBazel.project, info)
+    val source = testBazel.workspaceRoot.resolve("lib/external/hdr.h")
+    source.parent.createDirectories()
+    source.writeText("#define VALUE 1\n")
+
+    // Bazel links the root of a local_path_override repository into the workspace
+    val repo = info.outputBase.resolve("external/external_lib+")
+    repo.parent.createDirectories()
+    repo.createSymbolicLinkPointingTo(source.parent)
+    val original = info.execRoot.resolve("bazel-out/k8-fastbuild/bin/external/external_lib+/_virtual_includes/lib/external_lib/hdr.h")
+    original.parent.createDirectories()
+    original.createSymbolicLinkPointingTo(repo.resolve("hdr.h"))
+
+    links.onBeforeSync()
+    val cached = checkNotNull(links.createOutputFileHardLink(original))
+    links.onAfterSync(false)
+    assertThat(cached.isSymbolicLink()).isTrue()
+    assertThat(cached.toRealPath()).isEqualTo(source.toRealPath())
+  }
+
+  @Test
   @DisabledOnOs(OS.WINDOWS)
   fun `readable output symlink remains available when its target cannot be hardlinked`(): Unit = runBlocking {
     val info = testBazel.bazelInfo
