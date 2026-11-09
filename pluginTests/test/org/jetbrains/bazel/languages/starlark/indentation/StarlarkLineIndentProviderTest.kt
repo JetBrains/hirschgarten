@@ -3,12 +3,14 @@ package org.jetbrains.bazel.languages.starlark.indentation
 import com.intellij.testFramework.runInEdtAndGet
 import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.comparables.shouldBeGreaterThan
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkIndentationTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkLineIndentProviderTest : StarlarkIndentationTestCase() {
+class StarlarkLineIndentProviderTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/indentation")
+
   @Test
   fun `should add indent in the empty line after enter between braces`() {
     // given

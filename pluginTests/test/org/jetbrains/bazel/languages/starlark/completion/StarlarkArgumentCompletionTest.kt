@@ -1,13 +1,16 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import io.kotest.matchers.collections.shouldContainOnly
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkCompletionTestCase
+import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkArgumentCompletionTest : StarlarkCompletionTestCase() {
+class StarlarkArgumentCompletionTest {
+  private val myFixture by bazelCodeInsightFixture(release = BazelRelease(9, 1), testDataDir = "starlark/completion")
+
   @Test
   fun `should complete arguments in function call (excluding variadic ones)`() {
     myFixture.configureByFile("ArgumentCompletion.bzl")

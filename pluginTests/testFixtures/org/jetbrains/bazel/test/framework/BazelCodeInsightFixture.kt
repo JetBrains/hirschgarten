@@ -33,10 +33,14 @@ import org.jetbrains.bazel.test.framework.testproject.workspaceRootFixture
  *
  * Declare the result as an instance property of a class with [BazelTestApplication], so that each test gets a new project.
  * The fixture sets up from a background thread.
+ * When [testDataDir] is set, the test data path of the fixture is this directory in [BazelPathManager.testDataRoot].
  */
 @TestOnly
-fun bazelCodeInsightFixture(release: BazelRelease = BazelRelease.FALLBACK_VERSION): TestFixture<CodeInsightTestFixture> =
-  testBazelProjectFixture(release = release).codeInsightFixtureOnTestBazel()
+fun bazelCodeInsightFixture(
+  release: BazelRelease = BazelRelease.FALLBACK_VERSION,
+  testDataDir: String? = null,
+): TestFixture<CodeInsightTestFixture> =
+  testBazelProjectFixture(release = release).codeInsightFixtureOnTestBazel(testDataDir)
 
 /** Returns the test Bazel project of a fixture from [bazelCodeInsightFixture]. Fails for any other fixture. */
 val CodeInsightTestFixture.testBazel: TestBazelProject
@@ -54,7 +58,7 @@ fun CodeInsightTestFixture.completeBasicLookupStrings(dumbMode: Boolean = false)
   return items.flatMap { it.allLookupStrings }
 }
 
-private fun TestFixture<TestBazelProject>.codeInsightFixtureOnTestBazel(): TestFixture<CodeInsightTestFixture> =
+private fun TestFixture<TestBazelProject>.codeInsightFixtureOnTestBazel(testDataDir: String?): TestFixture<CodeInsightTestFixture> =
   testFixture("bazelCodeInsightFixture") {
     val testBazel = this@codeInsightFixtureOnTestBazel.init()
     val rootDirFixture = workspaceRootFixture()
@@ -63,6 +67,9 @@ private fun TestFixture<TestBazelProject>.codeInsightFixtureOnTestBazel(): TestF
     val codeInsightFixture = codeInsightFixture(projectFixture, rootDirFixture) { project, tempDir ->
       BazelCodeInsightTestFixture(project, tempDir, testBazel)
     }.init()
+    if (testDataDir != null) {
+      codeInsightFixture.testDataPath = BazelPathManager.getTestFixture(testDataDir)
+    }
     initialized(codeInsightFixture) {}
   }
 

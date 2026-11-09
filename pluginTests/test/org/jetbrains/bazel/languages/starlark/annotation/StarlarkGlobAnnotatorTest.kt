@@ -2,12 +2,14 @@ package org.jetbrains.bazel.languages.starlark.annotation
 
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkGlobAnnotatorTest : StarlarkAnnotatorTestCase() {
+class StarlarkGlobAnnotatorTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/annotation")
+
   private val globMsg = StarlarkBundle.message("annotator.glob.empty")
   private val patternMsg = StarlarkBundle.message("annotator.glob.empty.pattern")
 

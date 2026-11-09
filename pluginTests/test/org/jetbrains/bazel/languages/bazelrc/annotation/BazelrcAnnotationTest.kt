@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.languages.bazelrc.annotation
 
-import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcAnnotatorTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class BazelrcAnnotationTest : BazelrcAnnotatorTestCase() {
+class BazelrcAnnotationTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "bazelrc/annotation")
+
   @Test
   fun testLabelFlags() {
     myFixture.configureByFile("LabelFlagsTestData.bazelrc")

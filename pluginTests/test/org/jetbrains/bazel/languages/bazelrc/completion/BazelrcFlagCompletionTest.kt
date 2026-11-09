@@ -5,13 +5,15 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.collections.shouldNotHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class BazelrcFlagCompletionTest : BazelrcCompletionTestCase() {
+class BazelrcFlagCompletionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "bazelrc/completion")
+
   @Test
   fun `should complete at beginning of a flag`() {
     // given

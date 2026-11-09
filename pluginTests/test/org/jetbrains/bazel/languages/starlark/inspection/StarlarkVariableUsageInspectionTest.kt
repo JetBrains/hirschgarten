@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkVariableUsageInspectionTest : StarlarkInspectionTestCase() {
+class StarlarkVariableUsageInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   private val descriptionGlobal = StarlarkBundle.message("inspection.description.variable.referenced.before.assignment", "Global", "x")
   private val descriptionLocal = StarlarkBundle.message("inspection.description.variable.referenced.before.assignment", "Local", "x")
   private val descriptionFree = StarlarkBundle.message("inspection.description.variable.referenced.before.assignment", "Free", "x")

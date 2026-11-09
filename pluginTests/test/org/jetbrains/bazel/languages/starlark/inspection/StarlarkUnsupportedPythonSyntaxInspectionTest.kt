@@ -3,13 +3,15 @@ package org.jetbrains.bazel.languages.starlark.inspection
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkUnsupportedPythonSyntaxInspectionTest : StarlarkInspectionTestCase() {
+class StarlarkUnsupportedPythonSyntaxInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   private val unsupportedPower = StarlarkBundle.message("inspection.description.unsupported.binary.operator", "**")
   private val chainedComparison = StarlarkBundle.message("inspection.description.unsupported.chained.comparison")
   private val generatorExpression = StarlarkBundle.message("inspection.description.unsupported.generator.expression")

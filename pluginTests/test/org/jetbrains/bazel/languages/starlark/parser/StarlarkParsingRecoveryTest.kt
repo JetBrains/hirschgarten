@@ -1,143 +1,150 @@
 package org.jetbrains.bazel.languages.starlark.parser
 
 import com.intellij.testFramework.junit5.TestApplication
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkParsingTestCase
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import org.jetbrains.bazel.languages.starlark.fixtures.starlarkParsingFixture
 import org.junit.jupiter.api.Test
 
 @TestApplication
-class StarlarkParsingRecoveryTest : StarlarkParsingTestCase("recovery") {
-  @Test
-  fun testArgumentsWithoutComma() = doTest(true)
+class StarlarkParsingRecoveryTest {
+  companion object {
+    private val project = projectFixture()
+  }
+
+  private val parsing by starlarkParsingFixture(project, "recovery")
 
   @Test
-  fun testArgumentsWithoutCommaBeforeNamedArgument() = doTest(true)
+  fun testArgumentsWithoutComma() = parsing.doTest(true)
 
   @Test
-  fun testAssignmentWithoutValue() = doTest(true)
+  fun testArgumentsWithoutCommaBeforeNamedArgument() = parsing.doTest(true)
 
   @Test
-  fun testAugmentedAssignmentWithoutValue() = doTest(true)
+  fun testAssignmentWithoutValue() = parsing.doTest(true)
 
   @Test
-  fun testBinaryWithoutRightOperand() = doTest(true)
+  fun testAugmentedAssignmentWithoutValue() = parsing.doTest(true)
 
   @Test
-  fun testBinaryWithoutRightOperandBeforeNextLine() = doTest(true)
+  fun testBinaryWithoutRightOperand() = parsing.doTest(true)
 
   @Test
-  fun testChainedAssignment() = doTest(true)
+  fun testBinaryWithoutRightOperandBeforeNextLine() = parsing.doTest(true)
 
   @Test
-  fun testChainedAssignmentWithoutValue() = doTest(true)
+  fun testChainedAssignment() = parsing.doTest(true)
 
   @Test
-  fun testConditionalWithoutElse() = doTest(true)
+  fun testChainedAssignmentWithoutValue() = parsing.doTest(true)
 
   @Test
-  fun testDictWithoutColon() = doTest(true)
+  fun testConditionalWithoutElse() = parsing.doTest(true)
 
   @Test
-  fun testDictWithoutCommaBetweenEntries() = doTest(true)
+  fun testDictWithoutColon() = parsing.doTest(true)
 
   @Test
-  fun testDictWithoutValue() = doTest(true)
+  fun testDictWithoutCommaBetweenEntries() = parsing.doTest(true)
 
   @Test
-  fun testForWithoutIn() = doTest(true)
+  fun testDictWithoutValue() = parsing.doTest(true)
 
   @Test
-  fun testForWithoutTarget() = doTest(true)
+  fun testForWithoutIn() = parsing.doTest(true)
 
   @Test
-  fun testFunctionWithoutBody() = doTest(true)
+  fun testForWithoutTarget() = parsing.doTest(true)
 
   @Test
-  fun testFunctionWithoutClosingParenthesis() = doTest(true)
+  fun testFunctionWithoutBody() = parsing.doTest(true)
 
   @Test
-  fun testFunctionWithoutIndent() = doTest(true)
+  fun testFunctionWithoutClosingParenthesis() = parsing.doTest(true)
 
   @Test
-  fun testFunctionWithoutName() = doTest(true)
+  fun testFunctionWithoutIndent() = parsing.doTest(true)
 
   @Test
-  fun testFunctionWithoutParameters() = doTest(true)
+  fun testFunctionWithoutName() = parsing.doTest(true)
 
   @Test
-  fun testIfWithoutColon() = doTest(true)
+  fun testFunctionWithoutParameters() = parsing.doTest(true)
 
   @Test
-  fun testIfWithoutCondition() = doTest(true)
+  fun testIfWithoutColon() = parsing.doTest(true)
 
   @Test
-  fun testLambdaWithoutColon() = doTest(true)
+  fun testIfWithoutCondition() = parsing.doTest(true)
 
   @Test
-  fun testListWithoutComma() = doTest(true)
+  fun testLambdaWithoutColon() = parsing.doTest(true)
 
   @Test
-  fun testListWithoutCommaBetweenStrings() = doTest(true)
+  fun testListWithoutComma() = parsing.doTest(true)
 
   @Test
-  fun testLoadValueNotString() = doTest(true)
+  fun testListWithoutCommaBetweenStrings() = parsing.doTest(true)
 
   @Test
-  fun testLoadWithoutComma() = doTest(true)
+  fun testLoadValueNotString() = parsing.doTest(true)
 
   @Test
-  fun testLoadWithoutSymbols() = doTest(true)
+  fun testLoadWithoutComma() = parsing.doTest(true)
 
   @Test
-  fun testNamedArgumentAtEndOfFile() = doTest(true)
+  fun testLoadWithoutSymbols() = parsing.doTest(true)
 
   @Test
-  fun testNamedArgumentWithoutValue() = doTest(true)
+  fun testNamedArgumentAtEndOfFile() = parsing.doTest(true)
 
   @Test
-  fun testNotWithoutOperand() = doTest(true)
+  fun testNamedArgumentWithoutValue() = parsing.doTest(true)
 
   @Test
-  fun testParametersWithoutComma() = doTest(true)
+  fun testNotWithoutOperand() = parsing.doTest(true)
 
   @Test
-  fun testPythonStatements() = doTest(true)
+  fun testParametersWithoutComma() = parsing.doTest(true)
 
   @Test
-  fun testReferenceWithoutName() = doTest(true)
+  fun testPythonStatements() = parsing.doTest(true)
 
   @Test
-  fun testReservedKeywordAsName() = doTest(true)
+  fun testReferenceWithoutName() = parsing.doTest(true)
 
   @Test
-  fun testReturnWithUnexpectedToken() = doTest(true)
+  fun testReservedKeywordAsName() = parsing.doTest(true)
 
   @Test
-  fun testStarArgumentWithoutValue() = doTest(true)
+  fun testReturnWithUnexpectedToken() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedArgumentList() = doTest(true)
+  fun testStarArgumentWithoutValue() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedDict() = doTest(true)
+  fun testUnclosedArgumentList() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedList() = doTest(true)
+  fun testUnclosedDict() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedListInCall() = doTest(true)
+  fun testUnclosedList() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedLoad() = doTest(true)
+  fun testUnclosedListInCall() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedParameters() = doTest(true)
+  fun testUnclosedLoad() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedSlice() = doTest(true)
+  fun testUnclosedParameters() = parsing.doTest(true)
 
   @Test
-  fun testUnclosedTuple() = doTest(true)
+  fun testUnclosedSlice() = parsing.doTest(true)
 
   @Test
-  fun testUnexpectedIndent() = doTest(true)
+  fun testUnclosedTuple() = parsing.doTest(true)
+
+  @Test
+  fun testUnexpectedIndent() = parsing.doTest(true)
 }

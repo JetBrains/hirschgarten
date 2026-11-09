@@ -1,12 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.codeInsight.daemon.SyntheticPsiFileSupport
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkUnusedDeclarationTest : StarlarkAnnotatorTestCase() {
+class StarlarkUnusedDeclarationTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/annotation")
 
   @Test
   fun testUnusedDeclaration() {

@@ -1,14 +1,21 @@
 package org.jetbrains.bazel.languages.starlark.parser
 
 import com.intellij.testFramework.junit5.TestApplication
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkParsingTestCase
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import org.jetbrains.bazel.languages.starlark.fixtures.starlarkParsingFixture
 import org.junit.jupiter.api.Test
 
 @TestApplication
-class StarlarkParsingComplexTest : StarlarkParsingTestCase("complex") {
-  @Test
-  fun testAspects() = doTest(true, true)
+class StarlarkParsingComplexTest {
+  companion object {
+    private val project = projectFixture()
+  }
+
+  private val parsing by starlarkParsingFixture(project, "complex")
 
   @Test
-  fun testBuild() = doTest(true, true)
+  fun testAspects() = parsing.doTest(true, true)
+
+  @Test
+  fun testBuild() = parsing.doTest(true, true)
 }

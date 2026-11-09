@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkInvalidAssignmentTargetInspectionTest : StarlarkInspectionTestCase() {
+class StarlarkInvalidAssignmentTargetInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   private val invalid = StarlarkBundle.message("inspection.description.assignment.target.invalid", "1")
   private val invalidSlice = StarlarkBundle.message("inspection.description.assignment.target.invalid", "a[1:2]")
   private val augmentedSeq = StarlarkBundle.message("inspection.description.assignment.target.augmented.sequence")
