@@ -20,6 +20,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bsp.protocol.BazelInvocationContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
@@ -52,6 +53,7 @@ internal class BepOutputTest {
       diagnosticsService = DiagnosticsService(bazelInfo.workspaceRoot),
       parentId = TaskGroupId("originId").task(""),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
+      context = BazelInvocationContext.BUILD,
     )
   }
 

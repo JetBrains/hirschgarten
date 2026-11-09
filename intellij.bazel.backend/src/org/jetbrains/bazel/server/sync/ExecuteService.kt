@@ -72,7 +72,7 @@ class ExecuteService(
         command.useBes(eventFile)
         val executionDescriptor = command.buildExecutionDescriptor()
         val diagnosticsService = DiagnosticsService(workspaceRoot)
-        val bepServer = BepServer(project, taskEventsHandler, diagnosticsService, taskId, bazelPathsResolver, rawProgressReporter)
+        val bepServer = BepServer(project, taskEventsHandler, diagnosticsService, taskId, bazelPathsResolver, context, rawProgressReporter)
         bepReader = BepReader(bepServer, eventFile)
         val bepReaderDeferred = async(Dispatchers.IO) {
           bepReader.start()

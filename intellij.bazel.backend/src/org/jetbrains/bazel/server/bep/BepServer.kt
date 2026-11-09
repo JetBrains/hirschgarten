@@ -37,6 +37,7 @@ import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
+import org.jetbrains.bsp.protocol.BazelInvocationContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CompileReport
@@ -60,6 +61,7 @@ class BepServer(
   private val diagnosticsService: DiagnosticsService,
   private val parentId: TaskId,
   private val bazelPathsResolver: BazelPathsResolver,
+  private val context: BazelInvocationContext,
   private val rawProgressReporter: RawProgressReporter? = null,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
 
