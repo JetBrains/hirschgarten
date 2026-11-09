@@ -15,7 +15,7 @@
   // A name alone is a complete argument or parameter, so a missing '=' after it is no expected token.
   consumeTokenMethod("keyword_prefix|keyword_equals")="consumeTokenFast"
   // A rule with a name gives one item in an error message, not the list of its start tokens.
-  name("test|expression|or_level|not_level|bitwise_or_level|unary_level|list_item|loop_target|range_test")="expression"
+  name("test|expression|or_level|not_level|bitwise_or_level|unary_level|list_item|loop_target|comprehension_condition")="expression"
   name("statement_or_break|statement|simple_statement|suite|inline_statement_list")="statement"
   name("argument_item|argument")="argument"
   name("parameter_item|parameter")="parameter"
@@ -311,37 +311,34 @@ private header_colon ::= ':' &STATEMENT_BREAK
 private open_bracket ::= '(' | '[' | '{'
 private close_bracket ::= ')' | ']' | '}'
 upper empty_tuple ::= &')' { elementType=tuple_expression }
-upper generator_suffix ::= generator_comprehension { elementType=generator_expression }
+upper generator_suffix ::= comprehension { elementType=generator_expression }
 
 list_literal_expression ::= '[' list_content? ']' { pin=1 }
-private list_content ::= !']' list_item (list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?) { pin=1 }
+private list_content ::= !']' list_item (&'for' list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?) { pin=1 }
 private list_item ::= test { recoverWhile=list_recover }
 private list_recover ::= !(',' | close_bracket | 'for' | header_colon | STATEMENT_BREAK | expression_start)
-upper list_comp_suffix ::= comprehension { elementType=list_comp_expression }
+upper list_comp_suffix ::= comprehension { elementType=list_comp_expression recoverWhile=list_comp_recover }
+private list_comp_recover ::= !(close_bracket | header_colon | STATEMENT_BREAK)
 
 dict_literal_expression ::= '{' dict_content? '}' { pin=1 }
-private dict_content ::= !'}' dict_item (dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?) { pin=1 }
+private dict_content ::= !'}' dict_item (&'for' dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?) { pin=1 }
 private dict_item ::= dict_entry { recoverWhile=dict_recover }
 private dict_recover ::= !(',' | close_bracket | 'for' | header_colon | STATEMENT_BREAK | dict_entry_start)
 private dict_entry_start ::= expression_start | '**'
 private dict_entry ::= double_star_expression | key_value_expression
 key_value_expression ::= test ':' test { pin=1 }
 double_star_expression ::= '**' bitwise_or_level { pin=1 }
-upper dict_comp_suffix ::= comprehension { elementType=dict_comp_expression }
+upper dict_comp_suffix ::= comprehension { elementType=dict_comp_expression recoverWhile=list_comp_recover }
 
-// The range of a generator is an 'or' expression. The range of a list or dict comprehension can also be a lambda or a tuple.
-private generator_comprehension ::= generator_for+
-private generator_for ::= 'for' loop_targets 'in' or_level comprehension_if* { pin=1 }
 private comprehension ::= comprehension_for+
-private comprehension_for ::= 'for' loop_targets 'in' range_test range_tuple? comprehension_if* { pin=1 }
-left range_tuple ::= ',' range_test? (',' range_test)* ','? { elementType=tuple_expression }
-private comprehension_if ::= 'if' range_test { pin=1 }
-private range_test ::= lambda_expression | or_level
+private comprehension_for ::= 'for' loop_targets 'in' or_level comprehension_if* { pin=1 }
+private comprehension_if ::= 'if' comprehension_condition { pin=1 }
+private comprehension_condition ::= lambda_expression | or_level
 
 // The node types that only 'elementType' attributes use.
 fake binary_expression ::= test test
 fake target_expression ::= IDENTIFIER
 fake slice_expression ::= test slice_content
-fake generator_expression ::= test generator_comprehension
+fake generator_expression ::= test comprehension
 fake list_comp_expression ::= test comprehension
 fake dict_comp_expression ::= key_value_expression comprehension

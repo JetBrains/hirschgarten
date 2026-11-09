@@ -50,6 +50,9 @@ class StarlarkParsingRecoveryTest {
   fun testCompoundKeywordInsideLine() = parsing.doTest(true)
 
   @Test
+  fun testComprehensionRangeTupleOrLambda() = parsing.doTest(true)
+
+  @Test
   fun testConditionalWithoutElse() = parsing.doTest(true)
 
   @Test
