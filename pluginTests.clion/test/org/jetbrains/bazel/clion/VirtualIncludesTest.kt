@@ -9,21 +9,16 @@ import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.EnabledOnOs
-import org.junit.jupiter.api.condition.OS
 import org.assertj.core.api.Assertions.assertThat as assertThatGeneric
 
 @CcTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class VirtualIncludesTest(bazelVersion: String) {
 
-  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
   class Bazel7 : VirtualIncludesTest(BazelVersions.BAZEL_7)
 
-  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
   class Bazel8 : VirtualIncludesTest(BazelVersions.BAZEL_8)
 
-  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
   class Bazel9 : VirtualIncludesTest(BazelVersions.BAZEL_9)
 
   private val project by clionBazelProjectFixture("clion/virtual_includes", buildProject = true, bazelVersion = bazelVersion)

@@ -1,30 +1,26 @@
 package org.jetbrains.bazel.clion
 
 import com.google.devtools.intellij.ideinfo.IntellijIdeInfo.CcDebugInfo.CompilationMode
-import com.intellij.clion.testFramework.nolang.junit5.debugger.CidrCloseDebugSessionsExtension
-import com.intellij.clion.testFramework.nolang.junit5.debugger.debugProfileFixture
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionGdbDebugProfileType
-import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
 import com.jetbrains.cidr.execution.CidrExecutionFixture
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
-import org.jetbrains.bazel.fixtures.CcTestApplication
+import org.jetbrains.bazel.fixtures.CcDebugTestApplication
+import org.jetbrains.bazel.fixtures.CcDebugger
 import org.jetbrains.bazel.fixtures.EXECUTION_TIMEOUT
 import org.jetbrains.bazel.fixtures.ccDebugInfoDialogFixture
+import org.jetbrains.bazel.fixtures.ccDebuggerFixture
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.fixtures.startCcDebugSession
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
-import org.junit.jupiter.api.extension.ExtendWith
 
-@EnabledOnOs(OS.LINUX)
-@CcTestApplication
-@ExtendWith(CidrCloseDebugSessionsExtension::class)
+@DisabledOnOs(OS.WINDOWS, disabledReason = "only the CcDebugTest build on Windows has the bundled debuggers")
+@CcDebugTestApplication
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcDebugInfoDialogTest {
 
@@ -33,9 +29,9 @@ class CcDebugInfoDialogTest {
   }
 
   @Suppress("unused")
-  private val debugProfile = debugProfileFixture(projectFixture, CLionGdbDebugProfileType.ID, GdbDebugProfileState())
+  private val debuggerFixture = ccDebuggerFixture(projectFixture, CcDebugger.LLDB)
 
-  private val debugInfoDialogFixture = ccDebugInfoDialogFixture(projectFixture,  choice = CcDebugInfoChoice.DEBUG_ANYWAY)
+  private val debugInfoDialogFixture = ccDebugInfoDialogFixture(projectFixture, choice = CcDebugInfoChoice.DEBUG_ANYWAY)
 
   private val project by projectFixture
   private val debugInfoDialog by debugInfoDialogFixture
