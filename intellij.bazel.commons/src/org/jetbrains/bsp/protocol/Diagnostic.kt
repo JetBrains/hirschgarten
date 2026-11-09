@@ -13,4 +13,7 @@ data class Diagnostic(
   val fileLocation: Path?,
   val targetLabel: Label,
   val level: DiagnosticSeverity? = null,
-)
+) {
+  @ApiStatus.Internal
+  fun demoteErrors() = this.copy(level = if (level == DiagnosticSeverity.ERROR) DiagnosticSeverity.WARNING else level)
+}
