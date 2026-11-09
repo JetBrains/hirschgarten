@@ -19,7 +19,7 @@ FILE
     PsiWhiteSpace(' ')
     StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
       PsiElement(integer)('2')
-    PsiElement(;)(';')
+  PsiElement(;)(';')
   PsiErrorElement:Statement expected, found ;
     PsiElement(;)(';')
   PsiWhiteSpace(' ')

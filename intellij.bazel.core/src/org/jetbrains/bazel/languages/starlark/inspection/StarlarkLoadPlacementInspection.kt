@@ -2,14 +2,18 @@ package org.jetbrains.bazel.languages.starlark.inspection
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.elementType
+import com.intellij.psi.util.siblings
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -35,7 +39,7 @@ class StarlarkLoadPlacementInspection : LocalInspectionTool() {
           node,
           StarlarkBundle.message("inspection.description.load.not.at.top.level")
         )
-      } else if (holder.file.name !in (CONFIG_FILE_NAMES) && hasPreviousNonLoadTopLevelStatement(node)) {
+      } else if (holder.file.name !in (CONFIG_FILE_NAMES) && node.hasPreviousNonLoadTopLevelStatement()) {
         holder.registerProblem(
           node,
           StarlarkBundle.message("inspection.description.load.after.statement")
@@ -43,16 +47,9 @@ class StarlarkLoadPlacementInspection : LocalInspectionTool() {
       }
     }
 
-    private fun hasPreviousNonLoadTopLevelStatement(loadStatement: StarlarkLoadStatement): Boolean {
-      var sibling = PsiTreeUtil.skipWhitespacesAndCommentsBackward(loadStatement)
-      while (sibling != null) {
-        if (sibling !is StarlarkLoadStatement && !isStringComment(sibling)) {
-          return true
-        }
-        sibling = PsiTreeUtil.skipWhitespacesAndCommentsBackward(sibling)
-      }
-      return false
-    }
+    private fun StarlarkLoadStatement.hasPreviousNonLoadTopLevelStatement(): Boolean = siblings(forward = false, withSelf = false)
+        .filter { it !is PsiWhiteSpace && it !is PsiComment && it.elementType !== StarlarkTokenTypes.SEMICOLON }
+        .any { it !is StarlarkLoadStatement && !isStringComment(it) }
 
     private fun isStringComment(node: PsiElement): Boolean {
       val stmt = node as? StarlarkExpressionStatement ?: return false

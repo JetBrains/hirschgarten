@@ -50,6 +50,9 @@ class StarlarkParsingRecoveryTest {
   fun testCompoundKeywordInsideLine() = parsing.doTest(true)
 
   @Test
+  fun testCompoundStatementAfterSemicolon() = parsing.doTest(true)
+
+  @Test
   fun testComprehensionRangeTupleOrLambda() = parsing.doTest(true)
 
   @Test
@@ -102,6 +105,9 @@ class StarlarkParsingRecoveryTest {
 
   @Test
   fun testInlineSuiteWithCompoundStatement() = parsing.doTest(true)
+
+  @Test
+  fun testInlineSuiteWithJunk() = parsing.doTest(true)
 
   @Test
   fun testLambdaWithoutColon() = parsing.doTest(true)

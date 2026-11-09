@@ -38,12 +38,10 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
 
   private val STATEMENT_SEPARATORS = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)
 
-  /** A statement owns its `;`, so the next statement starts after it. */
-  private val STATEMENT_STARTS_AFTER = TokenSet.create(
+  private val LINE_STARTS = TokenSet.create(
     StarlarkTokenTypes.STATEMENT_BREAK,
     StarlarkTokenTypes.INDENT,
     StarlarkTokenTypes.DEDENT,
-    StarlarkTokenTypes.SEMICOLON,
   )
 
   private val INSIGNIFICANT_TOKENS = TokenSet.orSet(StarlarkTokenSets.WHITESPACE, StarlarkTokenSets.COMMENT)
@@ -63,8 +61,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
 
   /** True when the current member chain has no subscription, so its last `.name` can be a target. */
   private val CHAIN_TARGETABLE = Key.create<Boolean>("starlark.parser.chain.targetable")
-
-  private val INLINE_SUITE = Key.create<Boolean>("starlark.parser.inline.suite")
 
   private val PENDING_DEDENT = Key.create<Boolean>("starlark.parser.pending.dedent")
 
@@ -134,10 +130,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
 
   @JvmStatic
   fun plainMode(builder: PsiBuilder, level: Int, parser: Parser): Boolean = withFlag(builder, TARGET_MODE, false) { parser.parse(builder, level) }
-
-  /** Parses a suite on the line of its `:`. Its statements leave each `;` to the suite. */
-  @JvmStatic
-  fun inlineSuite(builder: PsiBuilder, level: Int, parser: Parser): Boolean = withFlag(builder, INLINE_SUITE, true) { parser.parse(builder, level) }
 
   /**
    * Parses the primary expression of a member chain. In target mode, a look-ahead reads the trailers of the chain.
@@ -237,8 +229,8 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   @JvmStatic
   fun statementEnd(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     when {
-      builder.tokenType in STATEMENT_SEPARATORS -> consumeSeparator(builder)
-      builder.eof() -> Unit
+      builder.tokenType === StarlarkTokenTypes.STATEMENT_BREAK -> builder.advanceLexer()
+      builder.tokenType === StarlarkTokenTypes.SEMICOLON || builder.eof() -> Unit
       builder.tokenType in NO_STATEMENT_STARTS ||
       builder.tokenType in StarlarkTokenSets.COMPOUND_STATEMENT_KEYWORDS && !followsLineBreak(builder) -> {
         val rest = builder.mark()
@@ -246,7 +238,7 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
           builder.advanceLexer()
         }
         rest.error(StarlarkBundle.message("parser.end.of.statement.expected"))
-        consumeSeparator(builder)
+        if (builder.tokenType === StarlarkTokenTypes.STATEMENT_BREAK) builder.advanceLexer()
       }
       else -> {
         builder.error(StarlarkBundle.message("parser.end.of.statement.expected"))
@@ -278,15 +270,26 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     return true
   }
 
-  /** True when the current token is the first token of a line, after a `;`, or of a statement after an [statementEnd] error. */
+  /** True when the current token is the first token of a line, or of a statement after an [statementEnd] error. */
   @JvmStatic
   fun atLineStart(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     builder.tokenType // Skips the whitespace before the current token.
     if (builder.getUserData(STATEMENT_START_OFFSET) == builder.currentOffset) return true
+    return followsLineStart(builder)
+  }
+
+  /** True when the current token is on the same physical line as the token before it. */
+  @JvmStatic
+  fun atSameLine(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
+    val type = builder.tokenType ?: return false
+    return type !in LINE_STARTS && !followsLineBreak(builder)
+  }
+
+  private fun followsLineStart(builder: PsiBuilder): Boolean {
     var step = -1
     while (true) {
       val type = builder.rawLookup(step) ?: return true
-      if (type !in INSIGNIFICANT_TOKENS) return type in STATEMENT_STARTS_AFTER
+      if (type !in INSIGNIFICANT_TOKENS) return type in LINE_STARTS
       step--
     }
   }
@@ -321,19 +324,8 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     var step = -1
     while (true) {
       val type = builder.rawLookup(step) ?: return true
-      if (type !in SPACES_TABS_AND_COMMENTS) return type === StarlarkTokenTypes.LINE_BREAK || type in STATEMENT_STARTS_AFTER
+      if (type !in SPACES_TABS_AND_COMMENTS) return type === StarlarkTokenTypes.LINE_BREAK || type in LINE_STARTS
       step--
-    }
-  }
-
-  /** Consumes the line end, or the `;` that the statement owns. In an inline suite, the suite owns the `;`. */
-  private fun consumeSeparator(builder: PsiBuilder) {
-    when {
-      builder.tokenType === StarlarkTokenTypes.STATEMENT_BREAK -> builder.advanceLexer()
-      builder.tokenType === StarlarkTokenTypes.SEMICOLON -> if (builder.getUserData(INLINE_SUITE) != true) {
-        builder.advanceLexer()
-        if (builder.tokenType === StarlarkTokenTypes.STATEMENT_BREAK) builder.advanceLexer()
-      }
     }
   }
 

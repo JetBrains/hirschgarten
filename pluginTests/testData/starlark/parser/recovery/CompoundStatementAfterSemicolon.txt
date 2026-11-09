@@ -1,0 +1,18 @@
+FILE
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('x')
+      PsiElement(identifier)('x')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(integer)('1')
+  PsiElement(;)(';')
+  PsiWhiteSpace(' ')
+  PsiErrorElement:<statement> or end of statement expected, got 'if'
+    PsiElement(if)('if')
+  PsiWhiteSpace(' ')
+  PsiElement(identifier)('y')
+  PsiElement(:)(':')
+  PsiWhiteSpace(' ')
+  PsiElement(pass)('pass')
