@@ -612,18 +612,6 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // colon_suite <<blockDedent>>
-  static boolean compound_suite(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "compound_suite")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = colon_suite(b, l + 1);
-    r = r && blockDedent(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
   // comprehension_for+
   static boolean comprehension(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "comprehension")) return false;
@@ -939,7 +927,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'elif' test compound_suite
+  // 'elif' test colon_suite
   static boolean elif_clause(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "elif_clause")) return false;
     if (!nextTokenIs(b, ELIF_KEYWORD)) return false;
@@ -948,13 +936,13 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, ELIF_KEYWORD);
     p = r; // pin = 1
     r = r && report_error_(b, test(b, l + 1));
-    r = p && compound_suite(b, l + 1) && r;
+    r = p && colon_suite(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
 
   /* ********************************************************** */
-  // 'else' compound_suite
+  // 'else' colon_suite
   static boolean else_clause(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "else_clause")) return false;
     if (!nextTokenIs(b, ELSE_KEYWORD)) return false;
@@ -962,7 +950,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _NONE_);
     r = consumeToken(b, ELSE_KEYWORD);
     p = r; // pin = 1
-    r = r && compound_suite(b, l + 1);
+    r = r && colon_suite(b, l + 1);
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
@@ -1118,7 +1106,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'for' loop_targets 'in' expression compound_suite
+  // 'for' loop_targets 'in' expression colon_suite
   public static boolean for_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "for_statement")) return false;
     if (!nextTokenIs(b, FOR_KEYWORD)) return false;
@@ -1129,7 +1117,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = r && report_error_(b, loop_targets(b, l + 1));
     r = p && report_error_(b, consumeToken(b, IN_KEYWORD)) && r;
     r = p && report_error_(b, expression(b, l + 1)) && r;
-    r = p && compound_suite(b, l + 1) && r;
+    r = p && colon_suite(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
@@ -1147,19 +1135,6 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = p && colon_suite(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
-  }
-
-  /* ********************************************************** */
-  // function_declaration <<blockDedent>>
-  static boolean function_statement(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "function_statement")) return false;
-    if (!nextTokenIs(b, DEF_KEYWORD)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = function_declaration(b, l + 1);
-    r = r && blockDedent(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
   }
 
   /* ********************************************************** */
@@ -1198,7 +1173,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'if' test compound_suite elif_clause* else_clause?
+  // 'if' test colon_suite elif_clause* else_clause?
   public static boolean if_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "if_statement")) return false;
     if (!nextTokenIs(b, IF_KEYWORD)) return false;
@@ -1207,7 +1182,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, IF_KEYWORD);
     p = r; // pin = 1
     r = r && report_error_(b, test(b, l + 1));
-    r = p && report_error_(b, compound_suite(b, l + 1)) && r;
+    r = p && report_error_(b, colon_suite(b, l + 1)) && r;
     r = p && report_error_(b, if_statement_3(b, l + 1)) && r;
     r = p && if_statement_4(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
@@ -1233,7 +1208,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // INDENT block_item* <<blockEnd>>
+  // INDENT block_item* (DEDENT | <<eof>>)
   static boolean indented_statements(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "indented_statements")) return false;
     if (!nextTokenIs(b, INDENT)) return false;
@@ -1242,7 +1217,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, INDENT);
     p = r; // pin = 1
     r = r && report_error_(b, indented_statements_1(b, l + 1));
-    r = p && blockEnd(b, l + 1) && r;
+    r = p && indented_statements_2(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
@@ -1256,6 +1231,17 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
       if (!empty_element_parsed_guard_(b, "indented_statements_1", c)) break;
     }
     return true;
+  }
+
+  // DEDENT | <<eof>>
+  private static boolean indented_statements_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "indented_statements_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, DEDENT);
+    if (!r) r = eof(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -2858,14 +2844,14 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // if_statement | for_statement | function_statement | simple_line
+  // if_statement | for_statement | function_declaration | simple_line
   static boolean statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, null, "<statement>");
     r = if_statement(b, l + 1);
     if (!r) r = for_statement(b, l + 1);
-    if (!r) r = function_statement(b, l + 1);
+    if (!r) r = function_declaration(b, l + 1);
     if (!r) r = simple_line(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;

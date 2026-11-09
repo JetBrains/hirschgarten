@@ -107,7 +107,7 @@ private statement_or_break ::= STATEMENT_BREAK | statement | unexpected_block | 
 private unexpected_block ::= <<unexpectedIndent>> block_item* (DEDENT | <<eof>>) { pin=1 }
 private statement_recover ::= !(<<atLineStart>> | STATEMENT_BREAK | DEDENT | ';')
 
-private statement ::= if_statement | for_statement | function_statement | simple_line
+private statement ::= if_statement | for_statement | function_declaration | simple_line
 
 private simple_line ::= simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
 private simple_statement ::=
@@ -145,23 +145,19 @@ named_load_value ::= keyword_prefix load_string { pin=1 }
 string_load_value ::= load_string
 private load_string ::= &STRING string_literal_expression
 
-if_statement ::= 'if' test compound_suite elif_clause* else_clause? { pin=1 }
-private elif_clause ::= 'elif' test compound_suite { pin=1 }
-private else_clause ::= 'else' compound_suite { pin=1 }
+if_statement ::= 'if' test colon_suite elif_clause* else_clause? { pin=1 }
+private elif_clause ::= 'elif' test colon_suite { pin=1 }
+private else_clause ::= 'else' colon_suite { pin=1 }
 
-for_statement ::= 'for' loop_targets 'in' expression compound_suite { pin=1 }
+for_statement ::= 'for' loop_targets 'in' expression colon_suite { pin=1 }
 
-// The DEDENT after the body of a function is outside of the function.
-private function_statement ::= function_declaration <<blockDedent>>
 function_declaration ::= 'def' IDENTIFIER parameter_list colon_suite { pin=1 }
 
-// The DEDENT after a block is outside of its statement list. 'if' and 'for' own it.
-private compound_suite ::= colon_suite <<blockDedent>>
 private colon_suite ::= <<expectColon>> suite { pin=1 }
 private suite ::= block_suite | inline_statement_list
 private block_suite ::= STATEMENT_BREAK statement_list { pin=1 }
 statement_list ::= indented_statements | <<indentExpected>>
-private indented_statements ::= INDENT block_item* <<blockEnd>> { pin=1 }
+private indented_statements ::= INDENT block_item* (DEDENT | <<eof>>) { pin=1 }
 // After ':' on the same line, only simple statements can follow. Anything else gives an empty statement list and an error.
 inline_statement_list ::= inline_statements | <<statementExpected>> inline_statements? { elementType=statement_list }
 private inline_statements ::= simple_line (<<atSameLine>> (simple_line | <<unexpectedStatementToken>>))*

@@ -79,6 +79,12 @@ class StarlarkFoldingTest {
   @Test
   fun testRegionInFunction() = doTest("regionInFunction.bzl")
 
+  @Test
+  fun testRegionAtBlockEnd() = doTest("regionAtBlockEnd.bzl")
+
+  @Test
+  fun testRegionAcrossBlockEnd() = doTest("regionAcrossBlockEnd.bzl")
+
   /** An unpaired marker makes no region. */
   @Test
   fun testRegionUnmatched() = doTest("regionUnmatched.bzl")
