@@ -6,9 +6,9 @@ import com.intellij.openapi.util.Computable
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 /**
@@ -17,7 +17,9 @@ import org.junit.jupiter.api.Test
  * strings use `'''`.
  */
 @BazelTestApplication
-class StarlarkStringLiteralEscaperTest : StarlarkPsiTestCase() {
+class StarlarkStringLiteralEscaperTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/psi")
+
   @Test
   fun `should compute contents of differently quoted strings`() {
     readStringLiteral(""""abc"""") { getStringContents() } shouldBe "abc"

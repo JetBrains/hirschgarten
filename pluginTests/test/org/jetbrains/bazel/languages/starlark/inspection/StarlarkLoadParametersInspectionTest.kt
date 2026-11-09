@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-internal class StarlarkLoadParametersInspectionTest : StarlarkInspectionTestCase() {
+internal class StarlarkLoadParametersInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   private val descriptionMissingFilename = StarlarkBundle.message("inspection.description.load.missing.filename")
   private val descriptionMissingSymbol = StarlarkBundle.message("inspection.description.load.missing.symbol")
   private val descriptionDuplicate = StarlarkBundle.message("inspection.description.load.name.defined.more.than.once")

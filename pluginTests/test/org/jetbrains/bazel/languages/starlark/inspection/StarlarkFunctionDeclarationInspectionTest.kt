@@ -1,14 +1,16 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 
 @BazelTestApplication
-internal class StarlarkFunctionDeclarationInspectionTest : StarlarkInspectionTestCase() {
+internal class StarlarkFunctionDeclarationInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   val descriptionBuild = StarlarkBundle.message("inspection.description.function.declaration.in.build.file")
   val descriptionModule = StarlarkBundle.message("inspection.description.function.declaration.in.module.file")
   val descriptionWorkspace = StarlarkBundle.message("inspection.description.function.declaration.in.workspace.file")

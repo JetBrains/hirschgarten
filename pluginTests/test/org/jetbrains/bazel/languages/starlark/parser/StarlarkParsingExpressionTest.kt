@@ -1,47 +1,54 @@
 package org.jetbrains.bazel.languages.starlark.parser
 
 import com.intellij.testFramework.junit5.TestApplication
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkParsingTestCase
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import org.jetbrains.bazel.languages.starlark.fixtures.starlarkParsingFixture
 import org.junit.jupiter.api.Test
 
 @TestApplication
-class StarlarkParsingExpressionTest : StarlarkParsingTestCase("expression") {
-  @Test
-  fun testArguments() = doTest(true)
+class StarlarkParsingExpressionTest {
+  companion object {
+    private val project = projectFixture()
+  }
+
+  private val parsing by starlarkParsingFixture(project, "expression")
 
   @Test
-  fun testBinary() = doTest(true)
+  fun testArguments() = parsing.doTest(true)
 
   @Test
-  fun testChains() = doTest(true)
+  fun testBinary() = parsing.doTest(true)
 
   @Test
-  fun testComprehension() = doTest(true)
+  fun testChains() = parsing.doTest(true)
 
   @Test
-  fun testConditional() = doTest(true)
+  fun testComprehension() = parsing.doTest(true)
 
   @Test
-  fun testDictEntries() = doTest(true)
+  fun testConditional() = parsing.doTest(true)
 
   @Test
-  fun testKeyword() = doTest(true)
+  fun testDictEntries() = parsing.doTest(true)
 
   @Test
-  fun testOperand() = doTest(true)
+  fun testKeyword() = parsing.doTest(true)
 
   @Test
-  fun testPrecedence() = doTest(true)
+  fun testOperand() = parsing.doTest(true)
 
   @Test
-  fun testPrimary() = doTest(true)
+  fun testPrecedence() = parsing.doTest(true)
 
   @Test
-  fun testSlice() = doTest(true)
+  fun testPrimary() = parsing.doTest(true)
 
   @Test
-  fun testTuple() = doTest(true)
+  fun testSlice() = parsing.doTest(true)
 
   @Test
-  fun testUnary() = doTest(true)
+  fun testTuple() = parsing.doTest(true)
+
+  @Test
+  fun testUnary() = parsing.doTest(true)
 }

@@ -1,53 +1,60 @@
 package org.jetbrains.bazel.languages.starlark.parser
 
 import com.intellij.testFramework.junit5.TestApplication
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkParsingTestCase
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import org.jetbrains.bazel.languages.starlark.fixtures.starlarkParsingFixture
 import org.junit.jupiter.api.Test
 
 @TestApplication
-class StarlarkParsingStatementTest : StarlarkParsingTestCase("statement") {
-  @Test
-  fun testAssignment() = doTest(true)
+class StarlarkParsingStatementTest {
+  companion object {
+    private val project = projectFixture()
+  }
+
+  private val parsing by starlarkParsingFixture(project, "statement")
 
   @Test
-  fun testAssignmentTargets() = doTest(true)
+  fun testAssignment() = parsing.doTest(true)
 
   @Test
-  fun testBlockComments() = doTest(true)
+  fun testAssignmentTargets() = parsing.doTest(true)
 
   @Test
-  fun testBreak() = doTest(true)
+  fun testBlockComments() = parsing.doTest(true)
 
   @Test
-  fun testComments() = doTest(true)
+  fun testBreak() = parsing.doTest(true)
 
   @Test
-  fun testContinue() = doTest(true)
+  fun testComments() = parsing.doTest(true)
 
   @Test
-  fun testExpression() = doTest(true)
+  fun testContinue() = parsing.doTest(true)
 
   @Test
-  fun testFor() = doTest(true)
+  fun testExpression() = parsing.doTest(true)
 
   @Test
-  fun testIf() = doTest(true)
+  fun testFor() = parsing.doTest(true)
 
   @Test
-  fun testIndentation() = doTest(true)
+  fun testIf() = parsing.doTest(true)
 
   @Test
-  fun testLoad() = doTest(true)
+  fun testIndentation() = parsing.doTest(true)
 
   @Test
-  fun testPass() = doTest(true)
+  fun testLoad() = parsing.doTest(true)
 
   @Test
-  fun testReturn() = doTest(true)
+  fun testPass() = parsing.doTest(true)
 
   @Test
-  fun testSemicolons() = doTest(true)
+  fun testReturn() = parsing.doTest(true)
 
   @Test
-  fun testSimple() = doTest(true)
+  fun testSemicolons() = parsing.doTest(true)
+
+  @Test
+  fun testSimple() = parsing.doTest(true)
 }

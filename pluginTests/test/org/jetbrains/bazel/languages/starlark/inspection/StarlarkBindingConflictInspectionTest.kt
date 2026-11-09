@@ -7,14 +7,16 @@ import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.collections.shouldContainAll
 import org.jetbrains.bazel.languages.starlark.inspection.StarlarkBindingConflictInspection.NavigateToConflictingDeclarationAction
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 
 @BazelTestApplication
-internal class StarlarkBindingConflictInspectionTest : StarlarkInspectionTestCase() {
+internal class StarlarkBindingConflictInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   private val descriptionCrossKindGlobal = StarlarkBundle.message("inspection.description.binding.conflict.cross.kind", "x", "global")
   private val descriptionCrossKindFileLocal = StarlarkBundle.message("inspection.description.binding.conflict.cross.kind", "x", "file-local")
   private val descriptionSameKind = StarlarkBundle.message("inspection.description.binding.conflict.same.kind", "x")

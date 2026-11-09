@@ -7,10 +7,10 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.sh.ShLanguage
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 /**
@@ -18,7 +18,9 @@ import org.junit.jupiter.api.Test
  * cannot appear in a Kotlin raw string, Starlark triple-quoted strings use `'''`.
  */
 @BazelTestApplication
-class GenruleCommandShellInjectionTest : StarlarkPsiTestCase() {
+class GenruleCommandShellInjectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/psi")
+
   @Test
   fun `should inject shell script into a triple quoted genrule cmd`() {
     // given

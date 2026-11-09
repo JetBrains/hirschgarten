@@ -1,12 +1,14 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkAnnotatorTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkLoadAnnotatorTest : StarlarkAnnotatorTestCase() {
+class StarlarkLoadAnnotatorTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/annotation")
+
   @Test
   fun testResolvedLoadedSymbolIsNotHighlighted() {
     myFixture.addFileToProject("BUILD.bazel", "")

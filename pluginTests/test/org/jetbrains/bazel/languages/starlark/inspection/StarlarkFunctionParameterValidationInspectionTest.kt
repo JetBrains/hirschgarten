@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkFunctionParameterValidationInspectionTest : StarlarkInspectionTestCase() {
+class StarlarkFunctionParameterValidationInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   val descriptionDuplicate = StarlarkBundle.message("inspection.description.parameters.duplicate.name", "a")
   val descriptionMultipleVariadic = StarlarkBundle.message("inspection.description.parameters.multiple.variadic")
   val descriptionAfterKeywordVariadic = StarlarkBundle.message("inspection.description.parameters.after.keyword.variadic")

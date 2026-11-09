@@ -4,14 +4,16 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkPsiTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkListLiteralTest : StarlarkPsiTestCase() {
+class StarlarkListLiteralTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/psi")
+
   @Test
   fun `should append string at the end of list`() {
     // given

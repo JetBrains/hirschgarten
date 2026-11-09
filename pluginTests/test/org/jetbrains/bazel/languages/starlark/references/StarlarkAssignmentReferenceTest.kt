@@ -4,7 +4,6 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkReferencesTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
@@ -12,10 +11,13 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpre
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
+class StarlarkAssignmentReferenceTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/references")
+
   inline fun <reified T : PsiElement> PsiElement.getChildOfType(): T? =
     PsiTreeUtil.getChildOfType<T>(this, T::class.java)
 

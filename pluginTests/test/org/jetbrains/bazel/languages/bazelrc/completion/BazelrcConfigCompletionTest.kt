@@ -2,13 +2,15 @@ package org.jetbrains.bazel.languages.bazelrc.completion
 
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldHaveSize
-import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.completeBasicLookupStrings
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class BazelrcConfigCompletionTest : BazelrcCompletionTestCase() {
+class BazelrcConfigCompletionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "bazelrc/completion")
+
   @Test
   fun `should not suggest any config if none exists`() {
     // given

@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.inspection
 
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkInspectionTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-internal class StarlarkControlFlowContextInspectionTest : StarlarkInspectionTestCase() {
+internal class StarlarkControlFlowContextInspectionTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/inspection")
+
   private val descriptionBreak = StarlarkBundle.message("inspection.description.break.outside.for.loop")
   private val descriptionContinue = StarlarkBundle.message("inspection.description.continue.outside.for.loop")
   private val descriptionReturn = StarlarkBundle.message("inspection.description.return.outside.function")

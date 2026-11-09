@@ -11,12 +11,14 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkFindUsagesTestCase
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkFileFindUsagesTest : StarlarkFindUsagesTestCase() {
+class StarlarkFileFindUsagesTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/findusages")
+
   @Test
   fun `should find usage for java file`() {
     val javaFile =

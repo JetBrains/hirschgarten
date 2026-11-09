@@ -2,16 +2,18 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.application.runReadActionBlocking
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkReferencesTestCase
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
 
 @BazelTestApplication
-class StarlarkArgumentReferenceTest : StarlarkReferencesTestCase() {
+class StarlarkArgumentReferenceTest {
+  private val myFixture by bazelCodeInsightFixture(testDataDir = "starlark/references")
+
   @Test
   fun `should resolve arguments in function call`() {
     // given
