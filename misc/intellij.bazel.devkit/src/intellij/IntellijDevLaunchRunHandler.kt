@@ -152,18 +152,15 @@ private class IntellijDevLaunchCommandLineState(
         throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.start", target, e.message ?: e.toString()), e)
       }
     }
-    val workspaceRoot = project.rootDir.toNioPath()
     val commandLine =
-      GeneralCommandLine(intellijDevLaunchCommand(launch, home, parseAsProgramArguments(settings.programArguments)))
-        .withWorkingDirectory(Path.of(launch.workingDirectory))
+      GeneralCommandLine(intellijDevLaunchCommand(home, parseAsProgramArguments(settings.programArguments)))
+        .withWorkingDirectory(Path.of(home.workingDirectory))
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE)
         .withEnvironment(
           intellijDevLaunchEnvironment(
-            launch = launch,
             home = home,
             parentEnvironment = parentEnvironment,
             runConfigurationEnvironment = settings.env.envs,
-            workspaceRoot = workspaceRoot.toString(),
             vmOptionsCopy = vmOptionsCopy,
           ),
         )

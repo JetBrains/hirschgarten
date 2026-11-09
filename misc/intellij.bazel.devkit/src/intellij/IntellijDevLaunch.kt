@@ -33,35 +33,21 @@ private const val LAUNCH_FILE_VERSION = 4
 private const val MATERIALIZER_ERROR_PREFIX = "ERROR: "
 
 /**
- * The variables that `bazel run` removes from the environment of the executable.
- * The launch states its own `JAVA_RUNFILES` and `RUNFILES_DIR`.
- */
-private val BAZEL_RUN_REMOVED_VARIABLES = listOf("JAVA_RUNFILES", "RUNFILES_DIR", "RUNFILES_MANIFEST_FILE", "RUNFILES_MANIFEST_ONLY", "TEST_SRCDIR")
-
-/**
  * The content of `<name>.launch.json` of version 4, which `intellij_dev_java_launcher` in `community/build/intellij_dev.bzl` writes.
- * Each path is absolute.
- * The home of the target is a generation of hard links outside the Bazel output base, which [materializer] makes.
- * So Bazel can build the target again while its IDE runs.
+ * It names only the command of the checkout that makes the home and prints the launch, see [materializeIntellijDevHome].
+ * So a change of the home or of the launch stays in the checkout, and only a removed or changed field of [IntellijDevHome] needs a new
+ * version.
  *
  * Monorepo DevKit has its own reader of the same file, `DevLaunch` in `plugins/monorepo-devkit/bazel`, because the two
  * plugins have separate versions. Change both readers together.
  *
- * @property materializer the command that makes the home and prints it, see [materializeIntellijDevHome].
- * @property programArguments the program arguments of the target.
- * @property workingDirectory the directory where `bazel run` starts the executable.
- * @property environment the environment of `RunEnvironmentInfo`. It does not name the vmoptions file, because the materializer gives it.
+ * @property materializer the command that makes the home and prints it as an [IntellijDevHome].
  */
 @ApiStatus.Internal
-data class IntellijDevLaunch(
-  val materializer: List<String>,
-  val programArguments: List<String>,
-  val workingDirectory: String,
-  val environment: Map<String, String>,
-) {
+data class IntellijDevLaunch(val materializer: List<String>) {
   companion object {
     /**
-     * Reads the launch file [text].
+     * Reads the launch file [text]. It ignores a field other than `version` and `materializer`.
      * It throws [IllegalArgumentException] when the text is not a launch file of version 4.
      * A target that a checkout before version 4 built has version 3, so the message names the version.
      */
@@ -74,23 +60,24 @@ data class IntellijDevLaunch(
         "the version is ${version ?: "missing"}, not $LAUNCH_FILE_VERSION, so the checkout predates launch file version $LAUNCH_FILE_VERSION. " +
         "Update the checkout and build the target again"
       }
-      return IntellijDevLaunch(
-        materializer = launch.stringArray("materializer").also { require(it.isNotEmpty()) { "`materializer` is empty" } },
-        programArguments = launch.stringArray("programArguments"),
-        workingDirectory = launch.string("workingDirectory"),
-        environment = launch.environment(),
-      )
+      return IntellijDevLaunch(materializer = launch.stringArray("materializer").also { require(it.isNotEmpty()) { "`materializer` is empty" } })
     }
   }
 }
 
 /**
- * The home that the materializer of an [IntellijDevLaunch] makes. Each path is absolute.
+ * The answer of the materializer of an [IntellijDevLaunch]: the home and the launch of the target. Each path is absolute.
+ * The reader ignores a field that it does not know, so a new field of the answer needs no new version.
  *
  * @property home the directory of the home.
  * @property launcher the production native launcher in [home].
  * @property vmOptionsFile the vmoptions file of the home. It holds the JVM flags of the target, one per line.
  * @property vmOptionsVariable the variable `<ENV>_VM_OPTIONS` that names [vmOptionsFile] for the launcher.
+ * @property programArguments the program arguments of the target.
+ * @property workingDirectory the directory where `bazel run` starts the executable.
+ * @property environment the variables that `bazel run` sets: the ones of `RunEnvironmentInfo`, `BUILD_WORKING_DIRECTORY` and
+ *   `BUILD_WORKSPACE_DIRECTORY`. It does not name [vmOptionsFile].
+ * @property removedVariables the variables that `bazel run` removes from the environment of the executable.
  */
 @ApiStatus.Internal
 data class IntellijDevHome(
@@ -98,6 +85,10 @@ data class IntellijDevHome(
   val launcher: String,
   val vmOptionsFile: String,
   val vmOptionsVariable: String,
+  val programArguments: List<String>,
+  val workingDirectory: String,
+  val environment: Map<String, String>,
+  val removedVariables: List<String>,
 ) {
   companion object {
     /** Reads the answer [text] of the materializer. It throws [IllegalArgumentException] when the text is not such an answer. */
@@ -115,6 +106,10 @@ data class IntellijDevHome(
         launcher = answer.string("launcher"),
         vmOptionsFile = answer.string("vmOptionsFile"),
         vmOptionsVariable = answer.string("vmOptionsVariable"),
+        programArguments = answer.stringArray("programArguments"),
+        workingDirectory = answer.string("workingDirectory"),
+        environment = answer.environment(),
+        removedVariables = answer.stringArray("unsetEnv"),
       )
     }
   }
@@ -175,7 +170,7 @@ fun intellijDevHomeOf(exitCode: Int, output: String, errors: String): IntellijDe
     return IntellijDevHome.parse(output)
   }
   catch (e: IllegalArgumentException) {
-    throw IOException("the materializer printed no home: ${e.message}", e)
+    throw IOException("the materializer printed no home: ${e.message}. Build the target again", e)
   }
 }
 
@@ -183,12 +178,12 @@ fun intellijDevHomeOf(exitCode: Int, output: String, errors: String): IntellijDe
 @ApiStatus.Internal
 fun jdwpVmOption(port: Int): String = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
 
-/** The command line of [launch]: the launcher of [home], the program arguments of the target, then [extraProgramArguments]. */
+/** The command line of [home]: its launcher, the program arguments of the target, then [extraProgramArguments]. */
 @ApiStatus.Internal
-fun intellijDevLaunchCommand(launch: IntellijDevLaunch, home: IntellijDevHome, extraProgramArguments: List<String>): List<String> =
+fun intellijDevLaunchCommand(home: IntellijDevHome, extraProgramArguments: List<String>): List<String> =
   buildList {
     add(home.launcher)
-    addAll(launch.programArguments)
+    addAll(home.programArguments)
     addAll(extraProgramArguments)
   }
 
@@ -215,27 +210,23 @@ fun intellijDevLaunchFile(bazelBin: Path, target: Label, apparentRepoNameToCanon
 }
 
 /**
- * The environment of [launch], as `bazel run` gives it to the executable.
- * [runConfigurationEnvironment] overrides the environment of the launch and the variable of [home] that names its vmoptions file.
- * They override [parentEnvironment].
+ * The environment of [home], as `bazel run` gives it to the executable: [parentEnvironment] without the variables that `bazel run`
+ * removes, then the environment of [home] and the variable of [home] that names its vmoptions file.
+ * [runConfigurationEnvironment] overrides them.
  * With [vmOptionsCopy], the variable of [home] names the copy, so the extra VM options always apply.
  */
 @ApiStatus.Internal
 fun intellijDevLaunchEnvironment(
-  launch: IntellijDevLaunch,
   home: IntellijDevHome,
   parentEnvironment: Map<String, String>,
   runConfigurationEnvironment: Map<String, String>,
-  workspaceRoot: String,
   vmOptionsCopy: Path?,
 ): Map<String, String> {
   val result = LinkedHashMap(parentEnvironment)
-  for (name in BAZEL_RUN_REMOVED_VARIABLES) {
+  for (name in home.removedVariables) {
     result.remove(name)
   }
-  result["BUILD_WORKING_DIRECTORY"] = workspaceRoot
-  result["BUILD_WORKSPACE_DIRECTORY"] = workspaceRoot
-  result.putAll(launch.environment)
+  result.putAll(home.environment)
   result[home.vmOptionsVariable] = home.vmOptionsFile
   result.putAll(runConfigurationEnvironment)
   if (vmOptionsCopy != null) {

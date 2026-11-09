@@ -21,23 +21,34 @@ private const val RUNFILES = "/base/bin/build/idea.runfiles"
 /** The launch file of `//build:idea` on macOS, with the paths shortened. */
 private val LAUNCH_JSON = """
   {
-    "env": {
-      "JAVA_RUNFILES": "$RUNFILES",
-      "RUNFILES_DIR": "$RUNFILES"
-    },
     "materializer": ["/base/bin/dev-home", "materialize", "--spec=/base/bin/build/idea.home.json", "--format=json"],
-    "programArguments": [],
-    "version": 4,
-    "workingDirectory": "$RUNFILES/_main"
+    "version": 4
   }
 """.trimIndent()
 
-/** The answer of the materializer of [LAUNCH_JSON] for the generation `0a1b`. */
+/** The answer of the materializer of [LAUNCH_JSON] for the generation `0a1b`, as `dev-home` prints it. */
+private val ANSWER = """{"home":"/cache/dev-home/g/0a1b","launcher":"/cache/dev-home/g/0a1b/Contents/MacOS/idea",""" +
+                     """"vmOptionsFile":"/cache/dev-home/g/0a1b/vmoptions-1a2b","vmOptionsVariable":"IDEA_VM_OPTIONS",""" +
+                     """"programArguments":[],"workingDirectory":"$RUNFILES/_main",""" +
+                     """"env":{"BUILD_WORKING_DIRECTORY":"/work/idea","BUILD_WORKSPACE_DIRECTORY":"/work/idea",""" +
+                     """"JAVA_RUNFILES":"$RUNFILES","RUNFILES_DIR":"$RUNFILES"},""" +
+                     """"unsetEnv":["JAVA_RUNFILES","RUNFILES_DIR","RUNFILES_MANIFEST_FILE","RUNFILES_MANIFEST_ONLY","TEST_SRCDIR"]}"""
+
+/** The home of [ANSWER]. */
 private val HOME = IntellijDevHome(
   home = "/cache/dev-home/g/0a1b",
   launcher = "/cache/dev-home/g/0a1b/Contents/MacOS/idea",
   vmOptionsFile = "/cache/dev-home/g/0a1b/vmoptions-1a2b",
   vmOptionsVariable = "IDEA_VM_OPTIONS",
+  programArguments = emptyList(),
+  workingDirectory = "$RUNFILES/_main",
+  environment = mapOf(
+    "BUILD_WORKING_DIRECTORY" to "/work/idea",
+    "BUILD_WORKSPACE_DIRECTORY" to "/work/idea",
+    "JAVA_RUNFILES" to RUNFILES,
+    "RUNFILES_DIR" to RUNFILES,
+  ),
+  removedVariables = listOf("JAVA_RUNFILES", "RUNFILES_DIR", "RUNFILES_MANIFEST_FILE", "RUNFILES_MANIFEST_ONLY", "TEST_SRCDIR"),
 )
 
 private val BAZEL_BIN = Path.of("/work/idea/bazel-bin")
@@ -47,12 +58,10 @@ private val REPO_MAPPING = mapOf("" to "", "community" to "community+")
 internal class IntellijDevLaunchTest {
   @Test
   fun `parses the launch file of the rule`() {
-    IntellijDevLaunch.parse(LAUNCH_JSON) shouldBe IntellijDevLaunch(
-      materializer = listOf("/base/bin/dev-home", "materialize", "--spec=/base/bin/build/idea.home.json", "--format=json"),
-      programArguments = emptyList(),
-      workingDirectory = "$RUNFILES/_main",
-      environment = mapOf("JAVA_RUNFILES" to RUNFILES, "RUNFILES_DIR" to RUNFILES),
-    )
+    val launch = IntellijDevLaunch(materializer = listOf("/base/bin/dev-home", "materialize", "--spec=/base/bin/build/idea.home.json", "--format=json"))
+    IntellijDevLaunch.parse(LAUNCH_JSON) shouldBe launch
+    // A field that the reader does not know does not change the launch.
+    IntellijDevLaunch.parse(LAUNCH_JSON.replace("\"version\": 4", "\"version\": 4, \"next\": {}")) shouldBe launch
   }
 
   @Test
@@ -72,20 +81,22 @@ internal class IntellijDevLaunchTest {
       IntellijDevLaunch.parse(LAUNCH_JSON.replace(Regex("\"materializer\": \\[[^\\]]*\\]"), "\"materializer\": []"))
     }.message shouldBe "`materializer` is empty"
     shouldThrow<IllegalArgumentException> {
-      IntellijDevLaunch.parse(LAUNCH_JSON.replace("\"programArguments\": []", "\"programArguments\": \"a\""))
-    }.message shouldBe "`programArguments` is not an array"
-    shouldThrow<IllegalArgumentException> {
-      IntellijDevLaunch.parse(LAUNCH_JSON.replace("\"RUNFILES_DIR\": \"$RUNFILES\"", "\"RUNFILES_DIR\": 1"))
-    }.message shouldBe "`env.RUNFILES_DIR` is not a string"
+      IntellijDevLaunch.parse(LAUNCH_JSON.replace("\"/base/bin/dev-home\"", "1"))
+    }.message shouldBe "`materializer[0]` is not a string"
   }
 
   @Test
   fun `the answer of the materializer is the home`() {
-    val answer = """{"home":"${HOME.home}","launcher":"${HOME.launcher}","vmOptionsFile":"${HOME.vmOptionsFile}","vmOptionsVariable":"IDEA_VM_OPTIONS"}""" + "\n"
-    intellijDevHomeOf(0, answer, "") shouldBe HOME
+    intellijDevHomeOf(0, ANSWER + "\n", "") shouldBe HOME
+    // A field that the reader does not know does not change the home.
+    intellijDevHomeOf(0, ANSWER.replace("\"unsetEnv\"", "\"next\":1,\"unsetEnv\""), "") shouldBe HOME
+    // The answer of a tool that a checkout built before the launch moved into the answer.
     shouldThrow<IOException> {
-      intellijDevHomeOf(0, """{"home":"/h","launcher":"/h/l","vmOptionsFile":"/h.vmoptions"}""", "")
-    }.message shouldBe "the materializer printed no home: `vmOptionsVariable` is missing"
+      intellijDevHomeOf(0, """{"home":"/h","launcher":"/h/l","vmOptionsFile":"/h.vmoptions","vmOptionsVariable":"IDEA_VM_OPTIONS"}""", "")
+    }.message shouldBe "the materializer printed no home: `programArguments` is missing. Build the target again"
+    shouldThrow<IOException> {
+      intellijDevHomeOf(0, ANSWER.replace("\"RUNFILES_DIR\":\"$RUNFILES\"", "\"RUNFILES_DIR\":1"), "")
+    }.message shouldBe "the materializer printed no home: `env.RUNFILES_DIR` is not a string. Build the target again"
   }
 
   @Test
@@ -98,8 +109,8 @@ internal class IntellijDevLaunchTest {
 
   @Test
   fun `puts the launcher of the home first, then the program arguments of the target, then the extra program arguments`() {
-    val launch = IntellijDevLaunch.parse(LAUNCH_JSON).copy(programArguments = listOf("serverMode"))
-    intellijDevLaunchCommand(launch, HOME, listOf("--extra")) shouldContainExactly listOf(HOME.launcher, "serverMode", "--extra")
+    intellijDevLaunchCommand(HOME.copy(programArguments = listOf("serverMode")), listOf("--extra")) shouldContainExactly
+      listOf(HOME.launcher, "serverMode", "--extra")
   }
 
   @Test
@@ -123,11 +134,9 @@ internal class IntellijDevLaunchTest {
   @Test
   fun `the environment is the one of bazel run, and the variable of the home names its vmoptions file`() {
     val environment = intellijDevLaunchEnvironment(
-      launch = IntellijDevLaunch.parse(LAUNCH_JSON),
       home = HOME,
       parentEnvironment = mapOf("PATH" to "/usr/bin", "RUNFILES_MANIFEST_FILE" to "/stale/MANIFEST", "JAVA_RUNFILES" to "/stale"),
       runConfigurationEnvironment = mapOf("CWM_NO_TIMEOUTS" to "1", "RUNFILES_DIR" to "/user"),
-      workspaceRoot = "/work/idea",
       vmOptionsCopy = null,
     )
     environment shouldContainExactly mapOf(
@@ -144,11 +153,9 @@ internal class IntellijDevLaunchTest {
   @Test
   fun `the vmoptions copy wins over the variable of the run configuration`() {
     val environment = intellijDevLaunchEnvironment(
-      launch = IntellijDevLaunch.parse(LAUNCH_JSON),
       home = HOME,
       parentEnvironment = emptyMap(),
       runConfigurationEnvironment = mapOf("IDEA_VM_OPTIONS" to "/mine.vmoptions"),
-      workspaceRoot = "/work/idea",
       vmOptionsCopy = Path.of("/system/bazel-dev-launch/idea-1.vmoptions"),
     )
     environment["IDEA_VM_OPTIONS"] shouldBe Path.of("/system/bazel-dev-launch/idea-1.vmoptions").toString()
@@ -195,12 +202,13 @@ internal class IntellijDevLaunchTest {
     val root = Files.createDirectories(temp.resolve("dev-home"))
     val materializer = Files.writeString(temp.resolve("dev-home.sh"), """
       printf '%s\n' "${'$'}*" > "${'$'}INTELLIJ_DEV_HOME_ROOT/arguments"
-      printf '{"home":"%s","launcher":"%s","vmOptionsFile":"%s","vmOptionsVariable":"IDEA_VM_OPTIONS"}\n' \
+      printf '{"home":"%s","launcher":"%s","vmOptionsFile":"%s","vmOptionsVariable":"IDEA_VM_OPTIONS",' \
         "${'$'}INTELLIJ_DEV_HOME_ROOT/g/1" "${'$'}INTELLIJ_DEV_HOME_ROOT/g/1/bin/idea" "${'$'}INTELLIJ_DEV_HOME_ROOT/g/1/vmoptions-1"
+      printf '"programArguments":["a"],"workingDirectory":"/w","env":{"A":"1"},"unsetEnv":["B"]}\n'
     """.trimIndent() + "\n")
 
     materializeIntellijDevHome(listOf("/bin/sh", materializer.toString(), "materialize"), mapOf("INTELLIJ_DEV_HOME_ROOT" to root.toString())) shouldBe
-      IntellijDevHome("$root/g/1", "$root/g/1/bin/idea", "$root/g/1/vmoptions-1", "IDEA_VM_OPTIONS")
+      IntellijDevHome("$root/g/1", "$root/g/1/bin/idea", "$root/g/1/vmoptions-1", "IDEA_VM_OPTIONS", listOf("a"), "/w", mapOf("A" to "1"), listOf("B"))
     Files.readString(root.resolve("arguments")) shouldBe "materialize\n"
   }
 
