@@ -411,26 +411,37 @@ class BepServer(
   private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val label = Label.parse(event.id.actionCompleted.label)
     val payload = event.action
-    when (payload.stderr.fileCase) {
+    val stderrText =  when (payload.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
           val path = bazelPathsResolver.resolve(payload.stderr)
-          val stdErrText = Files.readString(path)
-          processActionDiagnosticText(stdErrText, label, parentId, payload.success)
+          Files.readString(path)
         }
         catch (e: FileSystemNotFoundException) {
           LOGGER.warn("Failed to process diagnostic text", e)
+          ""
         }
         catch (e: IOException) {
           LOGGER.warn("Failed to process diagnostic text", e)
+          ""
         }
       }
 
       BuildEventStreamProtos.File.FileCase.CONTENTS -> {
-        processActionDiagnosticText(payload.stderr.contents.toStringUtf8(), label, parentId, payload.success)
+        payload.stderr.contents.toStringUtf8()
       }
-
-      else -> {}
+      else -> { "" }
+    }
+    val eventReported = processActionDiagnosticText(stderrText, label, parentId, payload.success)
+    if ((!eventReported)&&(!payload.success)) {
+      // A build step failed, but we could not report any details about the error. At least report the failure of the build action
+      // to the user.
+      val message = ( "${label}: action failure for ${event.id.actionCompleted.primaryOutput}"
+                      + ( if (stderrText.isEmpty()) "" else "\n${stderrText}"))
+      val diagnostic = Diagnostic(Position.NONE, message, null, label,
+                                  if (context == BazelInvocationContext.SYNC) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR)
+      val params = PublishDiagnosticsParams(parentId, null, label, listOf(diagnostic), true)
+      taskEventsHandler.onBuildPublishDiagnostics(params)
     }
   }
 
@@ -439,13 +450,14 @@ class BepServer(
     targetLabel: Label,
     taskId: TaskId,
     success: Boolean,
-  ) {
+  )  : Boolean {
     if (stdErrText.isNotEmpty()) {
       val events =
         diagnosticsService.extractDiagnostics(
           stdErrText.lines(),
           targetLabel,
           taskId,
+          onlyFromParsedOutput = true, // We will take care of the default diagnostics ourselves
         )
       events.forEach {
         taskEventsHandler.onBuildPublishDiagnostics(
@@ -454,6 +466,9 @@ class BepServer(
           )
         )
       }
+      return events.flatMap { it.diagnostics }.isNotEmpty()
+    } else {
+     return false
     }
   }
 
