@@ -99,6 +99,82 @@ class ProjectViewCompilationModeTest {
   }
 
   @Test
+  fun testAppendToLastBuildFlagsSection() {
+    checkSetCompilationMode(
+      before = """
+      build_flags:
+        --keep_going
+      build_flags:
+        --compilation_mode=opt
+      """,
+      after = """
+      build_flags:
+        --keep_going
+      build_flags:
+        --compilation_mode=dbg
+      """,
+    )
+  }
+
+  @Test
+  fun testAddBuildFlagsSectionAfterLaterImport() {
+    checkSetCompilationMode(
+      before = """
+      build_flags:
+        --keep_going
+        --compilation_mode=opt
+      import opt.bazelproject
+      """,
+      after = """
+      build_flags:
+        --keep_going
+      import opt.bazelproject
+      build_flags:
+        --compilation_mode=dbg
+      """,
+    )
+  }
+
+  @Test
+  fun testAddBuildFlagsSectionAfterLaterTryImport() {
+    checkSetCompilationMode(
+      before = """
+      build_flags:
+        --keep_going
+      try_import opt.bazelproject
+      """,
+      after = """
+      build_flags:
+        --keep_going
+      try_import opt.bazelproject
+      build_flags:
+        --compilation_mode=dbg
+      """,
+    )
+  }
+
+  @Test
+  fun testAppendToBuildFlagsSectionAfterImport() {
+    checkSetCompilationMode(
+      before = """
+      import opt.bazelproject
+      build_flags:
+        --keep_going
+      directories:
+        .
+      """,
+      after = """
+      import opt.bazelproject
+      build_flags:
+        --keep_going
+        --compilation_mode=dbg
+      directories:
+        .
+      """,
+    )
+  }
+
+  @Test
   fun testBuildFlagsEndOffset() {
     val text = """
       build_flags:
@@ -113,6 +189,31 @@ class ProjectViewCompilationModeTest {
   @Test
   fun testBuildFlagsEndOffsetWithoutSection() {
     val text = "directories:\n  .\n"
+
+    assertThat(buildFlagsEndOffset(text)).isEqualTo(text.length)
+  }
+
+  @Test
+  fun testBuildFlagsEndOffsetInLastSection() {
+    val text = """
+      build_flags:
+        --keep_going
+      build_flags:
+        --copt=-g
+      directories:
+        .
+      """.trimIndent() + "\n"
+
+    assertThat(buildFlagsEndOffset(text)).isEqualTo(text.indexOf("--copt=-g") + "--copt=-g".length)
+  }
+
+  @Test
+  fun testBuildFlagsEndOffsetWithLaterImport() {
+    val text = """
+      build_flags:
+        --keep_going
+      import opt.bazelproject
+      """.trimIndent() + "\n"
 
     assertThat(buildFlagsEndOffset(text)).isEqualTo(text.length)
   }
