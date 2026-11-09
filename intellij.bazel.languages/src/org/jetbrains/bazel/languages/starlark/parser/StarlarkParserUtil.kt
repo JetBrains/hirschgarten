@@ -231,7 +231,7 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
 
   /**
    * Ends a simple statement. On an error, the next statement starts at the current token if a statement can start there.
-   * If not, as for the '=' of `a += b = 1`, the error covers the rest of the statement up to the line end or `;`.
+   * If not, as for the second '=' of `a = b = 1`, the error covers the rest of the statement up to the line end or `;`.
    * A compound statement can start only on a new line, so a `for` in the middle of `[a, b for b in c]` is in that error too.
    */
   @JvmStatic
