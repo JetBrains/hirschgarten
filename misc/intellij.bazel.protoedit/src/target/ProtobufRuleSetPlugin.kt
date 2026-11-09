@@ -13,7 +13,7 @@ val ProtobufRuleSet: BazelRuleSet = BazelRuleSet(
   autoloadHints = listOf(),
   hostLocations = listOf("https://github.com/protocolbuffers/protobuf/"),
   minimalVersion = 27,
-  versionRegex = ".*/download/v(\\d+)\\..*".toRegex(),
+  versionRegex = ".*/(?:download|tags)/v(\\d+)\\..*".toRegex(),
 )
 
 private val LegacyProtoRuleSet: BazelRuleSet = BazelRuleSet(
