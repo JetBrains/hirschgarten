@@ -129,8 +129,7 @@ expression_statement ::= expression statement_end { pin=1 }
 
 // A lookahead finds the '=' first, so a call statement is not parsed twice.
 // A statement that cannot start with an expression, as 'class = 1', is no assignment.
-assignment_statement ::= assignment_head+ expression statement_end { pin=1 }
-private assignment_head ::= <<lookahead expression_start>> <<atAssignment>> <<targetMode expression>> '=' { pin=2 }
+assignment_statement ::= <<lookahead expression_start>> <<atAssignment>> <<targetMode expression>> '=' expression statement_end { pin=2 }
 aug_assignment_statement ::= <<lookahead expression_start>> <<atAugAssignment>> expression aug_operator expression statement_end { pin=2 }
 private aug_operator ::= '+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>='
 

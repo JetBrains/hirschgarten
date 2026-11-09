@@ -253,47 +253,20 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<lookahead expression_start>> <<atAssignment>> <<targetMode expression>> '='
-  static boolean assignment_head(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "assignment_head")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_);
-    r = lookahead(b, l + 1, _StarlarkParser::expression_start);
-    r = r && atAssignment(b, l + 1);
-    p = r; // pin = 2
-    r = r && report_error_(b, targetMode(b, l + 1, _StarlarkParser::expression));
-    r = p && consumeToken(b, EQ) && r;
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
-  }
-
-  /* ********************************************************** */
-  // assignment_head+ expression statement_end
+  // <<lookahead expression_start>> <<atAssignment>> <<targetMode expression>> '=' expression statement_end
   public static boolean assignment_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "assignment_statement")) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, ASSIGNMENT_STATEMENT, "<assignment statement>");
-    r = assignment_statement_0(b, l + 1);
-    p = r; // pin = 1
-    r = r && report_error_(b, expression(b, l + 1));
+    r = lookahead(b, l + 1, _StarlarkParser::expression_start);
+    r = r && atAssignment(b, l + 1);
+    p = r; // pin = 2
+    r = r && report_error_(b, targetMode(b, l + 1, _StarlarkParser::expression));
+    r = p && report_error_(b, consumeToken(b, EQ)) && r;
+    r = p && report_error_(b, expression(b, l + 1)) && r;
     r = p && statement_end(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
-  }
-
-  // assignment_head+
-  private static boolean assignment_statement_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "assignment_statement_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = assignment_head(b, l + 1);
-    while (r) {
-      int c = current_position_(b);
-      if (!assignment_head(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "assignment_statement_0", c)) break;
-    }
-    exit_section_(b, m, null, r);
-    return r;
   }
 
   /* ********************************************************** */
