@@ -10,7 +10,7 @@ FILE
     PsiWhiteSpace(' ')
     PsiErrorElement:End of statement expected
       PsiElement(])(']')
-    PsiElement(;)(';')
+  PsiElement(;)(';')
   PsiWhiteSpace(' ')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
     StarlarkTargetExpression(TARGET_EXPRESSION)('y')

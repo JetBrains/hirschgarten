@@ -107,9 +107,9 @@ private statement_or_break ::= STATEMENT_BREAK | statement | unexpected_block | 
 private unexpected_block ::= <<unexpectedIndent>> block_item* (DEDENT | <<eof>>) { pin=1 }
 private statement_recover ::= !(<<atLineStart>> | STATEMENT_BREAK | DEDENT | ';')
 
-private statement ::= if_statement | for_statement | function_statement | simple_statement
+private statement ::= if_statement | for_statement | function_statement | simple_line
 
-// A simple statement owns its ';' and the STATEMENT_BREAK after it. The next statement on the line is a sibling.
+private simple_line ::= simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
 private simple_statement ::=
     pass_statement
   | break_statement
@@ -163,9 +163,8 @@ private block_suite ::= STATEMENT_BREAK statement_list { pin=1 }
 statement_list ::= indented_statements | <<indentExpected>>
 private indented_statements ::= INDENT block_item* <<blockEnd>> { pin=1 }
 // After ':' on the same line, only simple statements can follow. Anything else gives an empty statement list and an error.
-// In a suite on one line, the ';' is a sibling of the statements.
-inline_statement_list ::= <<inlineSuite inline_statements>> | <<statementExpected>> <<inlineSuite inline_statements>>? { elementType=statement_list }
-private inline_statements ::= simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
+inline_statement_list ::= inline_statements | <<statementExpected>> inline_statements? { elementType=statement_list }
+private inline_statements ::= simple_line (<<atSameLine>> (simple_line | <<unexpectedStatementToken>>))*
 
 private loop_targets ::= <<targetMode loop_target_list>>
 private loop_target_list ::= loop_target loop_target_tuple?

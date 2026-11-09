@@ -1259,18 +1259,18 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<inlineSuite inline_statements>> | <<statementExpected>> <<inlineSuite inline_statements>>?
+  // inline_statements | <<statementExpected>> inline_statements?
   public static boolean inline_statement_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "inline_statement_list")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _COLLAPSE_, STATEMENT_LIST, "<statement>");
-    r = inlineSuite(b, l + 1, _StarlarkParser::inline_statements);
+    r = inline_statements(b, l + 1);
     if (!r) r = inline_statement_list_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // <<statementExpected>> <<inlineSuite inline_statements>>?
+  // <<statementExpected>> inline_statements?
   private static boolean inline_statement_list_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "inline_statement_list_1")) return false;
     boolean r;
@@ -1281,27 +1281,26 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // <<inlineSuite inline_statements>>?
+  // inline_statements?
   private static boolean inline_statement_list_1_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "inline_statement_list_1_1")) return false;
-    inlineSuite(b, l + 1, _StarlarkParser::inline_statements);
+    inline_statements(b, l + 1);
     return true;
   }
 
   /* ********************************************************** */
-  // simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
+  // simple_line (<<atSameLine>> (simple_line | <<unexpectedStatementToken>>))*
   static boolean inline_statements(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "inline_statements")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = simple_statement(b, l + 1);
+    r = simple_line(b, l + 1);
     r = r && inline_statements_1(b, l + 1);
-    r = r && inline_statements_2(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (';' simple_statement)*
+  // (<<atSameLine>> (simple_line | <<unexpectedStatementToken>>))*
   private static boolean inline_statements_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "inline_statements_1")) return false;
     while (true) {
@@ -1312,40 +1311,26 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // ';' simple_statement
+  // <<atSameLine>> (simple_line | <<unexpectedStatementToken>>)
   private static boolean inline_statements_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "inline_statements_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, SEMICOLON);
-    r = r && simple_statement(b, l + 1);
+    r = atSameLine(b, l + 1);
+    r = r && inline_statements_1_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (';' STATEMENT_BREAK?)?
-  private static boolean inline_statements_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "inline_statements_2")) return false;
-    inline_statements_2_0(b, l + 1);
-    return true;
-  }
-
-  // ';' STATEMENT_BREAK?
-  private static boolean inline_statements_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "inline_statements_2_0")) return false;
+  // simple_line | <<unexpectedStatementToken>>
+  private static boolean inline_statements_1_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "inline_statements_1_0_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, SEMICOLON);
-    r = r && inline_statements_2_0_1(b, l + 1);
+    r = simple_line(b, l + 1);
+    if (!r) r = unexpectedStatementToken(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
-  }
-
-  // STATEMENT_BREAK?
-  private static boolean inline_statements_2_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "inline_statements_2_0_1")) return false;
-    consumeToken(b, STATEMENT_BREAK);
-    return true;
   }
 
   /* ********************************************************** */
@@ -2539,6 +2524,66 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
+  static boolean simple_line(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "simple_line")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = simple_statement(b, l + 1);
+    r = r && simple_line_1(b, l + 1);
+    r = r && simple_line_2(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (';' simple_statement)*
+  private static boolean simple_line_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "simple_line_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!simple_line_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "simple_line_1", c)) break;
+    }
+    return true;
+  }
+
+  // ';' simple_statement
+  private static boolean simple_line_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "simple_line_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, SEMICOLON);
+    r = r && simple_statement(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (';' STATEMENT_BREAK?)?
+  private static boolean simple_line_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "simple_line_2")) return false;
+    simple_line_2_0(b, l + 1);
+    return true;
+  }
+
+  // ';' STATEMENT_BREAK?
+  private static boolean simple_line_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "simple_line_2_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, SEMICOLON);
+    r = r && simple_line_2_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // STATEMENT_BREAK?
+  private static boolean simple_line_2_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "simple_line_2_0_1")) return false;
+    consumeToken(b, STATEMENT_BREAK);
+    return true;
+  }
+
+  /* ********************************************************** */
   // pass_statement
   //   | break_statement
   //   | continue_statement
@@ -2813,7 +2858,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // if_statement | for_statement | function_statement | simple_statement
+  // if_statement | for_statement | function_statement | simple_line
   static boolean statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement")) return false;
     boolean r;
@@ -2821,7 +2866,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = if_statement(b, l + 1);
     if (!r) r = for_statement(b, l + 1);
     if (!r) r = function_statement(b, l + 1);
-    if (!r) r = simple_statement(b, l + 1);
+    if (!r) r = simple_line(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
