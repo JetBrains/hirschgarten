@@ -8,5 +8,5 @@ FILE
       PsiWhiteSpace(' ')
       StarlarkReferenceExpression(REFERENCE_EXPRESSION)
         PsiElement(identifier)('b')
-      PsiErrorElement:'else' expected
+      PsiErrorElement:else expected
         <empty list>

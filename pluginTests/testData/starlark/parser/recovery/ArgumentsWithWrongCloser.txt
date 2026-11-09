@@ -13,11 +13,10 @@ FILE
         StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
           StarlarkReferenceExpression(REFERENCE_EXPRESSION)
             PsiElement(identifier)('b')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:')' or ',' expected, got ']'
           <empty list>
-  PsiElement(])(']')
-  PsiErrorElement:Statement expected, found ]
-    <empty list>
+    PsiErrorElement:End of statement expected
+      PsiElement(])(']')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
     StarlarkTargetExpression(TARGET_EXPRESSION)('x')

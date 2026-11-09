@@ -5,14 +5,10 @@ FILE
     StarlarkFilenameLoadValue(FILENAME_LOAD_VALUE)
       StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
         PsiElement(string)('"a.bzl"')
-    PsiErrorElement:',' or ')' expected
+    PsiErrorElement:',' expected
       <empty list>
-  PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
-      PsiElement(string)('"b"')
-    PsiErrorElement:End of statement expected
-      <empty list>
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
+    PsiWhiteSpace(' ')
+    StarlarkStringLoadValue(STRING_LOAD_VALUE)
+      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+        PsiElement(string)('"b"')
+    PsiElement())(')')

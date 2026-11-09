@@ -1,7 +1,7 @@
 FILE
   StarlarkIfStatement(IF_STATEMENT)
     PsiElement(if)('if')
-    PsiErrorElement:Expression expected
+    PsiErrorElement:<expression> expected, got ':'
       <empty list>
     PsiWhiteSpace(' ')
     PsiElement(:)(':')

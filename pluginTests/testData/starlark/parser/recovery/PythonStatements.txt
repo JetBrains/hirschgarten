@@ -1,118 +1,72 @@
 FILE
-  PsiElement(class)('class')
   PsiErrorElement:Statement expected, found class
-    <empty list>
+    PsiElement(class)('class')
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('C')
-    PsiErrorElement:End of statement expected
-      <empty list>
+  PsiErrorElement:'C' unexpected
+    PsiElement(identifier)('C')
   PsiElement(:)(':')
-  PsiErrorElement:Statement expected, found :
-    <empty list>
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
   StarlarkAugAssignmentStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
-  PsiErrorElement:Statement expected, found dedent
-    <empty list>
   PsiWhiteSpace('\n')
-  PsiElement(while)('while')
   PsiErrorElement:Statement expected, found while
-    <empty list>
+    PsiElement(while)('while')
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('x')
-    PsiErrorElement:End of statement expected
-      <empty list>
+  PsiErrorElement:'x' unexpected
+    PsiElement(identifier)('x')
   PsiElement(:)(':')
-  PsiErrorElement:Statement expected, found :
-    <empty list>
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
   StarlarkAugAssignmentStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
-  PsiErrorElement:Statement expected, found dedent
-    <empty list>
   PsiWhiteSpace('\n')
-  PsiElement(try)('try')
   PsiErrorElement:Statement expected, found try
-    <empty list>
-  PsiElement(:)(':')
-  PsiErrorElement:Statement expected, found :
-    <empty list>
+    PsiElement(try)('try')
+  PsiErrorElement:':' unexpected
+    PsiElement(:)(':')
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
   StarlarkAugAssignmentStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
-  PsiErrorElement:Statement expected, found dedent
-    <empty list>
   PsiWhiteSpace('\n')
-  PsiElement(except)('except')
   PsiErrorElement:Statement expected, found except
-    <empty list>
+    PsiElement(except)('except')
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('E')
-    PsiErrorElement:End of statement expected
-      <empty list>
+  PsiErrorElement:'E' unexpected
+    PsiElement(identifier)('E')
   PsiWhiteSpace(' ')
   PsiElement(as)('as')
-  PsiErrorElement:Statement expected, found as
-    <empty list>
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('e')
-    PsiErrorElement:End of statement expected
-      <empty list>
+  PsiElement(identifier)('e')
   PsiElement(:)(':')
-  PsiErrorElement:Statement expected, found :
-    <empty list>
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
   StarlarkAugAssignmentStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
-  PsiErrorElement:Statement expected, found dedent
-    <empty list>
   PsiWhiteSpace('\n')
-  PsiElement(import)('import')
   PsiErrorElement:Statement expected, found import
-    <empty list>
+    PsiElement(import)('import')
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('foo')
+  PsiErrorElement:'foo' unexpected
+    PsiElement(identifier)('foo')
   PsiWhiteSpace('\n')
-  PsiElement(from)('from')
   PsiErrorElement:Statement expected, found from
-    <empty list>
+    PsiElement(from)('from')
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('foo')
-    PsiErrorElement:End of statement expected
-      <empty list>
+  PsiErrorElement:'foo' unexpected
+    PsiElement(identifier)('foo')
   PsiWhiteSpace(' ')
   PsiElement(import)('import')
-  PsiErrorElement:Statement expected, found import
-    <empty list>
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('bar')
+  PsiElement(identifier)('bar')
   PsiWhiteSpace('\n')
-  PsiElement(raise)('raise')
   PsiErrorElement:Statement expected, found raise
-    <empty list>
+    PsiElement(raise)('raise')
   PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
-      PsiElement(string)('"error"')
+  PsiErrorElement:'"error"' unexpected
+    PsiElement(string)('"error"')

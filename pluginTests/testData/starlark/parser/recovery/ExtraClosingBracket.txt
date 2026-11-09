@@ -10,10 +10,7 @@ FILE
             PsiElement(identifier)('a')
         PsiElement())(')')
     PsiErrorElement:End of statement expected
-      <empty list>
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
+      PsiElement())(')')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
     StarlarkTargetExpression(TARGET_EXPRESSION)('x')
@@ -44,18 +41,13 @@ FILE
             PsiElement(integer)('2')
           PsiElement(])(']')
         PsiErrorElement:End of statement expected
-          <empty list>
-      PsiElement(])(']')
-      PsiErrorElement:Statement expected, found ]
-        <empty list>
-      PsiErrorElement:Statement expected, found dedent
-        <empty list>
-      PsiWhiteSpace('\n')
-      StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-        StarlarkTargetExpression(TARGET_EXPRESSION)('z')
-          PsiElement(identifier)('z')
-        PsiWhiteSpace(' ')
-        PsiElement(=)('=')
-        PsiWhiteSpace(' ')
-        StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
-          PsiElement(integer)('3')
+          PsiElement(])(']')
+  PsiWhiteSpace('\n')
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('z')
+      PsiElement(identifier)('z')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(integer)('3')

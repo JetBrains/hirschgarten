@@ -7,7 +7,7 @@ FILE
       PsiElement(()('(')
       StarlarkMandatoryParameter(MANDATORY_PARAMETER)('ctx')
         PsiElement(identifier)('ctx')
-      PsiErrorElement:',' or '(' or ')' expected
+      PsiErrorElement:')' or ',' expected, got ':'
         <empty list>
     PsiElement(:)(':')
     PsiWhiteSpace('\n    ')

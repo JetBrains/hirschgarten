@@ -8,5 +8,5 @@ FILE
         StarlarkNamedArgumentExpression(NAMED_ARGUMENT_EXPRESSION)
           PsiElement(identifier)('a')
           PsiElement(=)('=')
-          PsiErrorElement:Expression expected
+          PsiErrorElement:<expression> expected
             <empty list>

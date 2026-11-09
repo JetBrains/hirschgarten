@@ -4,7 +4,7 @@ FILE
     PsiWhiteSpace(' ')
     StarlarkTargetExpression(TARGET_EXPRESSION)('x')
       PsiElement(identifier)('x')
-    PsiErrorElement:'in' expected
+    PsiErrorElement:',' or in expected, got 'y'
       <empty list>
     PsiWhiteSpace(' ')
     StarlarkReferenceExpression(REFERENCE_EXPRESSION)

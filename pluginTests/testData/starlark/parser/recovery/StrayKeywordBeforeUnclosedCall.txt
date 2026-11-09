@@ -1,7 +1,6 @@
 FILE
-  PsiElement(elif)('elif')
   PsiErrorElement:Statement expected, found elif
-    <empty list>
+    PsiElement(elif)('elif')
   PsiWhiteSpace(' ')
   StarlarkExpressionStatement(EXPRESSION_STATEMENT)
     StarlarkCallExpression(CALL_EXPRESSION)
@@ -21,7 +20,7 @@ FILE
           PsiWhiteSpace(' ')
           StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
             PsiElement(integer)('1')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:')' or ',' expected
           <empty list>
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)

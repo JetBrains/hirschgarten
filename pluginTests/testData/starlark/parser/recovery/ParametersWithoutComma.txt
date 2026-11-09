@@ -7,25 +7,14 @@ FILE
       PsiElement(()('(')
       StarlarkMandatoryParameter(MANDATORY_PARAMETER)('a')
         PsiElement(identifier)('a')
-      PsiErrorElement:',' or '(' or ')' expected
+      PsiErrorElement:',' expected
         <empty list>
-    PsiWhiteSpace(' ')
+      PsiWhiteSpace(' ')
+      StarlarkMandatoryParameter(MANDATORY_PARAMETER)('b')
+        PsiElement(identifier)('b')
+      PsiElement())(')')
+    PsiElement(:)(':')
+    PsiWhiteSpace('\n    ')
     StarlarkStatementList(STATEMENT_LIST)
-      StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-        StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-          PsiElement(identifier)('b')
-        PsiErrorElement:End of statement expected
-          <empty list>
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
-  PsiElement(:)(':')
-  PsiErrorElement:Statement expected, found :
-    <empty list>
-  PsiWhiteSpace('\n    ')
-  PsiErrorElement:Unexpected indent
-    <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
-    PsiElement(pass)('pass')
-  PsiErrorElement:Statement expected, found dedent
-    <empty list>
+      StarlarkAugAssignmentStatement(PASS_STATEMENT)
+        PsiElement(pass)('pass')

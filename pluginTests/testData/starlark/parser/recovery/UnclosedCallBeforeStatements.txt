@@ -8,7 +8,7 @@ FILE
         StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
           StarlarkReferenceExpression(REFERENCE_EXPRESSION)
             PsiElement(identifier)('a')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:')' or ',' expected
           <empty list>
   PsiWhiteSpace('\n')
   StarlarkExpressionStatement(EXPRESSION_STATEMENT)

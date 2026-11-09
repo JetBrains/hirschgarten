@@ -1,7 +1,6 @@
 FILE
-  PsiElement(;)(';')
   PsiErrorElement:Statement expected, found ;
-    <empty list>
+    PsiElement(;)(';')
   PsiWhiteSpace(' ')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
     StarlarkTargetExpression(TARGET_EXPRESSION)('a')

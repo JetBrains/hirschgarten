@@ -6,8 +6,6 @@ FILE
       StarlarkParameterList(PARAMETER_LIST)
         StarlarkMandatoryParameter(MANDATORY_PARAMETER)('x')
           PsiElement(identifier)('x')
-        PsiErrorElement:',' or '(' or ')' expected
-          <empty list>
-      PsiWhiteSpace(' ')
-      StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
-        PsiElement(integer)('1')
+        PsiWhiteSpace(' ')
+        PsiErrorElement:'1' unexpected
+          PsiElement(integer)('1')

@@ -8,14 +8,10 @@ FILE
         StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
           StarlarkReferenceExpression(REFERENCE_EXPRESSION)
             PsiElement(identifier)('a')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:',' expected
           <empty list>
-  PsiWhiteSpace(' ')
-  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('b')
-    PsiErrorElement:End of statement expected
-      <empty list>
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
+        PsiWhiteSpace(' ')
+        StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
+          StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+            PsiElement(identifier)('b')
+        PsiElement())(')')

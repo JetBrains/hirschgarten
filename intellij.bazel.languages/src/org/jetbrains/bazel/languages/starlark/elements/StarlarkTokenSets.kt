@@ -60,10 +60,6 @@ object StarlarkTokenSets {
 
   val LBRACKET_OR_LPAR = TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LPAR)
 
-  val RBRACKET_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)
-
-  val RBRACKET_COLON_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COLON, StarlarkTokenTypes.COMMA)
-
   val RESERVED_KEYWORDS =
     TokenSet.create(
       StarlarkTokenTypes.AS_KEYWORD,
@@ -159,14 +155,6 @@ object StarlarkTokenSets {
       StarlarkTokenTypes.FLOORDIV,
       StarlarkTokenTypes.DIV,
       StarlarkTokenTypes.PERC,
-    )
-
-  val UNARY_OPERATIONS =
-    TokenSet.create(
-      StarlarkTokenTypes.PLUS,
-      StarlarkTokenTypes.MINUS,
-      StarlarkTokenTypes.TILDE,
-      StarlarkTokenTypes.NOT_KEYWORD,
     )
 
   val BINARY_OPERATIONS =

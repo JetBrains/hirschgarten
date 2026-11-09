@@ -44,6 +44,12 @@ class StarlarkParsingRecoveryTest {
   fun testChainedAssignmentWithoutValue() = parsing.doTest(true)
 
   @Test
+  fun testColonsAndSemicolonsAfterErrors() = parsing.doTest(true)
+
+  @Test
+  fun testCompoundKeywordInsideLine() = parsing.doTest(true)
+
+  @Test
   fun testConditionalWithoutElse() = parsing.doTest(true)
 
   @Test
@@ -80,6 +86,9 @@ class StarlarkParsingRecoveryTest {
   fun testFunctionWithoutParameters() = parsing.doTest(true)
 
   @Test
+  fun testHeaderColonAfterBrokenBracketContent() = parsing.doTest(true)
+
+  @Test
   fun testIfWithoutColon() = parsing.doTest(true)
 
   @Test
@@ -87,6 +96,9 @@ class StarlarkParsingRecoveryTest {
 
   @Test
   fun testInconsistentDedentWithSameIndentLines() = parsing.doTest(true)
+
+  @Test
+  fun testInlineSuiteWithCompoundStatement() = parsing.doTest(true)
 
   @Test
   fun testLambdaWithoutColon() = parsing.doTest(true)
@@ -122,6 +134,9 @@ class StarlarkParsingRecoveryTest {
   fun testNotWithoutOperand() = parsing.doTest(true)
 
   @Test
+  fun testParametersWithBracketedJunk() = parsing.doTest(true)
+
+  @Test
   fun testParametersWithoutComma() = parsing.doTest(true)
 
   @Test
@@ -144,6 +159,9 @@ class StarlarkParsingRecoveryTest {
 
   @Test
   fun testStrayTokenBeforeStatement() = parsing.doTest(true)
+
+  @Test
+  fun testTupleWithEmptyElement() = parsing.doTest(true)
 
   @Test
   fun testUnclosedArgumentList() = parsing.doTest(true)
@@ -213,6 +231,9 @@ class StarlarkParsingRecoveryTest {
 
   @Test
   fun testUnexpectedIndent() = parsing.doTest(true)
+
+  @Test
+  fun testUnexpectedIndentBlock() = parsing.doTest(true)
 
   @Test
   fun testUnexpectedTokenAtStatementStart() = parsing.doTest(true)

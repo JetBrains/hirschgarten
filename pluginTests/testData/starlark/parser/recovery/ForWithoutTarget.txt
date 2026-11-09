@@ -1,7 +1,7 @@
 FILE
   StarlarkForStatement(FOR_STATEMENT)
     PsiElement(for)('for')
-    PsiErrorElement:Expression expected
+    PsiErrorElement:<expression> expected, got 'in'
       <empty list>
     PsiWhiteSpace(' ')
     PsiElement(in)('in')

@@ -9,7 +9,7 @@ FILE
       PsiElement([)('[')
       StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
         PsiElement(string)('":a"')
-      PsiErrorElement:']' or ',' expected
+      PsiErrorElement:',' expected
         <empty list>
       PsiWhiteSpace(' ')
       StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)

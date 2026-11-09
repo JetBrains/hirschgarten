@@ -9,7 +9,7 @@ FILE
       PsiElement([)('[')
       StarlarkReferenceExpression(REFERENCE_EXPRESSION)
         PsiElement(identifier)('a')
-      PsiErrorElement:']' or ',' expected
+      PsiErrorElement:',', ']' or for expected
         <empty list>
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
