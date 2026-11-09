@@ -8,6 +8,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.BazelCLionFeatureFlags
 import org.jetbrains.bazel.clion.sync.includesCc
@@ -21,7 +22,8 @@ import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bsp.protocol.BuildTarget
 
-internal class CcRunHandler : BazelRunHandler {
+@ApiStatus.Internal
+class CcRunHandler : BazelRunHandler {
   override val state: GenericRunState = GenericRunState()
 
   override val name: String get() = BazelCLionCoreBundle.message("run.handler.cc.name")
@@ -38,6 +40,12 @@ internal class CcRunHandler : BazelRunHandler {
 
   internal class Provider : RunHandlerProvider {
     override val id: String = "CcRunHandlerProvider"
+
+    override val providedRunHandlerName: @Nls String get() = BazelCLionCoreBundle.message("run.handler.cc.name")
+
+    override val canBeForced: Boolean get() = BazelCLionFeatureFlags.isCLionEnabled
+
+    override val isTestHandler: Boolean get() = false
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = CcRunHandler()
 
@@ -69,6 +77,12 @@ class CcTestHandler : BazelRunHandler {
 
   internal class Provider : RunHandlerProvider {
     override val id: String = "CcTestHandlerProvider"
+
+    override val providedRunHandlerName: @Nls String get() = BazelCLionCoreBundle.message("test.handler.cc.name")
+
+    override val canBeForced: Boolean get() = BazelCLionFeatureFlags.isCLionEnabled
+
+    override val isTestHandler: Boolean get() = true
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = CcTestHandler()
 

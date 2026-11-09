@@ -318,11 +318,18 @@ internal class PlainTargetBuilder {
 
   private var label: String? = null
   private var configurationId: String? = null
+  private var kind: String = "plain"
+  private var ruleType: RuleType = RuleType.UNKNOWN
   private val deps = mutableListOf<DependencyLabel>()
   private val srcs = mutableListOf<OutputLocation>()
 
   fun label(label: String) {
     this.label = label
+  }
+
+  fun kind(kind: String, ruleType: RuleType) {
+    this.kind = kind
+    this.ruleType = ruleType
   }
 
   fun configurationId(configurationId: String) {
@@ -353,7 +360,7 @@ internal class PlainTargetBuilder {
 
     return TestBuildTarget(
       key = targetKey(label, configurationId),
-      kind = TargetKind(kind = "plain", languageClasses = setOf(), ruleType = RuleType.UNKNOWN),
+      kind = TargetKind(kind = kind, languageClasses = setOf(), ruleType = ruleType),
       sources = locations(srcs),
     )
   }

@@ -17,6 +17,7 @@ import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.config.rootDir
@@ -88,6 +89,11 @@ internal class IntellijDevLaunchRunHandler(private val configuration: BazelRunCo
 internal class IntellijDevLaunchRunHandlerProvider : RunHandlerProvider {
   override val id: String
     get() = "IntellijDevLaunchRunHandlerProvider"
+
+  override val providedRunHandlerName: @Nls String
+    get() = BazelDevKitBundle.message("dev.launch.run.handler.name")
+
+  override val isTestHandler: Boolean get() = false
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = IntellijDevLaunchRunHandler(configuration)
 

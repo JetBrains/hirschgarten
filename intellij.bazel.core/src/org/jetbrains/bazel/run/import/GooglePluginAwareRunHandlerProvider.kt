@@ -11,8 +11,6 @@ interface GooglePluginAwareRunHandlerProvider : RunHandlerProvider {
    */
   val googleHandlerId: String
 
-  val isTestHandler: Boolean
-
   companion object {
     fun getRunHandlerProvider(googleHandlerId: String, bazelCommand: String): RunHandlerProvider? {
       val isTestCommand = isTestCommand(bazelCommand)

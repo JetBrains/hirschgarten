@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Nls
 
 /**
  * Supports the run configuration flow for BSP run configurations.
@@ -20,7 +21,7 @@ interface BazelRunHandler {
   /**
    * The name of the run handler (shown in the UI).
    */
-  val name: String
+  val name: @Nls String
 
   val isTestHandler: Boolean
 

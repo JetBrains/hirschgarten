@@ -3,6 +3,7 @@ package org.jetbrains.bazel.run
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetStorage
@@ -29,6 +30,14 @@ interface RunHandlerProvider {
 
   fun canRunNonImported(project: Project, targets: List<Label>): Boolean = false
 
+  val isTestHandler: Boolean
+
+  /** If `true`, this provider's run handler can be manually chosen by the user to execute a run configuration */
+  val canBeForced: Boolean get() = false
+
+  /** Name of the run handler this provider returns */
+  val providedRunHandlerName: @Nls String
+
   companion object {
     val ep: ExtensionPointName<RunHandlerProvider> =
       ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
@@ -52,5 +61,8 @@ interface RunHandlerProvider {
 
     /** Finds a BspRunHandlerProvider by its unique ID */
     fun findRunHandlerProvider(id: String): RunHandlerProvider? = ep.extensionList.firstOrNull { it.id == id }
+
+    /** Finds the providers that a user can select in the run configuration editor */
+    fun findSelectableRunHandlerProviders(): List<RunHandlerProvider> = ep.extensionList.filter { it.canBeForced }
   }
 }

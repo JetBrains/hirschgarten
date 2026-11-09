@@ -10,6 +10,8 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.fragm
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunHandler
+import java.awt.KeyboardFocusManager
+import javax.swing.SwingUtilities
 
 /**
  * The base editor for a Bazel run configuration.
@@ -40,6 +42,7 @@ class BazelRunConfigurationEditor(
       add(CommonTags.parallelRun())
       addBeforeRunFragment()
       addTargetLabelsFragment()
+      add(RunHandlerFragment())
       addStateEditorFragment()
     }
 
@@ -59,9 +62,12 @@ class BazelRunConfigurationEditor(
     add(TargetsFragment(project))
   }
 
-  fun focusTargetLabelsFragment() {
-    fragments.filterIsInstance<TargetsFragment>().forEach {
-      it.editorComponent.requestFocus()
-    }
+  fun findFocusedFragmentId(): String? {
+    val focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner ?: return null
+    return fragments.firstOrNull { SwingUtilities.isDescendingFrom(focusOwner, it.component()) }?.id
+  }
+
+  fun focusFragment(fragmentId: String) {
+    fragments.firstOrNull { it.id == fragmentId }?.editorComponent?.requestFocus()
   }
 }

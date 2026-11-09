@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiMethod
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.java.ui.gutters.JvmTestFilterExtension
 import org.jetbrains.bazel.jvm.run.JvmTestRunnerExtension
@@ -200,8 +201,8 @@ private fun PsiMethod.getMethodParameterTypes(): String =
 internal class JetBrainsTestSuiteHandler : BazelRunHandler {
   override val state: GenericTestState = GenericTestState()
 
-  override val name: String
-    get() = "test_suite (JetBrains test runner)"
+  override val name: @Nls String
+    get() = BazelDevKitBundle.message("jetbrains.test.suite.handler.name")
 
   override val isTestHandler: Boolean
     get() = true
@@ -212,6 +213,11 @@ internal class JetBrainsTestSuiteHandler : BazelRunHandler {
   internal class JetBrainsTestSuiteHandlerProvider : RunHandlerProvider {
     override val id: String
       get() = "JetBrainsTestSuiteHandlerProvider"
+
+    override val providedRunHandlerName: @Nls String
+      get() = BazelDevKitBundle.message("jetbrains.test.suite.handler.name")
+
+    override val isTestHandler: Boolean get() = true
 
     override fun canRun(
       project: Project,

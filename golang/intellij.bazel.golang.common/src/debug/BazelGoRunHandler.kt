@@ -7,8 +7,10 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.golang.resolve.BazelGoBundle
 import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.golang.workspace.GoWorkspaceModuleUtil
 import org.jetbrains.bazel.label.Label
@@ -30,8 +32,8 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
     )
   }
 
-  override val name: String
-    get() = "Bazel Go Run Handler"
+  override val name: @Nls String
+    get() = BazelGoBundle.message("go.run.handler.name")
 
   override val isTestHandler: Boolean = false
 
@@ -65,6 +67,9 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
   class BazelGoRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String
       get() = "BazelGoRunHandlerProvider"
+
+    override val providedRunHandlerName: @Nls String
+      get() = BazelGoBundle.message("go.run.handler.name")
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = BazelGoRunHandler(configuration)
 
