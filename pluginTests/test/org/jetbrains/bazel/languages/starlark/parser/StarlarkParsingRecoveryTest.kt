@@ -131,6 +131,9 @@ class StarlarkParsingRecoveryTest {
   fun testNamedArgumentWithoutValue() = parsing.doTest(true)
 
   @Test
+  fun testNotAfterComparison() = parsing.doTest(true)
+
+  @Test
   fun testNotWithoutOperand() = parsing.doTest(true)
 
   @Test
