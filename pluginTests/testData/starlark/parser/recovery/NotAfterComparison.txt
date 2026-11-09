@@ -1,0 +1,16 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkBinaryExpression(BINARY_EXPRESSION)
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('a')
+      PsiWhiteSpace(' ')
+      PsiElement(==)('==')
+      PsiErrorElement:<expression> expected, got 'not'
+        <empty list>
+  PsiWhiteSpace(' ')
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkPrefixExpression(PREFIX_EXPRESSION)
+      PsiElement(not)('not')
+      PsiWhiteSpace(' ')
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('b')

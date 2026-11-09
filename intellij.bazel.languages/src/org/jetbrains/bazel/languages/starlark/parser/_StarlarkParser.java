@@ -83,12 +83,12 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // comparison_level and_tail*
+  // not_level and_tail*
   static boolean and_level(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "and_level")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = comparison_level(b, l + 1);
+    r = not_level(b, l + 1);
     r = r && and_level_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
@@ -106,7 +106,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'and' comparison_level
+  // 'and' not_level
   public static boolean and_tail(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "and_tail")) return false;
     if (!nextTokenIsFast(b, AND_KEYWORD)) return false;
@@ -114,7 +114,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _LEFT_, BINARY_EXPRESSION, null);
     r = consumeTokenFast(b, AND_KEYWORD);
     p = r; // pin = 1
-    r = r && comparison_level(b, l + 1);
+    r = r && not_level(b, l + 1);
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
@@ -2059,6 +2059,20 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // 'not' not_level
+  public static boolean not_expression(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "not_expression")) return false;
+    if (!nextTokenIs(b, NOT_KEYWORD)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, PREFIX_EXPRESSION, null);
+    r = consumeToken(b, NOT_KEYWORD);
+    p = r; // pin = 1
+    r = r && not_level(b, l + 1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
   // 'in'
   static boolean not_in_keyword(PsiBuilder b, int l) {
     return consumeTokenFast(b, IN_KEYWORD);
@@ -2074,6 +2088,18 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = consumeTokenFast(b, NOT_KEYWORD);
     r = r && not_in_keyword(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // not_expression | comparison_level
+  static boolean not_level(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "not_level")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, null, "<expression>");
+    r = not_expression(b, l + 1);
+    if (!r) r = comparison_level(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -2383,7 +2409,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ('+' | '-' | '~' | 'not') unary_level
+  // ('+' | '-' | '~') unary_level
   public static boolean prefix_expression(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "prefix_expression")) return false;
     boolean r, p;
@@ -2395,14 +2421,13 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // '+' | '-' | '~' | 'not'
+  // '+' | '-' | '~'
   private static boolean prefix_expression_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "prefix_expression_0")) return false;
     boolean r;
     r = consumeToken(b, PLUS);
     if (!r) r = consumeToken(b, MINUS);
     if (!r) r = consumeToken(b, TILDE);
-    if (!r) r = consumeToken(b, NOT_KEYWORD);
     return r;
   }
 

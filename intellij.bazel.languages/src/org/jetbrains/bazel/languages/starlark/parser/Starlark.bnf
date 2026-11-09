@@ -15,7 +15,7 @@
   // A name alone is a complete argument or parameter, so a missing '=' after it is no expected token.
   consumeTokenMethod("keyword_prefix|keyword_equals")="consumeTokenFast"
   // A rule with a name gives one item in an error message, not the list of its start tokens.
-  name("test|expression|or_level|bitwise_or_level|unary_level|list_item|loop_target|range_test")="expression"
+  name("test|expression|or_level|not_level|bitwise_or_level|unary_level|list_item|loop_target|range_test")="expression"
   name("statement_or_break|statement|simple_statement|suite|inline_statement_list")="statement"
   name("argument_item|argument")="argument"
   name("parameter_item|parameter")="parameter"
@@ -208,8 +208,11 @@ private conditional_else ::= 'else'
 private or_level ::= and_level or_tail*
 left or_tail ::= 'or' and_level { pin=1 elementType=binary_expression }
 
-private and_level ::= comparison_level and_tail*
-left and_tail ::= 'and' comparison_level { pin=1 elementType=binary_expression }
+private and_level ::= not_level and_tail*
+left and_tail ::= 'and' not_level { pin=1 elementType=binary_expression }
+
+private not_level ::= not_expression | comparison_level
+not_expression ::= 'not' not_level { pin=1 elementType=prefix_expression }
 
 private comparison_level ::= comparison_operand comparison_tail*
 left comparison_tail ::= comparison_operator bitwise_or_level { pin=1 elementType=binary_expression }
@@ -238,9 +241,8 @@ left additive_tail ::= ('+' | '-') multiplicative_level { pin=1 elementType=bina
 private multiplicative_level ::= unary_level multiplicative_tail*
 left multiplicative_tail ::= ('*' | '//' | '/' | '%') unary_level { pin=1 elementType=binary_expression }
 
-// 'not' binds as tightly as '-': 'not a == b' is '(not a) == b'.
 private unary_level ::= prefix_expression | power_level
-prefix_expression ::= ('+' | '-' | '~' | 'not') unary_level { pin=1 }
+prefix_expression ::= ('+' | '-' | '~') unary_level { pin=1 }
 
 // The right operand of '**' can be unary: '2 ** -1'.
 private power_level ::= member_level power_tail?
