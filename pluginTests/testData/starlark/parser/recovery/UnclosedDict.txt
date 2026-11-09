@@ -6,5 +6,5 @@ FILE
         StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
           PsiElement(string)('"a"')
         PsiElement(:)(':')
-        PsiErrorElement:Expression expected
+        PsiErrorElement:<expression> expected
           <empty list>

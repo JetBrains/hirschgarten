@@ -7,18 +7,20 @@ FILE
     PsiWhiteSpace(' ')
     StarlarkListLiteralExpression(LIST_LITERAL_EXPRESSION)
       PsiElement([)('[')
-      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-        PsiElement(identifier)('a')
-      PsiErrorElement:']' or ',' expected
-        <empty list>
-  PsiWhiteSpace('\n')
-  StarlarkIfStatement(IF_STATEMENT)
-    PsiElement(if)('if')
-    PsiWhiteSpace(' ')
-    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-      PsiElement(identifier)('y')
-    PsiElement(:)(':')
-    PsiWhiteSpace('\n    ')
-    StarlarkStatementList(STATEMENT_LIST)
-      StarlarkAugAssignmentStatement(PASS_STATEMENT)
-        PsiElement(pass)('pass')
+      StarlarkConditionalExpression(CONDITIONAL_EXPRESSION)
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+          PsiElement(identifier)('a')
+        PsiWhiteSpace('\n')
+        PsiElement(if)('if')
+        PsiWhiteSpace(' ')
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+          PsiElement(identifier)('y')
+        PsiErrorElement:else expected, got ':'
+          <empty list>
+    PsiErrorElement:End of statement expected
+      PsiElement(:)(':')
+  PsiWhiteSpace('\n    ')
+  PsiErrorElement:Unexpected indent
+    <empty list>
+  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+    PsiElement(pass)('pass')

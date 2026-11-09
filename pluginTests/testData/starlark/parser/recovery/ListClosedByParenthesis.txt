@@ -14,7 +14,7 @@ FILE
             PsiWhiteSpace(' ')
             StarlarkReferenceExpression(REFERENCE_EXPRESSION)
               PsiElement(identifier)('b')
-            PsiErrorElement:']' or ',' expected
+            PsiErrorElement:',' or ']' expected, got ')'
               <empty list>
         PsiElement())(')')
   PsiWhiteSpace('\n')

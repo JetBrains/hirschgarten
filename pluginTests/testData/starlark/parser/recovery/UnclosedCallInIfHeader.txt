@@ -16,22 +16,27 @@ FILE
             PsiWhiteSpace(' ')
             StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
               PsiElement(integer)('1')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:':' unexpected
+          PsiElement(:)(':')
+        PsiErrorElement:',' expected
           <empty list>
-    PsiElement(:)(':')
-    PsiWhiteSpace('\n    ')
+        PsiWhiteSpace('\n    ')
+        StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
+          StarlarkCallExpression(CALL_EXPRESSION)
+            StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+              PsiElement(identifier)('fail')
+            StarlarkArgumentList(ARGUMENT_LIST)
+              PsiElement(()('(')
+              StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
+                StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+                  PsiElement(string)('"x"')
+              PsiElement())(')')
+    PsiErrorElement:':' expected
+      <empty list>
+    PsiWhiteSpace('\n')
     StarlarkStatementList(STATEMENT_LIST)
-      StarlarkExpressionStatement(EXPRESSION_STATEMENT)
-        StarlarkCallExpression(CALL_EXPRESSION)
-          StarlarkReferenceExpression(REFERENCE_EXPRESSION)
-            PsiElement(identifier)('fail')
-          StarlarkArgumentList(ARGUMENT_LIST)
-            PsiElement(()('(')
-            StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
-              StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
-                PsiElement(string)('"x"')
-            PsiElement())(')')
-  PsiWhiteSpace('\n')
+      PsiErrorElement:Indent expected
+        <empty list>
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
     StarlarkTargetExpression(TARGET_EXPRESSION)('y')
       PsiElement(identifier)('y')

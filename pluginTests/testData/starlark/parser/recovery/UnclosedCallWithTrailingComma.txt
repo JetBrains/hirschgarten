@@ -32,5 +32,5 @@ FILE
               PsiElement(,)(',')
               PsiWhiteSpace('\n')
               PsiElement())(')')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:')' or ',' expected
           <empty list>

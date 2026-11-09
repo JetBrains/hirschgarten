@@ -5,9 +5,8 @@ FILE
     PsiElement(identifier)('f')
     StarlarkParameterList(PARAMETER_LIST)
       PsiElement(()('(')
-      PsiErrorElement:Formal parameter name expected
+      PsiErrorElement:<parameter> expected
         <empty list>
-    PsiErrorElement:':' expected
-      <empty list>
     StarlarkStatementList(STATEMENT_LIST)
-      <empty list>
+      PsiErrorElement:Indent expected
+        <empty list>

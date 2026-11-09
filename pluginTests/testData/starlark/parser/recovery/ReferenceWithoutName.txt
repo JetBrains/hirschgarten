@@ -4,5 +4,5 @@ FILE
       StarlarkReferenceExpression(REFERENCE_EXPRESSION)
         PsiElement(identifier)('a')
       PsiElement(.)('.')
-      PsiErrorElement:Name expected
+      PsiErrorElement:identifier expected
         <empty list>

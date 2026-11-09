@@ -12,6 +12,6 @@ FILE
         PsiWhiteSpace(' ')
         StarlarkStarArgumentExpression(STAR_ARGUMENT_EXPRESSION)
           PsiElement(*)('*')
-          PsiErrorElement:Expression expected
+          PsiErrorElement:<expression> expected, got ')'
             <empty list>
         PsiElement())(')')

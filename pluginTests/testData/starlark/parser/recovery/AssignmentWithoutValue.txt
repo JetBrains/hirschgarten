@@ -4,5 +4,5 @@ FILE
       PsiElement(identifier)('x')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
-    PsiErrorElement:Expression expected
+    PsiErrorElement:<expression> expected
       <empty list>

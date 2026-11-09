@@ -9,8 +9,9 @@ FILE
         PsiElement(identifier)('x')
       PsiElement(,)(',')
       PsiWhiteSpace(' ')
-      PsiErrorElement:Formal parameter name expected
-        PsiElement(*)('*')
+      PsiElement(*)('*')
+      PsiErrorElement:',' or identifier expected, got ')'
+        <empty list>
       PsiElement())(')')
     PsiElement(:)(':')
     PsiWhiteSpace('\n    ')

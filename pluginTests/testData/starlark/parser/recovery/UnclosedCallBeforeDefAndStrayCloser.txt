@@ -15,7 +15,7 @@ FILE
           StarlarkReferenceExpression(REFERENCE_EXPRESSION)
             PsiElement(identifier)('a')
         PsiElement(,)(',')
-        PsiErrorElement:')' expected
+        PsiErrorElement:<argument> expected
           <empty list>
   PsiWhiteSpace('\n')
   StarlarkFunctionDeclaration(FUNCTION_DECLARATION)('f')
@@ -41,9 +41,8 @@ FILE
                 PsiElement(integer)('1')
             PsiElement())(')')
   PsiWhiteSpace('\n')
-  PsiElement())(')')
   PsiErrorElement:Statement expected, found )
-    <empty list>
+    PsiElement())(')')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
     StarlarkTargetExpression(TARGET_EXPRESSION)('y')

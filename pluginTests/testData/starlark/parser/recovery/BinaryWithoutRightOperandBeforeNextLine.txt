@@ -10,7 +10,7 @@ FILE
         PsiElement(integer)('1')
       PsiWhiteSpace(' ')
       PsiElement(+)('+')
-      PsiErrorElement:Expression expected
+      PsiErrorElement:<expression> expected
         <empty list>
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)

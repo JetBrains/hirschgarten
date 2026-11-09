@@ -7,7 +7,6 @@ FILE
         PsiElement(string)('"a.bzl"')
     PsiElement(,)(',')
     PsiWhiteSpace(' ')
-    StarlarkStringLoadValue(STRING_LOAD_VALUE)
-      PsiErrorElement:String expected
-        PsiElement(integer)('5')
+    PsiErrorElement:<string> expected, got '5'
+      PsiElement(integer)('5')
     PsiElement())(')')

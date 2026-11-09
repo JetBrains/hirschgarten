@@ -21,5 +21,5 @@ FILE
           PsiWhiteSpace(' ')
           StarlarkListLiteralExpression(LIST_LITERAL_EXPRESSION)
             PsiElement([)('[')
-            PsiErrorElement:Expression expected
+            PsiErrorElement:<expression> expected
               <empty list>

@@ -21,7 +21,7 @@ FILE
           PsiWhiteSpace(' ')
           StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
             PsiElement(string)('"1"')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:')' or ',' expected
           <empty list>
   PsiWhiteSpace('\n')
   StarlarkExpressionStatement(EXPRESSION_STATEMENT)
@@ -48,10 +48,7 @@ FILE
     StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
       PsiElement(string)('"c"')
     PsiErrorElement:End of statement expected
-      <empty list>
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
+      PsiElement())(')')
   PsiWhiteSpace('\n')
   StarlarkExpressionStatement(EXPRESSION_STATEMENT)
     StarlarkCallExpression(CALL_EXPRESSION)

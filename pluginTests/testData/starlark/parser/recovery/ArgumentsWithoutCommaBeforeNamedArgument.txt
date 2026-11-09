@@ -12,22 +12,17 @@ FILE
           PsiWhiteSpace(' ')
           StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
             PsiElement(string)('"a"')
-        PsiErrorElement:',' or ')' expected
+        PsiErrorElement:',' expected
           <empty list>
-  PsiWhiteSpace(' ')
-  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('srcs')
-      PsiElement(identifier)('srcs')
-    PsiWhiteSpace(' ')
-    PsiElement(=)('=')
-    PsiWhiteSpace(' ')
-    StarlarkListLiteralExpression(LIST_LITERAL_EXPRESSION)
-      PsiElement([)('[')
-      StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
-        PsiElement(string)('"a.cc"')
-      PsiElement(])(']')
-    PsiErrorElement:End of statement expected
-      <empty list>
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
+        PsiWhiteSpace(' ')
+        StarlarkNamedArgumentExpression(NAMED_ARGUMENT_EXPRESSION)
+          PsiElement(identifier)('srcs')
+          PsiWhiteSpace(' ')
+          PsiElement(=)('=')
+          PsiWhiteSpace(' ')
+          StarlarkListLiteralExpression(LIST_LITERAL_EXPRESSION)
+            PsiElement([)('[')
+            StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+              PsiElement(string)('"a.cc"')
+            PsiElement(])(']')
+        PsiElement())(')')

@@ -2,9 +2,8 @@ FILE
   StarlarkLoadStatement(LOAD_STATEMENT)
     PsiElement(load)('load')
     PsiElement(()('(')
-    StarlarkFilenameLoadValue(FILENAME_LOAD_VALUE)
-      PsiErrorElement:String expected
-        PsiElement(bytes)('b"a.bzl"')
+    PsiErrorElement:<string> expected, got 'b"a.bzl"'
+      PsiElement(bytes)('b"a.bzl"')
     PsiElement(,)(',')
     PsiWhiteSpace(' ')
     StarlarkStringLoadValue(STRING_LOAD_VALUE)
@@ -16,7 +15,8 @@ FILE
       PsiElement(identifier)('y')
       PsiWhiteSpace(' ')
       PsiElement(=)('=')
-      PsiWhiteSpace(' ')
-      PsiErrorElement:String expected
-        PsiElement(bytes)('b"z"')
+      PsiErrorElement:<string> expected, got 'b"z"'
+        <empty list>
+    PsiWhiteSpace(' ')
+    PsiElement(bytes)('b"z"')
     PsiElement())(')')

@@ -1,9 +1,6 @@
 FILE
   StarlarkReturnStatement(RETURN_STATEMENT)
     PsiElement(return)('return')
-    PsiErrorElement:Expression expected
-      <empty list>
-  PsiWhiteSpace(' ')
-  PsiElement())(')')
-  PsiErrorElement:Statement expected, found )
-    <empty list>
+    PsiWhiteSpace(' ')
+    PsiErrorElement:End of statement expected
+      PsiElement())(')')

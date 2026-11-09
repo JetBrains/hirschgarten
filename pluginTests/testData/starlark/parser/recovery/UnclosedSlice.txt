@@ -10,5 +10,5 @@ FILE
         PsiElement(:)(':')
         StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
           PsiElement(integer)('2')
-        PsiErrorElement:':' or ']' expected
-          <empty list>
+      PsiErrorElement:']' expected
+        <empty list>

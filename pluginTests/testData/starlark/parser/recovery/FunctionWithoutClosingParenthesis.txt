@@ -7,7 +7,7 @@ FILE
       PsiElement(()('(')
       StarlarkMandatoryParameter(MANDATORY_PARAMETER)('a')
         PsiElement(identifier)('a')
-      PsiErrorElement:',' or '(' or ')' expected
+      PsiErrorElement:')' or ',' expected
         <empty list>
     StarlarkStatementList(STATEMENT_LIST)
       PsiErrorElement:Indent expected
