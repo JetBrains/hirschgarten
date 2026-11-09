@@ -1,0 +1,12 @@
+FILE
+  StarlarkIfStatement(IF_STATEMENT)
+    PsiElement(if)('if')
+    PsiWhiteSpace(' ')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+      PsiElement(identifier)('x')
+    PsiErrorElement:':' expected
+      <empty list>
+    PsiWhiteSpace('\n    ')
+    StarlarkStatementList(STATEMENT_LIST)
+      StarlarkAugAssignmentStatement(PASS_STATEMENT)
+        PsiElement(pass)('pass')

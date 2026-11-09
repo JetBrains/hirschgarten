@@ -1,0 +1,6 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkPrefixExpression(PREFIX_EXPRESSION)
+      PsiElement(not)('not')
+      PsiErrorElement:Expression expected
+        <empty list>

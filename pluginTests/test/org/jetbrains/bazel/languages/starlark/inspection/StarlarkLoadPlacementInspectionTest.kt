@@ -42,6 +42,18 @@ internal class StarlarkLoadPlacementInspectionTest : StarlarkInspectionTestCase(
   }
 
   @Test
+  fun `load statements separated by semicolons should not be highlighted`() {
+    myFixture.configureByText(
+      "example.bzl",
+      """
+        load("foo", "bar"); load("baz", "qux");
+        load("quux", "corge")
+      """.trimIndent()
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `load statement after other statement in build file should not be highlighted`() {
     myFixture.configureByText(
       "BUILD",

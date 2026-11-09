@@ -1,0 +1,9 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkBinaryExpression(BINARY_EXPRESSION)
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('a')
+      PsiWhiteSpace(' ')
+      PsiElement(+)('+')
+      PsiErrorElement:Expression expected
+        <empty list>

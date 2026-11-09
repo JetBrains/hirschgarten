@@ -1,0 +1,8 @@
+FILE
+  StarlarkAugAssignmentStatement(AUG_ASSIGNMENT_STATEMENT)
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+      PsiElement(identifier)('x')
+    PsiWhiteSpace(' ')
+    PsiElement(+=)('+=')
+    PsiErrorElement:Expression expected
+      <empty list>

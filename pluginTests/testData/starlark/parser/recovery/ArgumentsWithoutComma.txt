@@ -1,0 +1,21 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkCallExpression(CALL_EXPRESSION)
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('f')
+      StarlarkArgumentList(ARGUMENT_LIST)
+        PsiElement(()('(')
+        StarlarkArgumentExpression(ARGUMENT_EXPRESSION)
+          StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+            PsiElement(identifier)('a')
+        PsiErrorElement:',' or ')' expected
+          <empty list>
+  PsiWhiteSpace(' ')
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+      PsiElement(identifier)('b')
+    PsiErrorElement:End of statement expected
+      <empty list>
+  PsiElement())(')')
+  PsiErrorElement:Statement expected, found )
+    <empty list>

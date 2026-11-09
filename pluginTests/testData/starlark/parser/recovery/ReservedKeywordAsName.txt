@@ -1,0 +1,12 @@
+FILE
+  PsiElement(class)('class')
+  PsiErrorElement:Statement expected, found class
+    <empty list>
+  PsiWhiteSpace(' ')
+  PsiElement(=)('=')
+  PsiErrorElement:Statement expected, found =
+    <empty list>
+  PsiWhiteSpace(' ')
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(integer)('1')

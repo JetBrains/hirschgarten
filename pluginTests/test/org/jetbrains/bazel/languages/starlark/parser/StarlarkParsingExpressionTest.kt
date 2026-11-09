@@ -7,20 +7,41 @@ import org.junit.jupiter.api.Test
 @TestApplication
 class StarlarkParsingExpressionTest : StarlarkParsingTestCase("expression") {
   @Test
-  fun testBinaryExpression() = doTest(true)
+  fun testArguments() = doTest(true)
 
   @Test
-  fun testIfExpression() = doTest(true)
+  fun testBinary() = doTest(true)
 
   @Test
-  fun testKeywordExpression() = doTest(true)
+  fun testChains() = doTest(true)
 
   @Test
-  fun testLambdaExpression() = doTest(true)
+  fun testComprehension() = doTest(true)
 
   @Test
-  fun testPrimaryExpression() = doTest(true)
+  fun testConditional() = doTest(true)
 
   @Test
-  fun testUnaryExpression() = doTest(true)
+  fun testDictEntries() = doTest(true)
+
+  @Test
+  fun testKeyword() = doTest(true)
+
+  @Test
+  fun testOperand() = doTest(true)
+
+  @Test
+  fun testPrecedence() = doTest(true)
+
+  @Test
+  fun testPrimary() = doTest(true)
+
+  @Test
+  fun testSlice() = doTest(true)
+
+  @Test
+  fun testTuple() = doTest(true)
+
+  @Test
+  fun testUnary() = doTest(true)
 }

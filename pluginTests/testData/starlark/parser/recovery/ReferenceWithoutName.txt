@@ -1,0 +1,8 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('a')
+      PsiElement(.)('.')
+      PsiErrorElement:Name expected
+        <empty list>

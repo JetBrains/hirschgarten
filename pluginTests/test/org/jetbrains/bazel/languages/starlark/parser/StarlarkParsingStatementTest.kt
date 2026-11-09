@@ -7,14 +7,47 @@ import org.junit.jupiter.api.Test
 @TestApplication
 class StarlarkParsingStatementTest : StarlarkParsingTestCase("statement") {
   @Test
-  fun testDefStatement() = doTest(true)
+  fun testAssignment() = doTest(true)
 
   @Test
-  fun testForStatement() = doTest(true)
+  fun testAssignmentTargets() = doTest(true)
 
   @Test
-  fun testIfStatement() = doTest(true)
+  fun testBlockComments() = doTest(true)
 
   @Test
-  fun testSimpleStatement() = doTest(true)
+  fun testBreak() = doTest(true)
+
+  @Test
+  fun testComments() = doTest(true)
+
+  @Test
+  fun testContinue() = doTest(true)
+
+  @Test
+  fun testExpression() = doTest(true)
+
+  @Test
+  fun testFor() = doTest(true)
+
+  @Test
+  fun testIf() = doTest(true)
+
+  @Test
+  fun testIndentation() = doTest(true)
+
+  @Test
+  fun testLoad() = doTest(true)
+
+  @Test
+  fun testPass() = doTest(true)
+
+  @Test
+  fun testReturn() = doTest(true)
+
+  @Test
+  fun testSemicolons() = doTest(true)
+
+  @Test
+  fun testSimple() = doTest(true)
 }

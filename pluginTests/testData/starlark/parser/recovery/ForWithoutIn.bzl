@@ -1,0 +1,2 @@
+for x y:
+    pass

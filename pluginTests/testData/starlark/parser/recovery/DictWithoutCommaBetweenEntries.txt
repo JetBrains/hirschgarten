@@ -1,0 +1,22 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkDictLiteralExpression(DICT_LITERAL_EXPRESSION)
+      PsiElement({)('{')
+      StarlarkKeyValueExpression(KEY_VALUE_EXPRESSION)
+        StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+          PsiElement(string)('"a"')
+        PsiElement(:)(':')
+        PsiWhiteSpace(' ')
+        StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+          PsiElement(integer)('1')
+      PsiErrorElement:',' expected
+        <empty list>
+      PsiWhiteSpace(' ')
+      StarlarkKeyValueExpression(KEY_VALUE_EXPRESSION)
+        StarlarkStringLiteralExpression(STRING_LITERAL_EXPRESSION)
+          PsiElement(string)('"b"')
+        PsiElement(:)(':')
+        PsiWhiteSpace(' ')
+        StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+          PsiElement(integer)('2')
+      PsiElement(})('}')
