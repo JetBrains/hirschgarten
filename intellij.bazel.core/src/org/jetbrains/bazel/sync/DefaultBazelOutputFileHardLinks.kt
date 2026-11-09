@@ -51,6 +51,7 @@ class DefaultBazelOutputFileHardLinks(
   bazelInfo: BazelInfo,
 ): BazelOutFileHardLinks {
   private val bazelOutputBase: Path = bazelInfo.outputBase
+  private val bazelExternalDir: Path = bazelOutputBase.resolve("external")
 
   /**
    * We can only create hard links in the same filesystem and same partition as Bazel's output base (BAZEL-3113).
@@ -95,7 +96,7 @@ class DefaultBazelOutputFileHardLinks(
           else {
             // We can be missing directory symlinks here by only resolving the last path segment. But this is much quicker than toRealPath on macOS.
             // This is OK for C++ virtual headers that only symlink files (see, e.g., VirtualIncludesTest), but can be problematic in the future.
-            originalFile.readSymbolicLinkTarget()
+            originalFile.readSymbolicLinkTarget()?.let(::resolveExternalRepositoryRoot)
           }
         }
       }
@@ -191,6 +192,18 @@ class DefaultBazelOutputFileHardLinks(
       targetHardLink.createParentDirectories()
       targetHardLink.createLinkPointingTo(realFile)
     }
+  }
+
+  /**
+   * The [target] with the root of its external repository resolved, when that root is a symlink.
+   * Bazel links the root of a local repository into the workspace, see [shouldCreateSymLink].
+   * This reads only the one symlink of the root. [Path.toRealPath] resolves each parent directory, and that is slow on macOS (BAZEL-3580).
+   */
+  private fun resolveExternalRepositoryRoot(target: Path): Path {
+    if (!target.startsWith(bazelExternalDir) || target.nameCount <= bazelExternalDir.nameCount) return target
+    val repositoryRoot = bazelExternalDir.resolve(target.getName(bazelExternalDir.nameCount))
+    val repositoryRootTarget = repositoryRoot.readSymbolicLinkTarget() ?: return target
+    return target.rebase(from = repositoryRoot, to = repositoryRootTarget)
   }
 
   private fun shouldCreateSymLink(realFile: Path, rootDirPath: Path): Boolean {
