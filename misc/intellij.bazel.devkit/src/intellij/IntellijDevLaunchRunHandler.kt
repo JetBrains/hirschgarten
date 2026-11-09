@@ -16,6 +16,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.BazelInfo
@@ -52,6 +53,7 @@ import java.nio.file.Path
  * Runs and debugs an `intellij_dev_java_launcher` target.
  * The handler builds the target with `bazel run --script_path`, which also makes the runfiles tree.
  * Then it starts the native launcher of the target from its launch file, as `bazel run` starts its stub.
+ * A launch file of version 4 names the materializer of the home, which the handler runs before the start, see [IntellijDevHomeLaunch].
  * The debug options and the options of the run configuration extensions reach the JVM through a copy of the vmoptions file
  * of the target, see [writeIntellijDevVmOptionsCopy].
  * A program argument of the run configuration comes after the ones of the target.
@@ -123,7 +125,17 @@ private class IntellijDevLaunchCommandLineState(
     val project = environment.project
     val target = configuration.targets.single()
     val launchFile = findLaunchFile(project, target)
-    val launch = withContext(Dispatchers.IO) { readLaunch(launchFile, target) }
+    val launchData = withContext(Dispatchers.IO) { readLaunch(launchFile, target) }
+    val parentEnvironment = EnvironmentUtil.getEnvironmentMap()
+    val launch = when (launchData) {
+      is IntellijDevLaunch -> launchData
+      is IntellijDevHomeLaunch -> try {
+        runInterruptible(Dispatchers.IO) { launchData.launch(materializeIntellijDevHome(launchData.materializer, parentEnvironment)) }
+      }
+      catch (e: IOException) {
+        throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.start", target, e.message ?: e.toString()), e)
+      }
+    }
 
     val vmOptions = buildList {
       if (environment.executor is DefaultDebugExecutor) {
@@ -152,7 +164,7 @@ private class IntellijDevLaunchCommandLineState(
         .withEnvironment(
           intellijDevLaunchEnvironment(
             launch = launch,
-            parentEnvironment = EnvironmentUtil.getEnvironmentMap(),
+            parentEnvironment = parentEnvironment,
             runConfigurationEnvironment = settings.env.envs,
             workspaceRoot = workspaceRoot.toString(),
             vmOptionsCopy = vmOptionsCopy,
@@ -184,7 +196,7 @@ private fun findLaunchFile(project: Project, target: Label): Path {
 
 // The handler starts a local launcher process, so the launch file is a local file too.
 @Suppress("UseOptimizedEelFunctions")
-private fun readLaunch(launchFile: Path, target: Label): IntellijDevLaunch {
+private fun readLaunch(launchFile: Path, target: Label): IntellijDevLaunchFile {
   val text = try {
     Files.readString(launchFile)
   }
@@ -192,7 +204,7 @@ private fun readLaunch(launchFile: Path, target: Label): IntellijDevLaunch {
     throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.no.launch.file", launchFile, target))
   }
   try {
-    return IntellijDevLaunch.parse(text)
+    return IntellijDevLaunchFile.parse(text)
   }
   catch (e: RuntimeException) {
     throw ExecutionException(BazelDevKitBundle.message("dev.launch.error.invalid.launch.file", launchFile, e.message ?: e.toString()), e)

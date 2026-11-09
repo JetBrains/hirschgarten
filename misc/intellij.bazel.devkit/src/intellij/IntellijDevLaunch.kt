@@ -19,6 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermissions
+import kotlin.concurrent.thread
 
 /** The rule kind of a dev target that starts the native launcher of a composed dev distribution. */
 internal const val INTELLIJ_DEV_JAVA_LAUNCHER_KIND: String = "intellij_dev_java_launcher"
@@ -26,7 +27,14 @@ internal const val INTELLIJ_DEV_JAVA_LAUNCHER_KIND: String = "intellij_dev_java_
 /** The file name suffix of the launch file that `intellij_dev_java_launcher` writes next to the executable. */
 internal const val INTELLIJ_DEV_LAUNCH_FILE_SUFFIX: String = ".launch.json"
 
-private const val LAUNCH_FILE_VERSION = 3
+/** The version of a launch file that names the launcher in the runfiles home of the target. */
+private const val RUNFILES_LAUNCH_FILE_VERSION = 3
+
+/** The version of a launch file that names the materializer of the home of the target. */
+private const val MATERIALIZER_LAUNCH_FILE_VERSION = 4
+
+/** The prefix of the failure line that the materializer prints on stderr. */
+private const val MATERIALIZER_ERROR_PREFIX = "ERROR: "
 
 /**
  * The variables that `bazel run` removes from the environment of the executable.
@@ -37,16 +45,65 @@ private val BAZEL_RUN_REMOVED_VARIABLES = listOf("JAVA_RUNFILES", "RUNFILES_DIR"
 /**
  * The content of `<name>.launch.json`, which `intellij_dev_java_launcher` in `community/build/intellij_dev.bzl` writes.
  * Each path is absolute.
+ * Version 3 is an [IntellijDevLaunch]. Version 4 is an [IntellijDevHomeLaunch].
  *
- * Monorepo DevKit has its own reader of the same file, `DevLaunch` in `plugins/monorepo-devkit/bazel`, because the two
- * plugins have separate versions. Change both readers together.
+ * Monorepo DevKit has its own reader of the same file, `DevLaunchFile` in `plugins/monorepo-devkit/bazel`, because the two
+ * plugins have separate versions. Change both readers together, for each version.
+ */
+@ApiStatus.Internal
+sealed interface IntellijDevLaunchFile {
+  val programArguments: List<String>
+  val workingDirectory: String
+  val environment: Map<String, String>
+
+  companion object {
+    /**
+     * Reads the launch file [text].
+     * It throws [IllegalArgumentException] when the text is not a launch file of version 3 or 4.
+     * A target that an older checkout built has version 2, so the message names the version.
+     */
+    fun parse(text: String): IntellijDevLaunchFile {
+      val root = JsonParser.parseString(text)
+      require(root.isJsonObject) { "the root is not an object" }
+      val launch = root.asJsonObject
+      val version = launch.get("version")
+      val number = version?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asDouble
+      return when (number) {
+        RUNFILES_LAUNCH_FILE_VERSION.toDouble() -> IntellijDevLaunch(
+          launcher = launch.string("launcher"),
+          vmOptionsFile = launch.string("vmOptionsFile"),
+          vmOptionsVariable = launch.string("vmOptionsVariable"),
+          launcherSource = launch.get("launcherSource")?.let { launch.string("launcherSource") },
+          programArguments = launch.stringArray("programArguments"),
+          runfilesDirectory = launch.string("runfilesDirectory"),
+          workingDirectory = launch.string("workingDirectory"),
+          environment = launch.environment(),
+        )
+        MATERIALIZER_LAUNCH_FILE_VERSION.toDouble() -> IntellijDevHomeLaunch(
+          materializer = launch.stringArray("materializer").also { require(it.isNotEmpty()) { "`materializer` is empty" } },
+          programArguments = launch.stringArray("programArguments"),
+          workingDirectory = launch.string("workingDirectory"),
+          environment = launch.environment(),
+        )
+        else -> throw IllegalArgumentException(
+          "the version is ${version ?: "missing"}, not $RUNFILES_LAUNCH_FILE_VERSION or $MATERIALIZER_LAUNCH_FILE_VERSION. " +
+          "Update the checkout and build the target again"
+        )
+      }
+    }
+  }
+}
+
+/**
+ * A launch file of version 3, or an [IntellijDevHomeLaunch] with its materialized home, see [IntellijDevHomeLaunch.launch].
  *
  * @property launcher the production native launcher in the home of the target.
  * @property vmOptionsFile the user vmoptions file of the target. It holds the JVM flags of the target, one per line.
  * @property vmOptionsVariable the variable `<ENV>_VM_OPTIONS` that names [vmOptionsFile] for the launcher.
  * @property launcherSource the Bazel output of the launcher, on Linux only. [launcher] must be a real file with its bytes,
- *   because the launcher resolves the links of its own path (IJPL-258306).
+ *   because the launcher resolves the links of its own path (IJPL-258306). A materialized home has none.
  * @property programArguments the program arguments of the target.
+ * @property runfilesDirectory the runfiles directory of the target. A materialized home has none.
  * @property workingDirectory the directory where `bazel run` starts the executable.
  * @property environment the environment of `RunEnvironmentInfo`. It names [vmOptionsFile] in [vmOptionsVariable].
  */
@@ -56,42 +113,131 @@ data class IntellijDevLaunch(
   val vmOptionsFile: String,
   val vmOptionsVariable: String,
   val launcherSource: String?,
-  val programArguments: List<String>,
-  val runfilesDirectory: String,
-  val workingDirectory: String,
-  val environment: Map<String, String>,
+  override val programArguments: List<String>,
+  val runfilesDirectory: String?,
+  override val workingDirectory: String,
+  override val environment: Map<String, String>,
+) : IntellijDevLaunchFile
+
+/**
+ * A launch file of version 4. The home of the target is a generation of hard links outside the Bazel output base.
+ * So Bazel can build the target again while its IDE runs.
+ *
+ * @property materializer the command that makes the home and prints it, see [materializeIntellijDevHome].
+ * @property environment the environment of `RunEnvironmentInfo`. It does not name the vmoptions file, because the materializer gives it.
+ */
+@ApiStatus.Internal
+data class IntellijDevHomeLaunch(
+  val materializer: List<String>,
+  override val programArguments: List<String>,
+  override val workingDirectory: String,
+  override val environment: Map<String, String>,
+) : IntellijDevLaunchFile {
+  /** The launch from [home]. Its environment names the vmoptions file of [home], as the environment of version 3 does. */
+  fun launch(home: IntellijDevHome): IntellijDevLaunch = IntellijDevLaunch(
+    launcher = home.launcher,
+    vmOptionsFile = home.vmOptionsFile,
+    vmOptionsVariable = home.vmOptionsVariable,
+    launcherSource = null,
+    programArguments = programArguments,
+    runfilesDirectory = null,
+    workingDirectory = workingDirectory,
+    environment = environment + (home.vmOptionsVariable to home.vmOptionsFile),
+  )
+}
+
+/**
+ * The home that the materializer of an [IntellijDevHomeLaunch] makes. Each path is absolute.
+ *
+ * @property home the directory of the home.
+ * @property launcher the native launcher in [home].
+ * @property vmOptionsFile the vmoptions file of the home.
+ * @property vmOptionsVariable the variable `<ENV>_VM_OPTIONS` that names [vmOptionsFile] for the launcher.
+ */
+@ApiStatus.Internal
+data class IntellijDevHome(
+  val home: String,
+  val launcher: String,
+  val vmOptionsFile: String,
+  val vmOptionsVariable: String,
 ) {
   companion object {
-    /**
-     * Reads the launch file [text].
-     * It throws [IllegalArgumentException] when the text is not a launch file of version [LAUNCH_FILE_VERSION].
-     * A target that an older checkout built has version 2, so the message names the version.
-     */
-    fun parse(text: String): IntellijDevLaunch {
-      val root = JsonParser.parseString(text)
-      require(root.isJsonObject) { "the root is not an object" }
-      val launch = root.asJsonObject
-      val version = launch.get("version")
-      require(version != null && version.isJsonPrimitive && version.asJsonPrimitive.isNumber && version.asDouble == LAUNCH_FILE_VERSION.toDouble()) {
-        "the version is ${version ?: "missing"}, not $LAUNCH_FILE_VERSION. Update the checkout and build the target again"
+    /** Reads the answer [text] of the materializer. It throws [IllegalArgumentException] when the text is not such an answer. */
+    fun parse(text: String): IntellijDevHome {
+      val root = try {
+        JsonParser.parseString(text)
       }
-      return IntellijDevLaunch(
-        launcher = launch.string("launcher"),
-        vmOptionsFile = launch.string("vmOptionsFile"),
-        vmOptionsVariable = launch.string("vmOptionsVariable"),
-        launcherSource = launch.get("launcherSource")?.let { launch.string("launcherSource") },
-        programArguments = launch.member("programArguments").let { element ->
-          require(element.isJsonArray) { "`programArguments` is not an array" }
-          element.asJsonArray.mapIndexed { index, value -> value.stringValue("programArguments[$index]") }
-        },
-        runfilesDirectory = launch.string("runfilesDirectory"),
-        workingDirectory = launch.string("workingDirectory"),
-        environment = launch.member("env").let { element ->
-          require(element.isJsonObject) { "`env` is not an object" }
-          element.asJsonObject.entrySet().associate { (name, value) -> name to value.stringValue("env.$name") }
-        },
+      catch (e: RuntimeException) {
+        throw IllegalArgumentException("the text is not JSON: ${e.message}", e)
+      }
+      require(root.isJsonObject) { "the root is not an object" }
+      val answer = root.asJsonObject
+      return IntellijDevHome(
+        home = answer.string("home"),
+        launcher = answer.string("launcher"),
+        vmOptionsFile = answer.string("vmOptionsFile"),
+        vmOptionsVariable = answer.string("vmOptionsVariable"),
       )
     }
+  }
+}
+
+/**
+ * Runs the materializer [command] of an [IntellijDevHomeLaunch] with [environment] and returns the home that it prints.
+ * The materializer reads `INTELLIJ_DEV_HOME_ROOT` of [environment] when it is set.
+ * It throws [IOException] when the materializer cannot start, fails, or prints no home.
+ * A failure has the message of the `ERROR:` line of the materializer, so the user sees why the home is missing.
+ * The call blocks until the materializer exits. An interrupt of the thread stops the materializer.
+ */
+@ApiStatus.Internal
+fun materializeIntellijDevHome(command: List<String>, environment: Map<String, String>): IntellijDevHome {
+  val builder = ProcessBuilder(command)
+  builder.environment().clear()
+  builder.environment().putAll(environment)
+  val process = try {
+    builder.start()
+  }
+  catch (e: IOException) {
+    throw IOException("cannot start the materializer ${command.first()}: ${e.message}", e)
+  }
+  try {
+    process.outputStream.close()
+    var errors = ""
+    // The materializer writes to both streams. A second reader keeps a full stderr pipe from blocking it.
+    val errorReader = thread(name = "dev home materializer stderr") {
+      errors = try {
+        process.errorStream.readAllBytes().decodeToString()
+      }
+      catch (_: IOException) {
+        ""
+      }
+    }
+    val output = process.inputStream.readAllBytes().decodeToString()
+    val exitCode = process.waitFor()
+    errorReader.join()
+    return intellijDevHomeOf(exitCode, output, errors)
+  }
+  finally {
+    process.destroyForcibly()
+  }
+}
+
+/**
+ * The home that the materializer printed in [output] when it exits with [exitCode] 0.
+ * Otherwise it throws [IOException] with the text of the `ERROR:` line in [errors], or with the exit code when there is no such line.
+ */
+@ApiStatus.Internal
+fun intellijDevHomeOf(exitCode: Int, output: String, errors: String): IntellijDevHome {
+  if (exitCode != 0) {
+    val message = errors.lines().lastOrNull { it.startsWith(MATERIALIZER_ERROR_PREFIX) }?.removePrefix(MATERIALIZER_ERROR_PREFIX)?.trim()
+                  ?: errors.trim().ifEmpty { "the materializer exited with code $exitCode" }
+    throw IOException(message)
+  }
+  try {
+    return IntellijDevHome.parse(output)
+  }
+  catch (e: IllegalArgumentException) {
+    throw IOException("the materializer printed no home: ${e.message}", e)
   }
 }
 
@@ -206,7 +352,8 @@ fun writeIntellijDevVmOptionsCopy(launch: IntellijDevLaunch, extraVmOptions: Lis
  * Makes the launcher of [launch] a real file with the bytes of `launcherSource`, as the Linux stub of the target does.
  * The launcher reads its path from `/proc/self/exe`, which resolves every link. So from a link it finds no home.
  * Bazel restores the link when the runfiles manifest changes. Then this function copies the file again.
- * A launch without `launcherSource`, on macOS and Windows, needs no copy. IJPL-258306 removes this step.
+ * A launch without `launcherSource`, on macOS and Windows and from a materialized home, needs no copy.
+ * IJPL-258306 removes this step.
  */
 @ApiStatus.Internal
 fun ensureIntellijDevLauncherFile(launch: IntellijDevLaunch) {
@@ -230,6 +377,18 @@ fun ensureIntellijDevLauncherFile(launch: IntellijDevLaunch) {
 private fun JsonObject.member(name: String): JsonElement = requireNotNull(get(name)) { "`$name` is missing" }
 
 private fun JsonObject.string(name: String): String = member(name).stringValue(name)
+
+private fun JsonObject.stringArray(name: String): List<String> {
+  val element = member(name)
+  require(element.isJsonArray) { "`$name` is not an array" }
+  return element.asJsonArray.mapIndexed { index, value -> value.stringValue("$name[$index]") }
+}
+
+private fun JsonObject.environment(): Map<String, String> {
+  val element = member("env")
+  require(element.isJsonObject) { "`env` is not an object" }
+  return element.asJsonObject.entrySet().associate { (name, value) -> name to value.stringValue("env.$name") }
+}
 
 private fun JsonElement.stringValue(name: String): String {
   require(isJsonPrimitive && asJsonPrimitive.isString) { "`$name` is not a string" }
