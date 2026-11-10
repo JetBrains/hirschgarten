@@ -147,6 +147,8 @@ jvm_library(
         "//CIDR/cidr-runner:cidr-runner_test_lib",
         "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend",
         "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend_test_lib",
+        "//CIDR/cidr-debugger/profiles/backend",
+        "//CIDR/cidr-debugger/dap",
         "@community//platform/xdebugger-impl:debugger-impl",
         "@community//platform/xdebugger-impl:debugger-impl_test_lib",
         "@community//platform/projectModel-api:projectModel",
