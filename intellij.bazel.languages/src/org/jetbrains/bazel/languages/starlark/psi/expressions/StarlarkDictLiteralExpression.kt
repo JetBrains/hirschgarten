@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 
@@ -16,7 +16,7 @@ class StarlarkDictLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
     var current = firstChild
     while (current != null) {
       when (current) {
-        is StarlarkKeyValueExpression -> keys.add(current.node.findChildByType(StarlarkElementTypes.EXPRESSIONS)?.psi ?: return null)
+        is StarlarkKeyValueExpression -> keys.add(current.node.findChildByType(StarlarkTokenSets.EXPRESSIONS)?.psi ?: return null)
         is StarlarkBaseElement -> return null
       }
       current = current.nextSibling

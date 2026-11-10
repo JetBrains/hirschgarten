@@ -9,7 +9,7 @@ import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
@@ -80,7 +80,7 @@ class StarlarkInvalidDictKeyInspection : LocalInspectionTool() {
       tuple.children.asSequence().filter { isExpression(it) }
 
     private fun isExpression(element: PsiElement): Boolean =
-      StarlarkElementTypes.EXPRESSIONS.contains(element.elementType)
+      StarlarkTokenSets.EXPRESSIONS.contains(element.elementType)
 
     private fun staticDictKey(element: PsiElement): StaticDictKey? =
       when (val expression = unwrapParenthesized(element)) {

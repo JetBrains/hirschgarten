@@ -3,9 +3,9 @@ package org.jetbrains.bazel.languages.starlark
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.PsiElement
+import com.intellij.psi.tree.IElementType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 
 @ApiStatus.Internal
@@ -41,7 +41,7 @@ object StarlarkUtils {
     return null
   }
 
-  fun nearestRelevantChildAfter(node: PsiElement, separator: StarlarkTokenType): PsiElement? {
+  fun nearestRelevantChildAfter(node: PsiElement, separator: IElementType): PsiElement? {
     var current = node.firstChild
     while (current != null) {
       if (current.node?.elementType == separator) return nextRelevantSibling(current)
@@ -50,7 +50,7 @@ object StarlarkUtils {
     return null
   }
 
-  fun relevantChildrenAfterEach(node: PsiElement, separator: StarlarkTokenType): List<PsiElement> =
+  fun relevantChildrenAfterEach(node: PsiElement, separator: IElementType): List<PsiElement> =
     buildList {
       var current = node.firstChild
       while (current != null) {
@@ -61,7 +61,7 @@ object StarlarkUtils {
       }
     }
 
-  fun relevantChildrenAroundEach(node: PsiElement, separator: StarlarkTokenType): List<Pair<PsiElement, PsiElement>> =
+  fun relevantChildrenAroundEach(node: PsiElement, separator: IElementType): List<Pair<PsiElement, PsiElement>> =
     buildList {
       var current = node.firstChild
       while (current != null) {

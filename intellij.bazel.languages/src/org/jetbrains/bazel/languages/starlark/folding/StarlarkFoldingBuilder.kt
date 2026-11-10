@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
@@ -68,5 +67,5 @@ internal class StarlarkFoldingBuilder : CustomFoldingBuilder() {
    * A start marker and an end marker in two different function bodies do not make a region.
    */
   override fun isCustomFoldingRoot(node: ASTNode): Boolean =
-    node.psi is StarlarkFile || node.elementType == StarlarkElementTypes.STATEMENT_LIST
+    node.psi is StarlarkFile || node.elementType == StarlarkTokenTypes.STATEMENT_LIST
 }
