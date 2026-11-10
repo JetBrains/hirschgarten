@@ -19,7 +19,9 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.diagnostics.Diagnostic
@@ -371,15 +373,6 @@ class BepServer(
 
   private fun consumeFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val taskId = startedEvent
-    val target =
-      event.id.testResult.label
-        ?.let { Label.parse(it) }
-
-    if (target == null) {
-      LOGGER.warn("No target label was found. Task id: ${taskId}")
-      return
-    }
-
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: ${parentId}")
       return
@@ -393,9 +386,20 @@ class BepServer(
     val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code)
     val isSuccess = statusCode == BazelStatus.SUCCESS
     val errors = if (isSuccess) 0 else 1
-    val report = CompileReport(target, errors, 0)
+    val buildReference = SyntheticLabel(AllRuleTargets)
+    val message = ("Build result: ${event.finished.exitCode.name} (${event.finished.exitCode.code})"
+                   + if (event.finished.failureDetail.message.isEmpty()) "" else "\n${event.finished.failureDetail.message}")
+    // Also report an overall build failure as diagnostic message
+    if (!isSuccess) {
+      val diagnostic = Diagnostic(Position.NONE, message, null, buildReference,
+                                  if (context == BazelInvocationContext.SYNC) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR)
+      val params = PublishDiagnosticsParams(parentId, null, buildReference, listOf(diagnostic), true)
+      taskEventsHandler.onBuildPublishDiagnostics(params)
+    }
+    val report = CompileReport(buildReference, errors, 0)
     val finishParams =
-      TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis, data = report)
+      TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis,
+                       message = message, data = report)
     taskEventsHandler.onBuildTaskFinish(finishParams)
   }
 
