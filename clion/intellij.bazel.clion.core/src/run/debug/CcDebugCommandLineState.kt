@@ -11,6 +11,7 @@ import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.util.system.LowLevelLocalMachineAccess
 import com.intellij.util.system.OS
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
@@ -26,6 +27,7 @@ import com.jetbrains.cidr.execution.TrivialInstaller
 import com.jetbrains.cidr.execution.TrivialRunParameters
 import com.jetbrains.cidr.execution.debugger.CidrLocalDebugProcess
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
+import com.jetbrains.cidr.execution.debugger.backend.dap.profile.DapDebugProfileState
 import com.jetbrains.cidr.execution.debugger.backend.dap.profile.DapDebugProfileType
 import com.jetbrains.cidr.execution.runOnEDT
 import org.jetbrains.bazel.clion.sync.CC_TEST_KIND
@@ -73,11 +75,16 @@ private class CcCidrLauncher(private val environment: ExecutionEnvironment, priv
     // the CcDebugRunner sets these before the debug process starts
     val targetInfo = requireNotNull(ccState.targetInfo)
     val executionInfo = requireNotNull(ccState.executionInfo)
-    val debugProfile = requireNotNull(ccState.debugProfile)
+    var debugProfile = requireNotNull(ccState.debugProfile)
 
     // TODO: when can these be null and what to do then?
     val executionRoot = requireNotNull(project.workspaceSnapshotOrNull?.bazelInfo?.execRoot)
     val workspaceRoot = requireNotNull(project.bazelProjectInfo.projectRootDir?.toNioPathOrNull())
+
+    if (OS.CURRENT == OS.macOS) {
+      // on macos the debugger resolves debug symbols relative to the working directory
+      debugProfile = debugProfile.withDapWorkingDir(executionRoot)
+    }
 
     val debugDriver = debugProfile.createDriverConfiguration(
       project = project,
@@ -199,6 +206,25 @@ private fun configureLldbDriver(driver: DebuggerDriver, sourceMappings: Map<Path
   }
 
   driver.executeInterpreterCommand(command)
+}
+
+/**
+ * Gives a DAP debug profile without a debugger working directory the [executionRoot] as that directory.
+ * On macOS, the binary records its object files relative to the execution root. LLDB finds them relative
+ * to its working directory.
+ */
+private fun CidrDebugProfile<*>.withDapWorkingDir(executionRoot: Path): CidrDebugProfile<*> {
+  val dapState = state as? DapDebugProfileState ?: return this
+  
+  // user has set a custom working directory
+  if (!dapState.debuggerWorkingDir.isNullOrBlank()) return this
+
+  val newState = DapDebugProfileState()
+  newState.copyFrom(dapState)
+  newState.debuggerWorkingDir = executionRoot.toString()
+
+  @Suppress("UNCHECKED_CAST")
+  return (this as CidrDebugProfile<DapDebugProfileState>).copy(state = newState)
 }
 
 private fun configureDapDriver(driver: DebuggerDriver, sourceMappings: Map<Path, Path>) {
