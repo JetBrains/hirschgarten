@@ -22,15 +22,17 @@ private const val CLANG_CL_TOOLCHAIN_NAME = "synthetic_clang_cl_bazel"
  * custom configuration.
  */
 fun createToolEnvironment(settings: CcCompilerInfo): CidrToolEnvironment {
-  if (settings.cCompilerKind != settings.cppCompilerKind || settings.cCompiler != settings.cppCompiler) {
+  if (settings.cCompilerKind != settings.cppCompilerKind) {
     LOG.warn("C and Cpp compiler mismatch. Defaulting to Cpp compiler.")
   }
 
-  return when (settings.cppCompilerKind) {
-           MSVCCompilerKind -> createMsvcEnvironment(settings)
-           ClangClCompilerKind -> createClangClEnvironment(settings)
-           else -> null
-         } ?: createToolEnvironment(settings.environment)
+  val environment = when (settings.cppCompilerKind) {
+    MSVCCompilerKind -> createMsvcEnvironment(settings)
+    ClangClCompilerKind -> createClangClEnvironment(settings)
+    else -> null
+  }
+
+  return environment ?: createToolEnvironment(settings.environment)
 }
 
 private fun createMsvcEnvironment(settings: CcCompilerInfo): CidrToolEnvironment? {
