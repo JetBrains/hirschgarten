@@ -10,7 +10,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression

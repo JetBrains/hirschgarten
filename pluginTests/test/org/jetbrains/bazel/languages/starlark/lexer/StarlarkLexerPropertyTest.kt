@@ -8,7 +8,8 @@ import com.intellij.psi.tree.TokenSet
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.propertyBased.MadTestingUtil
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.lexer.generated._StarlarkLexer
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.jetCheck.Generator
 import org.jetbrains.jetCheck.ImperativeCommand

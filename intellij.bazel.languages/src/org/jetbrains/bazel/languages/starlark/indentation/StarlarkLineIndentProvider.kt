@@ -13,7 +13,7 @@ import com.intellij.util.text.CharArrayUtil
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 private val WHITE_SPACE_OR_COMMENT: List<IElementType> =
   StarlarkTokenSets.WHITESPACE.types.toList() +

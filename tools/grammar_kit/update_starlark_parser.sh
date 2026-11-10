@@ -15,10 +15,11 @@ REPO_DIR="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 CACHE_DIR="${TMPDIR:-/tmp}/intellij-starlark-grammar"
 FD="$REPO_DIR/community/tools/fd.cmd"
 
-GEN_ROOT="$REPO_DIR/plugins/bazel/intellij.bazel.languages/src"
-PARSER_DIR="$GEN_ROOT/org/jetbrains/bazel/languages/starlark/parser"
-BNF_FILE="$PARSER_DIR/Starlark.bnf"
-GENERATED_FILES=("$PARSER_DIR/_StarlarkParser.java" "$GEN_ROOT/org/jetbrains/bazel/languages/starlark/elements/StarlarkTokenTypes.java")
+MODULE_DIR="$REPO_DIR/plugins/bazel/intellij.bazel.languages"
+GEN_ROOT="$MODULE_DIR/gen"
+BNF_FILE="$MODULE_DIR/src/org/jetbrains/bazel/languages/starlark/parser/Starlark.bnf"
+GENERATED_DIR="$GEN_ROOT/org/jetbrains/bazel/languages/starlark/parser/generated"
+GENERATED_FILES=("$GENERATED_DIR/_StarlarkParser.java" "$GENERATED_DIR/StarlarkTokenTypes.java")
 
 resolve_java() {
   local min="$1"

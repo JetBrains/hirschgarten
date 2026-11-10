@@ -3,13 +3,15 @@ package org.jetbrains.bazel.languages.starlark.parser
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
-import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 /** The external rules of `Starlark.bnf`. */
 internal object StarlarkParserUtil : GeneratedParserUtilBase() {
+
+  private val STATEMENT_START_OFFSET = Key.create<Int>("starlark.parser.statement.start.offset")
+
   /**
    * Removes the bracket pairs from the error state. With them, the error recovery skips a whole bracket group,
    * so after a stray token and an unclosed `(` it takes the rest of the file. The lexer ends an unclosed bracket at a line start,
@@ -20,37 +22,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     ErrorState.get(builder).braces = null
     return true
   }
-
-  private val NO_STATEMENT_STARTS = TokenSet.orSet(
-    StarlarkTokenSets.COMPOUND_ASSIGN_OPERATIONS,
-    StarlarkTokenSets.CLOSE_BRACKETS,
-    TokenSet.create(StarlarkTokenTypes.EQ, StarlarkTokenTypes.COMMA, StarlarkTokenTypes.COLON, StarlarkTokenTypes.DOT),
-    TokenSet.create(StarlarkTokenTypes.ELSE_KEYWORD, StarlarkTokenTypes.ELIF_KEYWORD, StarlarkTokenTypes.IN_KEYWORD, StarlarkTokenTypes.AND_KEYWORD, StarlarkTokenTypes.OR_KEYWORD),
-  )
-
-  /** Tokens that never start or continue a statement. The next statement can start right after one of them. */
-  private val STRAY_TOKENS = TokenSet.orSet(NO_STATEMENT_STARTS, TokenSet.create(StarlarkTokenTypes.SEMICOLON))
-
-  private val STATEMENT_SEPARATORS = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)
-
-  private val LINE_STARTS = TokenSet.create(
-    StarlarkTokenTypes.STATEMENT_BREAK,
-    StarlarkTokenTypes.INDENT,
-    StarlarkTokenTypes.DEDENT,
-  )
-
-  private val INSIGNIFICANT_TOKENS = TokenSet.orSet(StarlarkTokenSets.WHITESPACE, StarlarkTokenSets.COMMENT)
-
-  private val SPACES_TABS_AND_COMMENTS = TokenSet.orSet(StarlarkTokenSets.SPACES_AND_TABS, StarlarkTokenSets.COMMENT)
-
-  private val COLON_SEARCH_STOPS = TokenSet.create(
-    StarlarkTokenTypes.COLON,
-    StarlarkTokenTypes.STATEMENT_BREAK,
-    StarlarkTokenTypes.DEDENT,
-  )
-
-  /** The offset where a statement starts after a statement error. */
-  private val STATEMENT_START_OFFSET = Key.create<Int>("starlark.parser.statement.start.offset")
 
   @JvmStatic
   fun missingComma(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
@@ -65,14 +36,14 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   @JvmStatic
   fun statementExpected(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     val type = builder.tokenType
-    if (type == null) {
-      builder.error(StarlarkBundle.message("parser.indent.expected"))
-    } else if (type in STRAY_TOKENS) {
-      val unexpected = builder.mark()
-      builder.advanceLexer()
-      unexpected.error(StarlarkBundle.message("parser.statement.expected.found.0", type.toString()))
-    } else {
-      builder.error(StarlarkBundle.message("parser.statement.expected.found.0", type.toString()))
+    when (type) {
+      in StarlarkTokenSets.NO_STATEMENT_STARTS -> {
+        val unexpected = builder.mark()
+        builder.advanceLexer()
+        unexpected.error(StarlarkBundle.message("parser.statement.expected.found.0", type.toString()))
+      }
+      null -> builder.error(StarlarkBundle.message("parser.indent.expected"))
+      else -> builder.error(StarlarkBundle.message("parser.statement.expected.found.0", type.toString()))
     }
     startStatementHere(builder)
     return true
@@ -94,10 +65,10 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     when {
       builder.tokenType === StarlarkTokenTypes.STATEMENT_BREAK -> builder.advanceLexer()
       builder.tokenType === StarlarkTokenTypes.SEMICOLON || builder.eof() -> Unit
-      builder.tokenType in NO_STATEMENT_STARTS ||
+      builder.tokenType in StarlarkTokenSets.NO_STATEMENT_STARTS ||
       builder.tokenType in StarlarkTokenSets.COMPOUND_STATEMENT_KEYWORDS && !followsLineBreak(builder) -> {
         val rest = builder.mark()
-        while (!builder.eof() && builder.tokenType !in STATEMENT_SEPARATORS) {
+        while (!builder.eof() && builder.tokenType !in StarlarkTokenSets.STATEMENT_SEPARATORS) {
           builder.advanceLexer()
         }
         rest.error(StarlarkBundle.message("parser.end.of.statement.expected"))
@@ -123,7 +94,7 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
       return true
     }
     val unexpected = builder.mark()
-    while (!builder.eof() && builder.tokenType !in COLON_SEARCH_STOPS) {
+    while (!builder.eof() && builder.tokenType !in StarlarkTokenSets.COLON_SEARCH_STOPS) {
       builder.advanceLexer()
     }
     if (builder.tokenType === StarlarkTokenTypes.COLON) {
@@ -133,28 +104,18 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     return true
   }
 
-  /** True when the current token is the first token of a line, or of a statement after an [statementEnd] error. */
+  /** True when the current token is the first token of a logical line, or of a statement after a [statementEnd] error. */
   @JvmStatic
   fun atLineStart(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     builder.tokenType // Skips the whitespace before the current token.
-    if (builder.getUserData(STATEMENT_START_OFFSET) == builder.currentOffset) return true
-    return followsLineStart(builder)
+    return builder.getUserData(STATEMENT_START_OFFSET) == builder.currentOffset || followsLineStart(builder)
   }
 
   /** True when the current token is on the same physical line as the token before it. */
   @JvmStatic
   fun atSameLine(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     val type = builder.tokenType ?: return false
-    return type !in LINE_STARTS && !followsLineBreak(builder)
-  }
-
-  private fun followsLineStart(builder: PsiBuilder): Boolean {
-    var step = -1
-    while (true) {
-      val type = builder.rawLookup(step) ?: return true
-      if (type !in INSIGNIFICANT_TOKENS) return type in LINE_STARTS
-      step--
-    }
+    return type !in StarlarkTokenSets.LINE_STARTS && !followsLineBreak(builder)
   }
 
   @JvmStatic
@@ -176,10 +137,20 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
       else -> StarlarkBundle.message("parser.statement.expected.found.0", type.toString())
     }
     unexpected.error(message)
-    if (type in STRAY_TOKENS) {
+    if (type in StarlarkTokenSets.NO_STATEMENT_STARTS) {
       startStatementHere(builder)
     }
     return true
+  }
+
+  /** True when a statement break, an indent or a dedent comes before the current token, so a logical line starts here. */
+  private fun followsLineStart(builder: PsiBuilder): Boolean {
+    var step = -1
+    while (true) {
+      val type = builder.rawLookup(step) ?: return true
+      if (type !in StarlarkTokenSets.WHITESPACE_AND_COMMENTS) return type in StarlarkTokenSets.LINE_STARTS
+      step--
+    }
   }
 
   /** True when a line break comes before the current token, also inside brackets, where the lexer makes no statement break. */
@@ -187,7 +158,7 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     var step = -1
     while (true) {
       val type = builder.rawLookup(step) ?: return true
-      if (type !in SPACES_TABS_AND_COMMENTS) return type === StarlarkTokenTypes.LINE_BREAK || type in LINE_STARTS
+      if (type !in StarlarkTokenSets.SPACES_TABS_AND_COMMENTS) return type === StarlarkTokenTypes.LINE_BREAK || type in StarlarkTokenSets.LINE_STARTS
       step--
     }
   }

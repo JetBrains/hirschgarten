@@ -4,8 +4,8 @@ import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolService
 import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.globbing.asGlobCallOrNull
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement.Companion.relativeTo
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression

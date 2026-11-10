@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.lexer
 
 import com.intellij.psi.tree.IElementType
 import it.unimi.dsi.fastutil.ints.IntList
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 /**
  * A queue of new tokens: statement breaks, whitespace, comments, indents and dedents.

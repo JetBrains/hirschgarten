@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 import kotlin.takeIf
 
 @ApiStatus.Internal

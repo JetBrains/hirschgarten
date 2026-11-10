@@ -12,7 +12,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SingleRootFileViewProvider
 import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference

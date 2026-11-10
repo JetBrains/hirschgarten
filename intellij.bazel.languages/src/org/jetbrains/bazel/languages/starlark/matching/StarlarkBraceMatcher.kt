@@ -5,7 +5,7 @@ import com.intellij.lang.PairedBraceMatcher
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 internal class StarlarkBraceMatcher : PairedBraceMatcher {
   override fun getPairs(): Array<BracePair> =

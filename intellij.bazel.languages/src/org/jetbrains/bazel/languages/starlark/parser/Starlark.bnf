@@ -1,24 +1,19 @@
 // The grammar of Starlark: https://github.com/bazelbuild/starlark/blob/master/spec.md
-// The lexer is StarlarkIndentingLexer. It adds STATEMENT_BREAK, INDENT and DEDENT.
-// Grammar-Kit generates the token and element types into StarlarkTokenTypes. A token value is the name in error messages and PSI dumps.
-// The PSI classes are hand-written. StarlarkParserDefinition.createElement maps each element type to its PSI class.
 {
   generate=[psi="no" names="short"]
-  generatePsi=false
   generateTokens=true
 
-  parserClass="org.jetbrains.bazel.languages.starlark.parser._StarlarkParser"
+  parserClass="org.jetbrains.bazel.languages.starlark.parser.generated._StarlarkParser"
   parserUtilClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserUtil"
-  elementTypeHolderClass="org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes"
+  elementTypeHolderClass="org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes"
   tokenTypeClass="org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType"
   elementTypeClass="org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType"
-  // An error after a complete expression does not list every operator. A token that the user must see is in its own rule.
-  // The start of the next item is no expected token, because a missing ',' before it is an error too.
-  consumeTokenMethod(".*_start(_[0-9]+)*|.*_tail|assignment_suffix|aug_assignment_suffix|aug_operator|comparison_operator|not_in_operator|not_in_keyword|conditional_expression|reference_expression|call_expression|subscription_expression")="consumeTokenFast"
-  // A name alone is a complete argument or parameter, so a missing '=' after it is no expected token.
+  // These tokens are not listed in "… expected" error messages, so an error does not list every operator.
+  consumeTokenMethod(".*_start|.*_tail|assignment_suffix|aug_operator|comparison_operator|not_in_operator|not_in_keyword|conditional_expression|qualified_reference_expression|call_expression|subscription_expression")="consumeTokenFast"
+  // A name alone is a complete argument or parameter, so a message does not list the '=' after it.
   consumeTokenMethod("keyword_prefix|keyword_equals")="consumeTokenFast"
-  // A rule with a name gives one item in an error message, not the list of its start tokens.
-  name("test|expression|or_level|not_level|bitwise_or_level|unary_level|list_item|loop_target|comprehension_condition")="expression"
+  // A message shows a named rule as one item, as "expression expected", not as its start tokens.
+  name("single_expression|expression|or_level|not_level|bitwise_or_level|unary_level|list_item|starred_operand|comprehension_condition")="expression"
   name("statement_or_break|statement|simple_statement|suite|inline_statement_list")="statement"
   name("argument_item|argument")="argument"
   name("parameter_item|parameter")="parameter"
@@ -26,13 +21,11 @@
   name("dict_item|dict_entry")="dict entry"
 
   tokens=[
-    // Whitespace
     SPACE='SPACE'
     TAB='TAB'
     LINE_CONTINUATION='LINE_CONTINUATION'
     LINE_BREAK='LINE_BREAK'
 
-    // Significant whitespace, added by StarlarkIndentingLexer
     INDENT='indent'
     DEDENT='dedent'
     INCONSISTENT_DEDENT='inconsistent dedent'
@@ -64,7 +57,7 @@
     TRUE_KEYWORD='True'
     FALSE_KEYWORD='False'
 
-    // Python keywords that Starlark reserves. StarlarkUnsupportedPythonSyntaxInspection reports them.
+    // Python keywords that Starlark reserves. The lexer makes tokens of them, and StarlarkUnsupportedPythonSyntaxInspection reports them.
     AS_KEYWORD='as'
     ASSERT_KEYWORD='assert'
     ASYNC_KEYWORD='async'
@@ -130,16 +123,19 @@
   ]
 }
 
-starlark_file ::= <<withoutBracketGroups>> file_item*
+// File and statements
 
+starlark_file ::= <<withoutBracketGroups>> file_item*
 private file_item ::= !<<eof>> statement_or_break { pin=1 recoverWhile=statement_recover }
 private block_item ::= !(DEDENT | <<eof>>) statement_or_break { pin=1 recoverWhile=statement_recover }
 private statement_or_break ::= STATEMENT_BREAK | statement | unexpected_block | <<unexpectedStatementToken>>
+private statement ::= if_statement | for_statement | function_declaration | simple_line
 // An unexpected indent opens a block that ends at its own dedent, so only the indent is an error.
 private unexpected_block ::= <<unexpectedIndent>> block_item* (DEDENT | <<eof>>) { pin=1 }
 private statement_recover ::= !(<<atLineStart>> | STATEMENT_BREAK | DEDENT | ';')
 
-private statement ::= if_statement | for_statement | function_declaration | simple_line
+
+// Simple statements
 
 private simple_line ::= simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
 private simple_statement ::=
@@ -155,11 +151,15 @@ pass_statement ::= 'pass' statement_end { pin=1 }
 break_statement ::= 'break' statement_end { pin=1 }
 continue_statement ::= 'continue' statement_end { pin=1 }
 return_statement ::= 'return' expression? statement_end { pin=1 }
+
 // The parser reads the left side once. An assignment operator after it changes the statement into an assignment.
 expression_statement ::= expression (assignment_suffix | aug_assignment_suffix)? statement_end { pin=1 }
 upper assignment_suffix ::= '=' expression { pin=1 elementType=assignment_statement }
 upper aug_assignment_suffix ::= aug_operator expression { pin=1 elementType=aug_assignment_statement }
 private aug_operator ::= '+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>='
+
+
+// Load
 
 load_statement ::= 'load' '(' load_values? ')' statement_end { pin=1 }
 // StarlarkLoadParametersInspection reports a load without symbols, so the parser accepts it.
@@ -173,11 +173,17 @@ named_load_value ::= keyword_prefix load_string { pin=1 }
 string_load_value ::= load_string
 private load_string ::= &STRING string_literal_expression
 
-if_statement ::= 'if' test colon_suite elif_clause* else_clause? { pin=1 }
-private elif_clause ::= 'elif' test colon_suite { pin=1 }
+
+// Compound statements
+
+if_statement ::= 'if' single_expression colon_suite elif_clause* else_clause? { pin=1 }
+private elif_clause ::= 'elif' single_expression colon_suite { pin=1 }
 private else_clause ::= 'else' colon_suite { pin=1 }
 
 for_statement ::= 'for' loop_targets 'in' expression colon_suite { pin=1 }
+// A loop target is a '|' expression. So it stops before 'in', which is also a comparison operator.
+private loop_targets ::= starred_operand loop_target_tuple?
+left loop_target_tuple ::= ',' (starred_operand (',' starred_operand)* ','?)? { elementType=tuple_expression }
 
 function_declaration ::= 'def' IDENTIFIER parameter_list colon_suite { pin=1 }
 
@@ -186,17 +192,11 @@ private suite ::= block_suite | inline_statement_list
 private block_suite ::= STATEMENT_BREAK statement_list { pin=1 }
 statement_list ::= indented_statements | <<indentExpected>>
 private indented_statements ::= INDENT block_item* (DEDENT | <<eof>>) { pin=1 }
-// After ':' on the same line, only simple statements can follow. Anything else gives an empty statement list and an error.
 inline_statement_list ::= inline_statements | <<statementExpected>> inline_statements? { elementType=statement_list }
 private inline_statements ::= simple_line (<<atSameLine>> (simple_line | <<unexpectedStatementToken>>))*
 
-private loop_targets ::= loop_target loop_target_tuple?
-left loop_target_tuple ::= ',' (loop_target (',' loop_target)* ','?)? { elementType=tuple_expression }
-private loop_target ::= star_expression | bitwise_or_level
 
-// The parameters are in this order: start, close, item.
-private meta comma_tail ::= (',' | &<<start>> missing_comma) !<<close>> <<item>> { pin=2 }
-external missing_comma ::= missingComma
+// Parameters
 
 parameter_list ::= '(' parameters? ')' { pin=1 }
 private parameters ::= !')' parameter_item <<comma_tail parameter_start ')' parameter_item>>* ','? { pin=1 }
@@ -214,17 +214,25 @@ private parameter ::=
 variadic_parameter ::= '*' IDENTIFIER
 keyword_only_boundary ::= '*'
 keyword_variadic_parameter ::= '**' IDENTIFIER { pin=1 }
-optional_parameter ::= keyword_prefix test { pin=1 }
+optional_parameter ::= keyword_prefix single_expression { pin=1 }
 mandatory_parameter ::= IDENTIFIER
 
-lambda_expression ::= 'lambda' lambda_parameter_list ':' test { pin=1 }
+lambda_expression ::= 'lambda' lambda_parameter_list ':' single_expression { pin=1 }
 
-private expression ::= test tuple_expression?
-left tuple_expression ::= ',' (test (',' test)* ','?)?
 
-private test ::= lambda_expression | conditional_level
+// Expressions, from the lowest priority to the highest
+
+// A precedence cascade: each level reads the next stronger level, then zero or more tails.
+// A 'left' tail wraps the node before it, so 'a - b - c' is binary(binary(a - b) - c).
+
+// An expression can be a tuple without parentheses, as 'a, b'. A single_expression does not allow that.
+// The 'if' condition uses it, because 'if 1, 2:' is not allowed.
+private expression ::= single_expression tuple_expression?
+left tuple_expression ::= ',' (single_expression (',' single_expression)* ','?)?
+
+private single_expression ::= lambda_expression | conditional_level
 private conditional_level ::= or_level conditional_expression?
-left conditional_expression ::= 'if' or_level conditional_else test { pin=1 }
+left conditional_expression ::= 'if' or_level conditional_else single_expression { pin=1 }
 private conditional_else ::= 'else'
 
 private or_level ::= and_level or_tail*
@@ -233,16 +241,19 @@ left or_tail ::= 'or' and_level { pin=1 elementType=binary_expression }
 private and_level ::= not_level and_tail*
 left and_tail ::= 'and' not_level { pin=1 elementType=binary_expression }
 
+// 'not' binds weaker than a comparison: 'not a == b' is 'not (a == b)', and 'a == not b' is an error.
 private not_level ::= not_expression | comparison_level
 not_expression ::= 'not' not_level { pin=1 elementType=prefix_expression }
 
-private comparison_level ::= comparison_operand comparison_tail*
+// A chained comparison, as 'a < b < c', is not Starlark. The parser accepts it, and StarlarkUnsupportedPythonSyntaxInspection reports it.
+private comparison_level ::= starred_operand comparison_tail*
 left comparison_tail ::= comparison_operator bitwise_or_level { pin=1 elementType=binary_expression }
-private comparison_operand ::= star_expression | bitwise_or_level
+private starred_operand ::= star_expression | bitwise_or_level
 private comparison_operator ::= '==' | '!=' | '<=' | '>=' | '<' | '>' | 'in' | not_in_operator
 // Two tokens in one sequence would record 'not' for error messages, so 'in' is a separate rule.
 private not_in_operator ::= 'not' not_in_keyword
 private not_in_keyword ::= 'in'
+// Unpacking, as '*x', is not Starlark. The parser accepts it, and StarlarkUnsupportedPythonSyntaxInspection reports it.
 star_expression ::= '*' bitwise_or_level { pin=1 }
 
 private bitwise_or_level ::= bitwise_xor_level bitwise_or_tail*
@@ -266,36 +277,40 @@ left multiplicative_tail ::= ('*' | '//' | '/' | '%') unary_level { pin=1 elemen
 private unary_level ::= prefix_expression | power_level
 prefix_expression ::= ('+' | '-' | '~') unary_level { pin=1 }
 
-// The right operand of '**' can be unary: '2 ** -1'.
+// The '**' operator is not Starlark. The parser accepts it, and StarlarkUnsupportedPythonSyntaxInspection reports it.
 private power_level ::= member_level power_tail?
 left power_tail ::= '**' unary_level { pin=1 elementType=binary_expression }
 
+
+// Postfix expressions
+
 private member_level ::= primary_level member_tail*
-private member_tail ::= reference_expression | call_expression | subscription_expression
-left reference_expression ::= '.' reference_name { pin=1 }
+private member_tail ::= qualified_reference_expression | call_expression | subscription_expression
+
+left qualified_reference_expression ::= '.' reference_name { pin=1 elementType=reference_expression }
 private reference_name ::= IDENTIFIER
+
 left call_expression ::= argument_list
+argument_list ::= '(' arguments? ')' { pin=1 }
+private arguments ::= !')' argument_item <<comma_tail double_star_start ')' argument_item>>* ','? { pin=1 }
+private argument_item ::= argument { recoverWhile=argument_recover }
+private argument_recover ::= !(',' | close_bracket | header_colon | STATEMENT_BREAK | double_star_start)
+private argument ::= star_argument_expression | named_argument_expression | argument_expression
+star_argument_expression ::= ('*' | '**') single_expression { pin=1 }
+named_argument_expression ::= keyword_prefix single_expression { pin=1 }
+argument_expression ::= single_expression
+
 left subscription_expression ::= '[' subscription_content subscription_end { pin=1 }
 private subscription_end ::= ']'
-
 private subscription_content ::= expression slice_suffix? | slice_suffix { recoverWhile=subscription_recover }
 private subscription_recover ::= !(']' | header_colon | STATEMENT_BREAK)
-upper slice_suffix ::= ':' test? (':' test?)? { elementType=slice_expression }
+upper slice_suffix ::= ':' single_expression? (':' single_expression?)? { elementType=slice_expression }
 
-argument_list ::= '(' arguments? ')' { pin=1 }
-private arguments ::= !')' argument_item <<comma_tail argument_start ')' argument_item>>* ','? { pin=1 }
-private argument_item ::= argument { recoverWhile=argument_recover }
-private argument_recover ::= !(',' | close_bracket | header_colon | STATEMENT_BREAK | argument_start)
-private argument_start ::= expression_start | '**'
-private argument ::= star_argument_expression | named_argument_expression | argument_expression
-star_argument_expression ::= ('*' | '**') test { pin=1 }
-named_argument_expression ::= keyword_prefix test { pin=1 }
-private keyword_prefix ::= IDENTIFIER keyword_equals
-private keyword_equals ::= '='
-argument_expression ::= test
+
+// Atoms
 
 private primary_level ::=
-    name_expression
+    reference_expression
   | integer_literal_expression
   | float_literal_expression
   | string_literal_expression
@@ -306,11 +321,7 @@ private primary_level ::=
   | list_literal_expression
   | dict_literal_expression
 
-private expression_start ::=
-    IDENTIFIER | INT | FLOAT | STRING | BYTES | 'None' | 'True' | 'False'
-  | '(' | '[' | '{' | 'lambda' | 'not' | '-' | '+' | '~' | '*'
-
-name_expression ::= IDENTIFIER { elementType=reference_expression }
+reference_expression ::= IDENTIFIER
 integer_literal_expression ::= INT
 float_literal_expression ::= FLOAT
 string_literal_expression ::= STRING | BYTES
@@ -318,45 +329,70 @@ none_literal_expression ::= 'None'
 true_literal_expression ::= 'True'
 false_literal_expression ::= 'False'
 
-// An 'upper' rule changes the type of the enclosing node. So the parser reads the content only once.
 parenthesized_expression ::= '(' parenthesized_content ')' { pin=1 }
 private parenthesized_content ::= empty_tuple | expression generator_suffix? { recoverWhile=parenthesized_recover }
 private parenthesized_recover ::= !(')' | header_colon | STATEMENT_BREAK)
-// A ':' at the line end is the colon of a compound header, not part of a broken bracket content.
-private header_colon ::= ':' &STATEMENT_BREAK
-// A recovery that stops at any closer must never eat an opener, or it stops at the closer of that opener.
-private open_bracket ::= '(' | '[' | '{'
-private close_bracket ::= ')' | ']' | '}'
 upper empty_tuple ::= &')' { elementType=tuple_expression }
+// A generator expression is not Starlark. The parser accepts it, and StarlarkUnsupportedPythonSyntaxInspection reports it.
 upper generator_suffix ::= comprehension { elementType=generator_expression }
 
 list_literal_expression ::= '[' list_content? ']' { pin=1 }
 private list_content ::= !']' list_item (&'for' list_comp_suffix | <<comma_tail expression_start ']' list_item>>* ','?) { pin=1 }
-private list_item ::= test { recoverWhile=list_recover }
+private list_item ::= single_expression { recoverWhile=list_recover }
 private list_recover ::= !(',' | close_bracket | 'for' | header_colon | STATEMENT_BREAK | expression_start)
-upper list_comp_suffix ::= comprehension { elementType=list_comp_expression recoverWhile=list_comp_recover }
-private list_comp_recover ::= !(close_bracket | header_colon | STATEMENT_BREAK)
+upper list_comp_suffix ::= comprehension { elementType=list_comp_expression recoverWhile=comprehension_recover }
 
 dict_literal_expression ::= '{' dict_content? '}' { pin=1 }
-private dict_content ::= !'}' dict_item (&'for' dict_comp_suffix | <<comma_tail dict_entry_start '}' dict_item>>* ','?) { pin=1 }
+private dict_content ::= !'}' dict_item (&'for' dict_comp_suffix | <<comma_tail double_star_start '}' dict_item>>* ','?) { pin=1 }
 private dict_item ::= dict_entry { recoverWhile=dict_recover }
-private dict_recover ::= !(',' | close_bracket | 'for' | header_colon | STATEMENT_BREAK | dict_entry_start)
-private dict_entry_start ::= expression_start | '**'
+private dict_recover ::= !(',' | close_bracket | 'for' | header_colon | STATEMENT_BREAK | double_star_start)
 private dict_entry ::= double_star_expression | key_value_expression
-key_value_expression ::= test ':' test { pin=1 }
+key_value_expression ::= single_expression ':' single_expression { pin=1 }
+// Unpacking in a dict, as '**d', is not Starlark. The parser accepts it, and StarlarkUnsupportedPythonSyntaxInspection reports it.
 double_star_expression ::= '**' bitwise_or_level { pin=1 }
-upper dict_comp_suffix ::= comprehension { elementType=dict_comp_expression recoverWhile=list_comp_recover }
+upper dict_comp_suffix ::= comprehension { elementType=dict_comp_expression recoverWhile=comprehension_recover }
+
+
+// Comprehensions
 
 private comprehension ::= comprehension_for+
+// The range and the condition are 'or' expressions. So an 'if' after them starts a condition, not a conditional expression.
 private comprehension_for ::= 'for' loop_targets 'in' or_level comprehension_if* { pin=1 }
 private comprehension_if ::= 'if' comprehension_condition { pin=1 }
 private comprehension_condition ::= lambda_expression | or_level
+private comprehension_recover ::= !(close_bracket | header_colon | STATEMENT_BREAK)
 
-// The node types that only 'elementType' attributes use.
+
+// Shared rules
+
+// A ',', or a missing ',' before the next start, then an item. It stops at the close. The parameters are: start, close, item.
+private meta comma_tail ::= (',' | &<<start>> missing_comma) !<<close>> <<item>> { pin=2 }
+external missing_comma ::= missingComma
+
+private keyword_prefix ::= IDENTIFIER keyword_equals
+// A separate rule, because Grammar-Kit joins two tokens of a sequence into one call that ignores consumeTokenMethod.
+private keyword_equals ::= '='
+
+// Keep it in sync with primary_level, the prefix operators, 'lambda', 'not' and '*'.
+private expression_start ::=
+    IDENTIFIER | INT | FLOAT | STRING | BYTES | 'None' | 'True' | 'False'
+  | '(' | '[' | '{' | 'lambda' | 'not' | '-' | '+' | '~' | '*'
+private double_star_start ::= expression_start | '**'
+
+// A recovery that stops at any closer must never eat an opener, or it stops at the closer of that opener.
+private open_bracket ::= '(' | '[' | '{'
+private close_bracket ::= ')' | ']' | '}'
+// A ':' at the line end is the colon of a compound header, not part of a broken bracket content.
+private header_colon ::= ':' &STATEMENT_BREAK
+
+
+// Fake node types
+
+// The parser never runs these bodies. A rule gives its node one of these types with 'elementType'.
 fake assignment_statement ::= expression assignment_suffix
 fake aug_assignment_statement ::= expression aug_assignment_suffix
-fake binary_expression ::= test test
-fake slice_expression ::= test slice_suffix
-fake generator_expression ::= test comprehension
-fake list_comp_expression ::= test comprehension
+fake binary_expression ::= single_expression single_expression
+fake slice_expression ::= single_expression slice_suffix
+fake generator_expression ::= single_expression comprehension
+fake list_comp_expression ::= single_expression comprehension
 fake dict_comp_expression ::= key_value_expression comprehension

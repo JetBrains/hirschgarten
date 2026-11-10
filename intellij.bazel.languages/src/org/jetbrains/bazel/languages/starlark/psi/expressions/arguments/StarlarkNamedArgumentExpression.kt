@@ -5,7 +5,7 @@ import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.openapi.components.serviceOrNull
 import com.intellij.psi.PsiReference
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport

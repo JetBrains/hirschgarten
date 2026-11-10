@@ -10,7 +10,7 @@ import com.intellij.testFramework.LightVirtualFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 private const val DUMMY_FILENAME = "dummy.bzl"
 

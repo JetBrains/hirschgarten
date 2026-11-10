@@ -1,13 +1,14 @@
-package org.jetbrains.bazel.languages.starlark.lexer;
+package org.jetbrains.bazel.languages.starlark.lexer.generated;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes;
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes;
 
 @SuppressWarnings("ALL")
 %%
 
+%public
 %class _StarlarkLexer
 %implements FlexLexer
 %unicode
