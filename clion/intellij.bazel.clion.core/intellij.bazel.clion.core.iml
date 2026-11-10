@@ -46,6 +46,7 @@
     <orderEntry type="module" module-name="intellij.cidr.debugger.core" />
     <orderEntry type="module" module-name="intellij.cidr.debugger.backend" />
     <orderEntry type="module" module-name="intellij.cidr.debugger.profiles.backend" />
+    <orderEntry type="module" module-name="intellij.cidr.debugger.dap" />
     <orderEntry type="module" module-name="intellij.clion.execution" />
     <orderEntry type="module" module-name="intellij.clion.toolchains" />
     <orderEntry type="module" module-name="intellij.cidr.execution" />

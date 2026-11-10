@@ -26,6 +26,7 @@ import com.jetbrains.cidr.execution.TrivialInstaller
 import com.jetbrains.cidr.execution.TrivialRunParameters
 import com.jetbrains.cidr.execution.debugger.CidrLocalDebugProcess
 import com.jetbrains.cidr.execution.debugger.backend.DebuggerDriver
+import com.jetbrains.cidr.execution.debugger.backend.dap.profile.DapDebugProfileType
 import com.jetbrains.cidr.execution.runOnEDT
 import org.jetbrains.bazel.clion.sync.CC_TEST_KIND
 import org.jetbrains.bazel.commons.RepoMapping
@@ -125,6 +126,7 @@ private class CcCidrLauncher(private val environment: ExecutionEnvironment, priv
       when (debugProfile.type.getId()) {
         CLionLldbDebugProfileType.ID -> configureLldbDriver(driver, sourceMappings)
         CLionGdbDebugProfileType.ID -> configureGdbDriver(driver, sourceMappings)
+        DapDebugProfileType.ID -> configureDapDriver(driver, sourceMappings)
       }
     }
 
@@ -177,13 +179,13 @@ private class CcTestConsoleBuilder(private val environment: ExecutionEnvironment
 }
 
 private fun MutableMap<Path, Path>.putLocalRepoMapping(execroot: Path, workspace: Path, repoMapping: RepoMapping) {
-  for ((name, path) in repoMapping.getLocalRepositories().localRepositories) {
+  for ([name, path] in repoMapping.getLocalRepositories().localRepositories) {
     put(execroot.resolve("external", name), workspace.resolve(path))
   }
 }
 
 private fun configureGdbDriver(driver: DebuggerDriver, sourceMappings: Map<Path, Path>) {
-  for ((from, to) in sourceMappings) {
+  for ([from, to] in sourceMappings) {
     driver.executeInterpreterCommand("set substitute-path \"$from\" \"$to\"")
   }
 }
@@ -198,3 +200,13 @@ private fun configureLldbDriver(driver: DebuggerDriver, sourceMappings: Map<Path
 
   driver.executeInterpreterCommand(command)
 }
+
+private fun configureDapDriver(driver: DebuggerDriver, sourceMappings: Map<Path, Path>) {
+  // the DAP driver gives an IDE path the debugger path of the first mapping with the longest IDE path,
+  // and only a relative debugger path matches both `lib/impl.cc` and the `./lib/hdr.h` that the compiler records for a header
+  val relativeFirst = sourceMappings.entries.sortedBy { it.key.isAbsolute }
+  for ([index, mapping] in relativeFirst.withIndex()) {
+    driver.addPathMapping(index, mapping.key.toString(), mapping.value.toString())
+  }
+}
+
