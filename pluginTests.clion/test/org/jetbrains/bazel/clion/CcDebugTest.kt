@@ -89,8 +89,7 @@ abstract class CcDebugTest(debugProfileTypeId: String, debugProfileSettings: Bas
     if (isWindows()) {
       addBuildFlags(
         // the default MSVC toolchain does not support relative debug symbols
-        "--extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl",
-        "--extra_execution_platforms=//platform:x64_windows-clang-cl",
+        "--extra_toolchains=//toolchain:x64_windows-clang-cl",
 
         // we need relative for debug symbols as the path of the execution root might change between test runs and the symbols are stored in the build cache
         "--copt=-fdebug-compilation-dir=.",
