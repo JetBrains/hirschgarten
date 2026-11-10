@@ -43,5 +43,5 @@ FILE
       PsiErrorElement:Statement expected, found ;
         PsiElement(;)(';')
       PsiWhiteSpace(' ')
-      StarlarkAugAssignmentStatement(PASS_STATEMENT)
+      StarlarkPassStatement(PASS_STATEMENT)
         PsiElement(pass)('pass')

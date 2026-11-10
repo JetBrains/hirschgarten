@@ -22,5 +22,5 @@ FILE
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')

@@ -30,7 +30,7 @@ FILE
     StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
       PsiElement(integer)('1')
   PsiWhiteSpace('\n\n')
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
     PsiWhiteSpace(' ')
     PsiErrorElement:End of statement expected
@@ -80,7 +80,7 @@ FILE
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)

@@ -51,6 +51,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatemen
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkIfStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadValue
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkPassStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkReturnStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
@@ -158,7 +159,7 @@ object StarlarkElementTypes {
       FILENAME_LOAD_VALUE -> StarlarkFilenameLoadValue(node)
       NAMED_LOAD_VALUE -> StarlarkNamedLoadValue(node)
       STRING_LOAD_VALUE -> StarlarkStringLoadValue(node)
-      PASS_STATEMENT -> StarlarkAugAssignmentStatement(node)
+      PASS_STATEMENT -> StarlarkPassStatement(node)
       RETURN_STATEMENT -> StarlarkReturnStatement(node)
       STATEMENT_LIST -> StarlarkStatementList(node)
 

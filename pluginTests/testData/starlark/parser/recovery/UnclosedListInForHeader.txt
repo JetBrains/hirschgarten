@@ -14,7 +14,7 @@ FILE
     PsiElement(:)(':')
     PsiWhiteSpace('\n    ')
     StarlarkStatementList(STATEMENT_LIST)
-      StarlarkAugAssignmentStatement(PASS_STATEMENT)
+      StarlarkPassStatement(PASS_STATEMENT)
         PsiElement(pass)('pass')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
