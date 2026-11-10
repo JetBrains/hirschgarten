@@ -52,6 +52,8 @@
     <orderEntry type="module" module-name="intellij.platform.debugger.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.cidr.runner" scope="TEST" />
     <orderEntry type="module" module-name="intellij.cidr.debugger.backend" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.cidr.debugger.profiles.backend" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.cidr.debugger.dap" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.debugger.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.projectModel" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.clion.test.google" scope="TEST" />

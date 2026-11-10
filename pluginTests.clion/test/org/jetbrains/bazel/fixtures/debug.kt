@@ -16,6 +16,7 @@ import com.jetbrains.cidr.cpp.execution.debugger.backend.CLionLldbDebugProfileTy
 import com.jetbrains.cidr.cpp.execution.debugger.backend.GdbDebugProfileState
 import com.jetbrains.cidr.cpp.execution.debugger.backend.LldbDebugProfileState
 import com.jetbrains.cidr.execution.debugger.CidrDebuggerPathManager
+import com.jetbrains.cidr.execution.debugger.backend.dap.profile.DapDebugProfileType
 import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
@@ -56,20 +57,29 @@ sealed interface CcDebugger {
 
     override fun isBundled(): Boolean = LLDBDriverConfiguration.hasBundledLLDB()
   }
+
+  /** The bundled GDB in its DAP mode. */
+  object GDB_DAP : CcDebugger {
+
+    override val debugProfileTypeId: String get() = DapDebugProfileType.ID
+
+    override fun createDebugProfileSettings(): BaseState = DapDebugProfileType().createDefaultState().apply {
+      debuggerExecutable = CidrDebuggerPathManager.bundledGDBBinary.path
+      debuggerArguments = "--interpreter=dap"
+    }
+
+    override fun isBundled(): Boolean = GDB.isBundled()
+  }
 }
 
 /**
  * Makes the [debugger] the current debug profile of the project. Fails when
  * the current build does not bundle the [debugger].
  */
-internal fun ccDebuggerFixture(projectFixture: TestFixture<Project>, debugger: CcDebugger): TestFixture<Unit> {
-  val debugProfileFixture = debugProfileFixture(projectFixture, debugger.debugProfileTypeId, debugger.createDebugProfileSettings())
-
-  return testFixture {
-    assertThat(debugger.isBundled()).withFailMessage("bundled $debugger not found").isTrue()
-    debugProfileFixture.init()
-    initialized(Unit) {}
-  }
+internal fun ccDebuggerFixture(projectFixture: TestFixture<Project>, debugger: CcDebugger): TestFixture<Unit> = testFixture {
+  assertThat(debugger.isBundled()).withFailMessage("bundled $debugger not found").isTrue()
+  debugProfileFixture(projectFixture, debugger.debugProfileTypeId, debugger.createDebugProfileSettings()).init()
+  initialized(Unit) {}
 }
 
 /** Starts a debug session for the [label] with the [CcDebugRunner]. */

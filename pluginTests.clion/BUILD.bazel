@@ -91,6 +91,8 @@ jvm_library(
         "@community//platform/xdebugger-testFramework:debugger-testFramework",
         "//CIDR/cidr-runner",
         "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend",
+        "//CIDR/cidr-debugger/profiles/backend",
+        "//CIDR/cidr-debugger/dap",
         "@community//platform/xdebugger-impl:debugger-impl",
         "@community//platform/projectModel-api:projectModel",
         "//plugins/bazel/clion/intellij.bazel.clion.test.google:bazel-clion-test-google",
