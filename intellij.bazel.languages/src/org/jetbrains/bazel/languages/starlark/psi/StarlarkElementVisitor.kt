@@ -8,7 +8,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkConditiona
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDoubleStarExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
@@ -23,7 +22,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesi
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkPrefixExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceItem
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
@@ -102,10 +100,6 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   open fun visitDoubleStarExpression(node: StarlarkDoubleStarExpression) {
-    visitElement(node)
-  }
-
-  open fun visitEmptyExpression(node: StarlarkEmptyExpression) {
     visitElement(node)
   }
 
@@ -222,10 +216,6 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   open fun visitSliceExpression(node: StarlarkSliceExpression) {
-    visitElement(node)
-  }
-
-  open fun visitSliceItem(node: StarlarkSliceItem) {
     visitElement(node)
   }
 

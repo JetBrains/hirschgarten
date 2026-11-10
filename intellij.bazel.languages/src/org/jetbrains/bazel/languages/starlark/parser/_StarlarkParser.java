@@ -956,27 +956,6 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // &(':' | ']')
-  public static boolean empty_expression(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "empty_expression")) return false;
-    if (!nextTokenIs(b, "<empty expression>", COLON, RBRACKET)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _AND_, EMPTY_EXPRESSION, "<empty expression>");
-    r = empty_expression_0(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // ':' | ']'
-  private static boolean empty_expression_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "empty_expression_0")) return false;
-    boolean r;
-    r = consumeToken(b, COLON);
-    if (!r) r = consumeToken(b, RBRACKET);
-    return r;
-  }
-
-  /* ********************************************************** */
   // &')'
   public static boolean empty_tuple(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "empty_tuple")) return false;
@@ -2595,190 +2574,47 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // slice_first_item (',' slice_item)*
-  public static boolean slice_content(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_content")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _UPPER_, SLICE_EXPRESSION, "<slice content>");
-    r = slice_first_item(b, l + 1);
-    r = r && slice_content_1(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // (',' slice_item)*
-  private static boolean slice_content_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_content_1")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!slice_content_1_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "slice_content_1", c)) break;
-    }
-    return true;
-  }
-
-  // ',' slice_item
-  private static boolean slice_content_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_content_1_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, COMMA);
-    r = r && slice_item(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // slice_lower (':' slice_upper (':' test?)?)?
-  public static boolean slice_first_item(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_first_item")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_, SLICE_ITEM, "<slice first item>");
-    r = slice_lower(b, l + 1);
-    r = r && slice_first_item_1(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // (':' slice_upper (':' test?)?)?
-  private static boolean slice_first_item_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_first_item_1")) return false;
-    slice_first_item_1_0(b, l + 1);
-    return true;
-  }
-
-  // ':' slice_upper (':' test?)?
-  private static boolean slice_first_item_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_first_item_1_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, COLON);
-    r = r && slice_upper(b, l + 1);
-    r = r && slice_first_item_1_0_2(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // (':' test?)?
-  private static boolean slice_first_item_1_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_first_item_1_0_2")) return false;
-    slice_first_item_1_0_2_0(b, l + 1);
-    return true;
-  }
-
-  // ':' test?
-  private static boolean slice_first_item_1_0_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_first_item_1_0_2_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, COLON);
-    r = r && slice_first_item_1_0_2_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // test?
-  private static boolean slice_first_item_1_0_2_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_first_item_1_0_2_0_1")) return false;
-    test(b, l + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // test? (':' test? (':' test?)?)?
-  public static boolean slice_item(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_, SLICE_ITEM, "<slice item>");
-    r = slice_item_0(b, l + 1);
-    r = r && slice_item_1(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // test?
-  private static boolean slice_item_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_0")) return false;
-    test(b, l + 1);
-    return true;
-  }
-
-  // (':' test? (':' test?)?)?
-  private static boolean slice_item_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_1")) return false;
-    slice_item_1_0(b, l + 1);
-    return true;
-  }
-
   // ':' test? (':' test?)?
-  private static boolean slice_item_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_1_0")) return false;
+  public static boolean slice_suffix(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "slice_suffix")) return false;
+    if (!nextTokenIs(b, COLON)) return false;
     boolean r;
-    Marker m = enter_section_(b);
+    Marker m = enter_section_(b, l, _UPPER_, SLICE_EXPRESSION, null);
     r = consumeToken(b, COLON);
-    r = r && slice_item_1_0_1(b, l + 1);
-    r = r && slice_item_1_0_2(b, l + 1);
-    exit_section_(b, m, null, r);
+    r = r && slice_suffix_1(b, l + 1);
+    r = r && slice_suffix_2(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
   // test?
-  private static boolean slice_item_1_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_1_0_1")) return false;
+  private static boolean slice_suffix_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "slice_suffix_1")) return false;
     test(b, l + 1);
     return true;
   }
 
   // (':' test?)?
-  private static boolean slice_item_1_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_1_0_2")) return false;
-    slice_item_1_0_2_0(b, l + 1);
+  private static boolean slice_suffix_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "slice_suffix_2")) return false;
+    slice_suffix_2_0(b, l + 1);
     return true;
   }
 
   // ':' test?
-  private static boolean slice_item_1_0_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_1_0_2_0")) return false;
+  private static boolean slice_suffix_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "slice_suffix_2_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COLON);
-    r = r && slice_item_1_0_2_0_1(b, l + 1);
+    r = r && slice_suffix_2_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // test?
-  private static boolean slice_item_1_0_2_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_item_1_0_2_0_1")) return false;
-    test(b, l + 1);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // test | empty_expression
-  static boolean slice_lower(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_lower")) return false;
-    boolean r;
-    r = test(b, l + 1);
-    if (!r) r = empty_expression(b, l + 1);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // empty_expression | test?
-  static boolean slice_upper(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_upper")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = empty_expression(b, l + 1);
-    if (!r) r = slice_upper_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // test?
-  private static boolean slice_upper_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "slice_upper_1")) return false;
+  private static boolean slice_suffix_2_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "slice_suffix_2_0_1")) return false;
     test(b, l + 1);
     return true;
   }
@@ -2939,26 +2775,33 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<subscriptionHasColon>> slice_content | expression
+  // expression slice_suffix? | slice_suffix
   static boolean subscription_content(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subscription_content")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_);
     r = subscription_content_0(b, l + 1);
-    if (!r) r = expression(b, l + 1);
+    if (!r) r = slice_suffix(b, l + 1);
     exit_section_(b, l, m, r, false, _StarlarkParser::subscription_recover);
     return r;
   }
 
-  // <<subscriptionHasColon>> slice_content
+  // expression slice_suffix?
   private static boolean subscription_content_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subscription_content_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = subscriptionHasColon(b, l + 1);
-    r = r && slice_content(b, l + 1);
+    r = expression(b, l + 1);
+    r = r && subscription_content_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  // slice_suffix?
+  private static boolean subscription_content_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "subscription_content_0_1")) return false;
+    slice_suffix(b, l + 1);
+    return true;
   }
 
   /* ********************************************************** */

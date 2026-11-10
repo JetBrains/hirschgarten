@@ -17,7 +17,6 @@ public interface _StarlarkParserTypes {
   IElementType DICT_COMP_EXPRESSION = StarlarkParserUtil.elementType("DICT_COMP_EXPRESSION");
   IElementType DICT_LITERAL_EXPRESSION = StarlarkParserUtil.elementType("DICT_LITERAL_EXPRESSION");
   IElementType DOUBLE_STAR_EXPRESSION = StarlarkParserUtil.elementType("DOUBLE_STAR_EXPRESSION");
-  IElementType EMPTY_EXPRESSION = StarlarkParserUtil.elementType("EMPTY_EXPRESSION");
   IElementType EXPRESSION_STATEMENT = StarlarkParserUtil.elementType("EXPRESSION_STATEMENT");
   IElementType FALSE_LITERAL_EXPRESSION = StarlarkParserUtil.elementType("FALSE_LITERAL_EXPRESSION");
   IElementType FILENAME_LOAD_VALUE = StarlarkParserUtil.elementType("FILENAME_LOAD_VALUE");
@@ -46,7 +45,6 @@ public interface _StarlarkParserTypes {
   IElementType REFERENCE_EXPRESSION = StarlarkParserUtil.elementType("REFERENCE_EXPRESSION");
   IElementType RETURN_STATEMENT = StarlarkParserUtil.elementType("RETURN_STATEMENT");
   IElementType SLICE_EXPRESSION = StarlarkParserUtil.elementType("SLICE_EXPRESSION");
-  IElementType SLICE_ITEM = StarlarkParserUtil.elementType("SLICE_ITEM");
   IElementType STAR_ARGUMENT_EXPRESSION = StarlarkParserUtil.elementType("STAR_ARGUMENT_EXPRESSION");
   IElementType STAR_EXPRESSION = StarlarkParserUtil.elementType("STAR_EXPRESSION");
   IElementType STATEMENT_LIST = StarlarkParserUtil.elementType("STATEMENT_LIST");
