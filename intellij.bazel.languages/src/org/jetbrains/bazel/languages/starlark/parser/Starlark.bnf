@@ -1,15 +1,17 @@
 // The grammar of Starlark: https://github.com/bazelbuild/starlark/blob/master/spec.md
 // The lexer is StarlarkIndentingLexer. It adds STATEMENT_BREAK, INDENT and DEDENT.
-// The PSI classes are hand-written. StarlarkParserUtil.elementType maps each node name to StarlarkElementTypes.
+// Grammar-Kit generates the token and element types into StarlarkTokenTypes. A token value is the name in error messages and PSI dumps.
+// The PSI classes are hand-written. StarlarkParserDefinition.createElement maps each element type to its PSI class.
 {
   generate=[psi="no" names="short"]
   generatePsi=false
-  generateTokens=false
+  generateTokens=true
 
   parserClass="org.jetbrains.bazel.languages.starlark.parser._StarlarkParser"
   parserUtilClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserUtil"
-  elementTypeHolderClass="org.jetbrains.bazel.languages.starlark.parser._StarlarkParserTypes"
-  elementTypeFactory="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserUtil.elementType"
+  elementTypeHolderClass="org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes"
+  tokenTypeClass="org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType"
+  elementTypeClass="org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType"
   // An error after a complete expression does not list every operator. A token that the user must see is in its own rule.
   // The start of the next item is no expected token, because a missing ',' before it is an error too.
   consumeTokenMethod(".*_start(_[0-9]+)*|.*_tail|assignment_suffix|aug_assignment_suffix|aug_operator|comparison_operator|not_in_operator|not_in_keyword|conditional_expression|reference_expression|call_expression|subscription_expression")="consumeTokenFast"
@@ -22,19 +24,26 @@
   name("parameter_item|parameter")="parameter"
   name("load_filename_item|load_item|load_string|string_literal_expression")="string"
   name("dict_item|dict_entry")="dict entry"
-  parserImports=[
-    'static org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes.*'
-  ]
 
   tokens=[
-    STATEMENT_BREAK
-    INDENT
-    DEDENT
-    IDENTIFIER
-    INT
-    FLOAT
-    STRING
-    BYTES
+    // Whitespace
+    SPACE='SPACE'
+    TAB='TAB'
+    LINE_CONTINUATION='LINE_CONTINUATION'
+    LINE_BREAK='LINE_BREAK'
+
+    // Significant whitespace, added by StarlarkIndentingLexer
+    INDENT='indent'
+    DEDENT='dedent'
+    INCONSISTENT_DEDENT='inconsistent dedent'
+    STATEMENT_BREAK='end of statement'
+
+    COMMENT='comment'
+
+    STRING='string'
+    BYTES='bytes'
+    INT='integer'
+    FLOAT='float'
 
     AND_KEYWORD='and'
     BREAK_KEYWORD='break'
@@ -54,6 +63,28 @@
     NONE_KEYWORD='None'
     TRUE_KEYWORD='True'
     FALSE_KEYWORD='False'
+
+    // Python keywords that Starlark reserves. StarlarkUnsupportedPythonSyntaxInspection reports them.
+    AS_KEYWORD='as'
+    ASSERT_KEYWORD='assert'
+    ASYNC_KEYWORD='async'
+    AWAIT_KEYWORD='await'
+    CLASS_KEYWORD='class'
+    DEL_KEYWORD='del'
+    EXCEPT_KEYWORD='except'
+    FINALLY_KEYWORD='finally'
+    FROM_KEYWORD='from'
+    GLOBAL_KEYWORD='global'
+    IMPORT_KEYWORD='import'
+    IS_KEYWORD='is'
+    NONLOCAL_KEYWORD='nonlocal'
+    RAISE_KEYWORD='raise'
+    TRY_KEYWORD='try'
+    WHILE_KEYWORD='while'
+    WITH_KEYWORD='with'
+    YIELD_KEYWORD='yield'
+
+    IDENTIFIER='identifier'
 
     PLUS='+'
     MINUS='-'

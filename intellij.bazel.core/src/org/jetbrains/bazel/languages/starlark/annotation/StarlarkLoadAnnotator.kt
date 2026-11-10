@@ -12,7 +12,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.SingleRootFileViewProvider
 import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
@@ -41,8 +41,8 @@ internal class StarlarkLoadAnnotator : Annotator, DumbAware {
   }
 
   private fun PsiElement.isLoadedSymbolLiteral(): Boolean =
-    elementType == StarlarkElementTypes.STRING_LITERAL_EXPRESSION &&
-    (parent.elementType == StarlarkElementTypes.STRING_LOAD_VALUE || parent.elementType == StarlarkElementTypes.NAMED_LOAD_VALUE)
+    elementType == StarlarkTokenTypes.STRING_LITERAL_EXPRESSION &&
+    (parent.elementType == StarlarkTokenTypes.STRING_LOAD_VALUE || parent.elementType == StarlarkTokenTypes.NAMED_LOAD_VALUE)
 
   private fun isTooLargeLoadedFile(element: PsiElement): Boolean {
     val reference = element.reference as? BazelLabelReference ?: return false
@@ -52,7 +52,7 @@ internal class StarlarkLoadAnnotator : Annotator, DumbAware {
   }
 
   private fun PsiElement.isLoadFilenameLiteral(): Boolean =
-    elementType == StarlarkElementTypes.STRING_LITERAL_EXPRESSION &&
+    elementType == StarlarkTokenTypes.STRING_LITERAL_EXPRESSION &&
     parent is StarlarkFilenameLoadValue
 
   private class OpenCodeInsightFileSizeHelpAction : IntentionAction {

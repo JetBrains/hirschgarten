@@ -173,4 +173,36 @@ object StarlarkTokenSets {
       MULTIPLICATIVE_OPERATIONS,
       SHIFT_OPERATIONS,
     )
+
+  val EXPRESSIONS =
+    TokenSet.create(
+      StarlarkTokenTypes.ARGUMENT_EXPRESSION,
+      StarlarkTokenTypes.ARGUMENT_LIST,
+      StarlarkTokenTypes.BINARY_EXPRESSION,
+      StarlarkTokenTypes.CALL_EXPRESSION,
+      StarlarkTokenTypes.CONDITIONAL_EXPRESSION,
+      StarlarkTokenTypes.DICT_COMP_EXPRESSION,
+      StarlarkTokenTypes.DICT_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.DOUBLE_STAR_EXPRESSION,
+      StarlarkTokenTypes.FALSE_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.FLOAT_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.GENERATOR_EXPRESSION,
+      StarlarkTokenTypes.INTEGER_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.KEY_VALUE_EXPRESSION,
+      StarlarkTokenTypes.LAMBDA_EXPRESSION,
+      StarlarkTokenTypes.LIST_COMP_EXPRESSION,
+      StarlarkTokenTypes.LIST_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.NAMED_ARGUMENT_EXPRESSION,
+      StarlarkTokenTypes.NONE_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.PARENTHESIZED_EXPRESSION,
+      StarlarkTokenTypes.PREFIX_EXPRESSION,
+      StarlarkTokenTypes.REFERENCE_EXPRESSION,
+      StarlarkTokenTypes.SLICE_EXPRESSION,
+      StarlarkTokenTypes.STAR_ARGUMENT_EXPRESSION,
+      StarlarkTokenTypes.STAR_EXPRESSION,
+      StarlarkTokenTypes.STRING_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.SUBSCRIPTION_EXPRESSION,
+      StarlarkTokenTypes.TRUE_LITERAL_EXPRESSION,
+      StarlarkTokenTypes.TUPLE_EXPRESSION,
+    )
 }

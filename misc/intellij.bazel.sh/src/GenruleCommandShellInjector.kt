@@ -4,7 +4,7 @@ import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.psi.PsiElement
 import com.intellij.sh.ShLanguage
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
@@ -88,7 +88,7 @@ internal class GenruleCommandShellInjector : MultiHostInjector {
         element.getOperands().forEach { collectParts(it, parts) }
 
       element is StarlarkParenthesizedExpression && element.getTuple() == null -> {
-        val inner = element.node.findChildByType(StarlarkElementTypes.EXPRESSIONS)?.psi
+        val inner = element.node.findChildByType(StarlarkTokenSets.EXPRESSIONS)?.psi
         if (inner != null) collectParts(inner, parts) else addPlaceholder(parts)
       }
 

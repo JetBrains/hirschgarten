@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.psi.statements
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.tree.IElementType
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -17,7 +17,7 @@ class StarlarkForStatement(node: ASTNode) :
   StarlarkAssigningStatement {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitForStatement(this)
 
-  override fun operator(): StarlarkTokenType = StarlarkTokenTypes.IN_KEYWORD
+  override fun operator(): IElementType = StarlarkTokenTypes.IN_KEYWORD
 
   fun getLoopVariables(): List<StarlarkReferenceExpression> =
     children.firstOrNull { it.isLoopTarget() }?.boundNames().orEmpty()

@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.psi.statements
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.tree.IElementType
 import com.intellij.util.Processor
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
@@ -19,7 +19,7 @@ class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node), St
 
   override fun getName(): String? = getBoundName()?.name ?: super.getName()
 
-  override fun operator(): StarlarkTokenType = StarlarkTokenTypes.EQ
+  override fun operator(): IElementType = StarlarkTokenTypes.EQ
 
   fun check(processor: Processor<StarlarkElement>): Boolean =
     leftHandSide()?.boundNames().orEmpty().all { processor.process(it) }

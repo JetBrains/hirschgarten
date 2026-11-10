@@ -10,7 +10,6 @@ import com.intellij.testFramework.LightVirtualFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
 private const val DUMMY_FILENAME = "dummy.bzl"
@@ -41,7 +40,7 @@ class StarlarkElementGenerator(val project: Project) {
   fun createStringLiteralExpression(contents: String): ASTNode {
     val dummyFile = createDummyFile("\"$contents\"")
     val stringNode = dummyFile.node.firstChildNode.firstChildNode
-    if (stringNode.elementType !== StarlarkElementTypes.STRING_LITERAL_EXPRESSION) {
+    if (stringNode.elementType !== StarlarkTokenTypes.STRING_LITERAL_EXPRESSION) {
       error("Expected elementType to be STRING_LITERAL_EXPRESSION")
     }
     return stringNode
@@ -57,7 +56,7 @@ class StarlarkElementGenerator(val project: Project) {
       dummyFile.node.firstChildNode.firstChildNode.lastChildNode
         .children()
         .elementAt(1)
-    if (argumentNode.elementType !== StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION) {
+    if (argumentNode.elementType !== StarlarkTokenTypes.NAMED_ARGUMENT_EXPRESSION) {
       error("Expected elementType to be NAMED_ARGUMENT_EXPRESSION")
     }
     return argumentNode

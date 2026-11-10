@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-# Regenerates _StarlarkParser.java and _StarlarkParserTypes.java from Starlark.bnf with Grammar-Kit, without the IDE.
+# Regenerates _StarlarkParser.java and StarlarkTokenTypes.java from Starlark.bnf with Grammar-Kit, without the IDE.
 # Needs JDK 25+ and one prior Bazel build, for the platform jars and languages.jar:
 #   ./tests.cmd --module intellij.bazel.pluginTests --test org.jetbrains.bazel.languages.starlark.parser.StarlarkParsingStatementTest
 # Usage: update_starlark_parser.sh, or GRAMMAR_KIT_JAR=... update_starlark_parser.sh to use a local jar.
@@ -18,7 +18,7 @@ FD="$REPO_DIR/community/tools/fd.cmd"
 GEN_ROOT="$REPO_DIR/plugins/bazel/intellij.bazel.languages/src"
 PARSER_DIR="$GEN_ROOT/org/jetbrains/bazel/languages/starlark/parser"
 BNF_FILE="$PARSER_DIR/Starlark.bnf"
-GENERATED_FILES=("$PARSER_DIR/_StarlarkParser.java" "$PARSER_DIR/_StarlarkParserTypes.java")
+GENERATED_FILES=("$PARSER_DIR/_StarlarkParser.java" "$GEN_ROOT/org/jetbrains/bazel/languages/starlark/elements/StarlarkTokenTypes.java")
 
 resolve_java() {
   local min="$1"

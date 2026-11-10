@@ -11,7 +11,7 @@ import com.intellij.psi.search.SearchScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.BazelLanguagesIcons
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -93,7 +93,7 @@ class StarlarkCallExpression(node: ASTNode) :
 
   fun getNameAttributeValue(): String? = nameArgumentStringLiteral()?.getStringContents()
   fun getCalledFunctionName(): String? = (getCalledExpression() as? StarlarkReferenceExpression)?.text
-  fun getCalledExpression(): PsiElement? = findChildByType(StarlarkElementTypes.EXPRESSIONS)
+  fun getCalledExpression(): PsiElement? = findChildByType(StarlarkTokenSets.EXPRESSIONS)
 
   fun getTags(): List<String>? = getArgumentList()
     ?.getKeywordArgument("tags")

@@ -5,7 +5,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -14,7 +13,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 class StarlarkBinaryExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitBinaryExpression(this)
 
-  fun getOperands(): List<PsiElement> = findChildrenByType(StarlarkElementTypes.EXPRESSIONS)
+  fun getOperands(): List<PsiElement> = findChildrenByType(StarlarkTokenSets.EXPRESSIONS)
 
   fun getLeftOperand(): PsiElement? = getOperands().firstOrNull()
 

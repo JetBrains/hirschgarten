@@ -3,14 +3,13 @@ package org.jetbrains.bazel.languages.starlark.parser;
 
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
-import static org.jetbrains.bazel.languages.starlark.parser._StarlarkParserTypes.*;
+import static org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes.*;
 import static org.jetbrains.bazel.languages.starlark.parser.StarlarkParserUtil.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.tree.TokenSet;
 import com.intellij.lang.PsiParser;
 import com.intellij.lang.LightPsiParser;
-import static org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes.*;
 
 @SuppressWarnings({"SimplifiableIfStatement", "UnusedAssignment"})
 public class _StarlarkParser implements PsiParser, LightPsiParser {

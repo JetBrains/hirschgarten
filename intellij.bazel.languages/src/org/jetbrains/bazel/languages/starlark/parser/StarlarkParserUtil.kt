@@ -3,15 +3,12 @@ package org.jetbrains.bazel.languages.starlark.parser
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.openapi.util.Key
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
-/** The external rules and the element type factory of `Starlark.bnf`. */
+/** The external rules of `Starlark.bnf`. */
 internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   /**
    * Removes the bracket pairs from the error state. With them, the error recovery skips a whole bracket group,
@@ -85,13 +82,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   fun indentExpected(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     builder.error(StarlarkBundle.message("parser.indent.expected"))
     return true
-  }
-
-  @JvmStatic
-  fun elementType(name: String): IElementType {
-    // Reading one property creates all the element types of the object.
-    StarlarkElementTypes.STATEMENT_LIST
-    return IElementType.enumerate { it is StarlarkElementType && it.toString() == name }.single()
   }
 
   /**
