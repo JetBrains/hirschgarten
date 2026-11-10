@@ -4,11 +4,10 @@ FILE
       StarlarkReferenceExpression(REFERENCE_EXPRESSION)
         PsiElement(identifier)('x')
       PsiElement([)('[')
-      StarlarkSliceItem(SLICE_ITEM)
-        StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
-          PsiElement(integer)('1')
-        PsiElement(:)(':')
-        StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
-          PsiElement(integer)('2')
+      StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+        PsiElement(integer)('1')
+      PsiElement(:)(':')
+      StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+        PsiElement(integer)('2')
       PsiErrorElement:']' expected
         <empty list>

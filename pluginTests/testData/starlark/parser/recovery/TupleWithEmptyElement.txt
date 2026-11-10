@@ -46,7 +46,7 @@ FILE
         StarlarkReferenceExpression(REFERENCE_EXPRESSION)
           PsiElement(identifier)('a')
         PsiElement(,)(',')
-      PsiErrorElement:<expression> expected, got ','
+      PsiErrorElement:':' or <expression> expected, got ','
         PsiElement(,)(',')
       PsiWhiteSpace(' ')
       PsiElement(identifier)('b')

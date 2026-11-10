@@ -180,20 +180,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   fun attributeTarget(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean =
     builder.getUserData(TARGET_MODE) == true && builder.getUserData(CHAIN_TARGETABLE) == true && builder.tokenType !in CHAIN_TRAILERS
 
-  /** True when the subscription has a `:` outside of inner brackets and lambdas. */
-  @JvmStatic
-  fun subscriptionHasColon(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
-    val ahead = Lookahead(builder)
-    var lambdas = 0
-    while (true) {
-      when (ahead.nextOutsideBrackets() ?: return false) {
-        StarlarkTokenTypes.LAMBDA_KEYWORD -> lambdas++
-        StarlarkTokenTypes.COLON -> if (lambdas > 0) lambdas-- else return true
-        in StarlarkTokenSets.ENDS_OF_STATEMENT -> return false
-      }
-    }
-  }
-
   @JvmStatic
   fun atAssignment(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean =
     findStatementOperator(builder) === StarlarkTokenTypes.EQ

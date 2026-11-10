@@ -10,7 +10,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkConditiona
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDoubleStarExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
@@ -25,7 +24,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesi
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkPrefixExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceItem
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
@@ -90,7 +88,6 @@ object StarlarkElementTypes {
   val DICT_COMP_EXPRESSION = StarlarkElementType("DICT_COMP_EXPRESSION")
   val DICT_LITERAL_EXPRESSION = StarlarkElementType("DICT_LITERAL_EXPRESSION")
   val DOUBLE_STAR_EXPRESSION = StarlarkElementType("DOUBLE_STAR_EXPRESSION")
-  val EMPTY_EXPRESSION = StarlarkElementType("EMPTY_EXPRESSION")
   val FALSE_LITERAL_EXPRESSION = StarlarkElementType("FALSE_LITERAL_EXPRESSION")
   val FLOAT_LITERAL_EXPRESSION = StarlarkElementType("FLOAT_LITERAL_EXPRESSION")
   val GENERATOR_EXPRESSION = StarlarkElementType("GENERATOR_EXPRESSION")
@@ -107,7 +104,6 @@ object StarlarkElementTypes {
   val PREFIX_EXPRESSION = StarlarkElementType("PREFIX_EXPRESSION")
   val REFERENCE_EXPRESSION = StarlarkElementType("REFERENCE_EXPRESSION")
   val SLICE_EXPRESSION = StarlarkElementType("SLICE_EXPRESSION")
-  val SLICE_ITEM = StarlarkElementType("SLICE_ITEM")
   val STAR_ARGUMENT_EXPRESSION = StarlarkElementType("STAR_ARGUMENT_EXPRESSION")
   val STAR_EXPRESSION = StarlarkElementType("STAR_EXPRESSION")
   val STRING_LITERAL_EXPRESSION = StarlarkElementType("STRING_LITERAL_EXPRESSION")
@@ -125,7 +121,6 @@ object StarlarkElementTypes {
       DICT_COMP_EXPRESSION,
       DICT_LITERAL_EXPRESSION,
       DOUBLE_STAR_EXPRESSION,
-      EMPTY_EXPRESSION,
       FALSE_LITERAL_EXPRESSION,
       FLOAT_LITERAL_EXPRESSION,
       GENERATOR_EXPRESSION,
@@ -142,7 +137,6 @@ object StarlarkElementTypes {
       PREFIX_EXPRESSION,
       REFERENCE_EXPRESSION,
       SLICE_EXPRESSION,
-      SLICE_ITEM,
       STAR_ARGUMENT_EXPRESSION,
       STAR_EXPRESSION,
       STRING_LITERAL_EXPRESSION,
@@ -184,7 +178,6 @@ object StarlarkElementTypes {
       DICT_COMP_EXPRESSION -> StarlarkDictCompExpression(node)
       DICT_LITERAL_EXPRESSION -> StarlarkDictLiteralExpression(node)
       DOUBLE_STAR_EXPRESSION -> StarlarkDoubleStarExpression(node)
-      EMPTY_EXPRESSION -> StarlarkEmptyExpression(node)
       FALSE_LITERAL_EXPRESSION -> StarlarkFalseLiteralExpression(node)
       FLOAT_LITERAL_EXPRESSION -> StarlarkFloatLiteralExpression(node)
       GENERATOR_EXPRESSION -> StarlarkGeneratorExpression(node)
@@ -200,7 +193,6 @@ object StarlarkElementTypes {
       PREFIX_EXPRESSION -> StarlarkPrefixExpression(node)
       REFERENCE_EXPRESSION -> StarlarkReferenceExpression(node)
       SLICE_EXPRESSION -> StarlarkSliceExpression(node)
-      SLICE_ITEM -> StarlarkSliceItem(node)
       STAR_ARGUMENT_EXPRESSION -> StarlarkStarArgumentExpression(node)
       STAR_EXPRESSION -> StarlarkStarExpression(node)
       STRING_LITERAL_EXPRESSION -> StarlarkStringLiteralExpression(node)

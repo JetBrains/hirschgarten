@@ -251,15 +251,9 @@ left call_expression ::= argument_list
 left subscription_expression ::= '[' <<plainMode subscription_content>> subscription_end { pin=1 }
 private subscription_end ::= ']'
 
-private subscription_content ::= <<subscriptionHasColon>> slice_content | expression { recoverWhile=subscription_recover }
+private subscription_content ::= expression slice_suffix? | slice_suffix { recoverWhile=subscription_recover }
 private subscription_recover ::= !(']' | header_colon | STATEMENT_BREAK)
-upper slice_content ::= slice_first_item (',' slice_item)* { elementType=slice_expression }
-// A missing bound of the first item is an empty expression. A missing step is not.
-slice_first_item ::= slice_lower (':' slice_upper (':' test?)?)? { elementType=slice_item }
-private slice_lower ::= test | empty_expression
-private slice_upper ::= empty_expression | test?
-slice_item ::= test? (':' test? (':' test?)?)?
-empty_expression ::= &(':' | ']')
+upper slice_suffix ::= ':' test? (':' test?)? { elementType=slice_expression }
 
 argument_list ::= '(' <<plainMode arguments>>? ')' { pin=1 }
 private arguments ::= !')' argument_item <<comma_tail argument_start ')' argument_item>>* ','? { pin=1 }
@@ -333,7 +327,7 @@ private comprehension_condition ::= lambda_expression | or_level
 // The node types that only 'elementType' attributes use.
 fake binary_expression ::= test test
 fake target_expression ::= IDENTIFIER
-fake slice_expression ::= test slice_content
+fake slice_expression ::= test slice_suffix
 fake generator_expression ::= test comprehension
 fake list_comp_expression ::= test comprehension
 fake dict_comp_expression ::= key_value_expression comprehension
