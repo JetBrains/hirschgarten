@@ -55,17 +55,8 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   /** The offset where a statement starts after a statement error. */
   private val STATEMENT_START_OFFSET = Key.create<Int>("starlark.parser.statement.start.offset")
 
-  /**
-   * Consumes the `,` between two items of a list. When the `,` is missing and [start] can start the next item,
-   * reports the missing `,`, and the list goes on with that item.
-   */
   @JvmStatic
-  fun commaSeparator(builder: PsiBuilder, level: Int, start: Parser): Boolean {
-    if (builder.tokenType === StarlarkTokenTypes.COMMA) {
-      builder.advanceLexer()
-      return true
-    }
-    if (!lookahead(builder, level, start)) return false
+  fun missingComma(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     builder.error(StarlarkBundle.message("parser.expected.comma"))
     return true
   }
@@ -101,17 +92,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     // Reading one property creates all the element types of the object.
     StarlarkElementTypes.STATEMENT_LIST
     return IElementType.enumerate { it is StarlarkElementType && it.toString() == name }.single()
-  }
-
-  /** True when [parser] matches at the current token. Unlike `&`, it adds no expected tokens to the error messages. */
-  private fun lookahead(builder: PsiBuilder, level: Int, parser: Parser): Boolean {
-    // In two nested predicates, Grammar-Kit records no expected tokens.
-    val outer = enter_section_(builder, level, _AND_)
-    val inner = enter_section_(builder, level + 1, _AND_)
-    val result = parser.parse(builder, level + 2)
-    exit_section_(builder, level + 1, inner, result, false, null)
-    exit_section_(builder, level, outer, result, false, null)
-    return result
   }
 
   /**

@@ -205,7 +205,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "argument_start")) return false;
     boolean r;
     r = expression_start(b, l + 1);
-    if (!r) r = consumeToken(b, EXP);
+    if (!r) r = consumeTokenFast(b, EXP);
     return r;
   }
 
@@ -508,17 +508,49 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<commaSeparator <<start>>>> !<<close>> <<item>>
+  // (',' | &<<start>> missing_comma) !<<close>> <<item>>
   static boolean comma_tail(PsiBuilder b, int l, Parser _start, Parser _close, Parser _item) {
     if (!recursion_guard_(b, l, "comma_tail")) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_);
-    r = commaSeparator(b, l + 1, _start);
+    r = comma_tail_0(b, l + 1, _start);
     r = r && comma_tail_1(b, l + 1, _close);
     p = r; // pin = 2
     r = r && _item.parse(b, l);
     exit_section_(b, l, m, r, p, null);
     return r || p;
+  }
+
+  // ',' | &<<start>> missing_comma
+  private static boolean comma_tail_0(PsiBuilder b, int l, Parser _start) {
+    if (!recursion_guard_(b, l, "comma_tail_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokenFast(b, COMMA);
+    if (!r) r = comma_tail_0_1(b, l + 1, _start);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &<<start>> missing_comma
+  private static boolean comma_tail_0_1(PsiBuilder b, int l, Parser _start) {
+    if (!recursion_guard_(b, l, "comma_tail_0_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = comma_tail_0_1_0(b, l + 1, _start);
+    r = r && missingComma(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &<<start>>
+  private static boolean comma_tail_0_1_0(PsiBuilder b, int l, Parser _start) {
+    if (!recursion_guard_(b, l, "comma_tail_0_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = _start.parse(b, l);
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
   // !<<close>>
@@ -833,7 +865,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "dict_entry_start")) return false;
     boolean r;
     r = expression_start(b, l + 1);
-    if (!r) r = consumeToken(b, EXP);
+    if (!r) r = consumeTokenFast(b, EXP);
     return r;
   }
 
@@ -974,23 +1006,23 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   static boolean expression_start(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "expression_start")) return false;
     boolean r;
-    r = consumeToken(b, IDENTIFIER);
-    if (!r) r = consumeToken(b, INT);
-    if (!r) r = consumeToken(b, FLOAT);
-    if (!r) r = consumeToken(b, STRING);
-    if (!r) r = consumeToken(b, BYTES);
-    if (!r) r = consumeToken(b, NONE_KEYWORD);
-    if (!r) r = consumeToken(b, TRUE_KEYWORD);
-    if (!r) r = consumeToken(b, FALSE_KEYWORD);
-    if (!r) r = consumeToken(b, LPAR);
-    if (!r) r = consumeToken(b, LBRACKET);
-    if (!r) r = consumeToken(b, LBRACE);
-    if (!r) r = consumeToken(b, LAMBDA_KEYWORD);
-    if (!r) r = consumeToken(b, NOT_KEYWORD);
-    if (!r) r = consumeToken(b, MINUS);
-    if (!r) r = consumeToken(b, PLUS);
-    if (!r) r = consumeToken(b, TILDE);
-    if (!r) r = consumeToken(b, MULT);
+    r = consumeTokenFast(b, IDENTIFIER);
+    if (!r) r = consumeTokenFast(b, INT);
+    if (!r) r = consumeTokenFast(b, FLOAT);
+    if (!r) r = consumeTokenFast(b, STRING);
+    if (!r) r = consumeTokenFast(b, BYTES);
+    if (!r) r = consumeTokenFast(b, NONE_KEYWORD);
+    if (!r) r = consumeTokenFast(b, TRUE_KEYWORD);
+    if (!r) r = consumeTokenFast(b, FALSE_KEYWORD);
+    if (!r) r = consumeTokenFast(b, LPAR);
+    if (!r) r = consumeTokenFast(b, LBRACKET);
+    if (!r) r = consumeTokenFast(b, LBRACE);
+    if (!r) r = consumeTokenFast(b, LAMBDA_KEYWORD);
+    if (!r) r = consumeTokenFast(b, NOT_KEYWORD);
+    if (!r) r = consumeTokenFast(b, MINUS);
+    if (!r) r = consumeTokenFast(b, PLUS);
+    if (!r) r = consumeTokenFast(b, TILDE);
+    if (!r) r = consumeTokenFast(b, MULT);
     return r;
   }
 
@@ -1703,15 +1735,36 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // STRING | IDENTIFIER '='
+  // STRING | IDENTIFIER &'='
   static boolean load_value_start(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "load_value_start")) return false;
-    if (!nextTokenIs(b, "", IDENTIFIER, STRING)) return false;
+    if (!nextTokenIsFast(b, IDENTIFIER, STRING)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, STRING);
-    if (!r) r = parseTokens(b, 0, IDENTIFIER, EQ);
+    r = consumeTokenFast(b, STRING);
+    if (!r) r = load_value_start_1(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // IDENTIFIER &'='
+  private static boolean load_value_start_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "load_value_start_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokenFast(b, IDENTIFIER);
+    r = r && load_value_start_1_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'='
+  private static boolean load_value_start_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "load_value_start_1_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeTokenFast(b, EQ);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -2183,9 +2236,9 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   static boolean parameter_start(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parameter_start")) return false;
     boolean r;
-    r = consumeToken(b, IDENTIFIER);
-    if (!r) r = consumeToken(b, MULT);
-    if (!r) r = consumeToken(b, EXP);
+    r = consumeTokenFast(b, IDENTIFIER);
+    if (!r) r = consumeTokenFast(b, MULT);
+    if (!r) r = consumeTokenFast(b, EXP);
     return r;
   }
 
