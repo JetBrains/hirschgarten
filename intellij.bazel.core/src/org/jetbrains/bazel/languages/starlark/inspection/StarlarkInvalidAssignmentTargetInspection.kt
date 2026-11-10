@@ -17,7 +17,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesi
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAugAssignmentStatement
@@ -58,7 +57,6 @@ class StarlarkInvalidAssignmentTargetInspection : LocalInspectionTool() {
 
     private fun firstInvalidTarget(target: PsiElement): PsiElement? =
       when (target) {
-        is StarlarkTargetExpression,
         is StarlarkSubscriptionExpression,
         is StarlarkReferenceExpression -> null
         is StarlarkParenthesizedExpression -> {

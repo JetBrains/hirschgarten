@@ -38,7 +38,7 @@ FILE
       PsiErrorElement:Indent expected
         <empty list>
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('y')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('y')
       PsiElement(identifier)('y')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')

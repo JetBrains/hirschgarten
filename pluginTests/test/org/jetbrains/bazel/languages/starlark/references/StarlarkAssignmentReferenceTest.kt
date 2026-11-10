@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
@@ -27,7 +26,7 @@ class StarlarkAssignmentReferenceTest {
     myFixture.configureByFile("AssignmentReference.bzl")
     val expectedResolved = runReadActionBlocking {
       myFixture.file.getChildOfType<StarlarkAssignmentStatement>()!!
-        .getChildOfType<StarlarkTargetExpression>()
+        .getChildOfType<StarlarkReferenceExpression>()
     }
     // when
     val resolved = resolveUsage()
@@ -43,7 +42,7 @@ class StarlarkAssignmentReferenceTest {
       myFixture.file
         .getChildOfType<StarlarkAssignmentStatement>()!!
         .getChildOfType<StarlarkTupleExpression>()!!
-        .getChildOfType<StarlarkTargetExpression>()
+        .getChildOfType<StarlarkReferenceExpression>()
     }
     // when
     val resolved = resolveUsage()
@@ -60,7 +59,7 @@ class StarlarkAssignmentReferenceTest {
         .getChildOfType<StarlarkAssignmentStatement>()!!
         .getChildOfType<StarlarkParenthesizedExpression>()!!
         .getChildOfType<StarlarkTupleExpression>()!!
-        .getChildOfType<StarlarkTargetExpression>()
+        .getChildOfType<StarlarkReferenceExpression>()
     }
     // when
     val resolved = resolveUsage()

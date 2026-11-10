@@ -2,14 +2,18 @@ package org.jetbrains.bazel.languages.starlark.findusages
 
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.descendantsOfType
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -220,8 +224,8 @@ class StarlarkFindUsagesTest {
       """.trimIndent(),
     )
     val usages = runReadActionBlocking {
-      val compTarget = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
-        .findLast { it.name == "x" }
+      val compTarget = myFixture.file.descendantsOfType<StarlarkReferenceExpression>()
+        .findLast { it.isBinding() && it.name == "x" }
         .shouldNotBeNull()
       myFixture.findUsages(compTarget)
     }
@@ -302,6 +306,16 @@ class StarlarkFindUsagesTest {
     ) shouldBe myFixture.offsetsOf("x = 2", "return x")
   }
 
+  @Test
+  fun `an unresolved name is no target element`() {
+    myFixture.targetElementAtCaret("print(<caret>undefined_name)").shouldBeNull()
+  }
+
+  @Test
+  fun `the throwaway name is no target element`() {
+    myFixture.targetElementAtCaret("for <caret>_ in []:\n    pass").shouldBeNull()
+  }
+
   // endregion
 
   // region Unrelated results
@@ -338,6 +352,13 @@ private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.findUsage
   }
 }
 
+private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.targetElementAtCaret(text: String): PsiElement? {
+  configureByText("defs.bzl", text)
+  return runReadActionBlocking {
+    TargetElementUtil.findTargetElement(editor, TargetElementUtil.getInstance().allAccepted)
+  }
+}
+
 private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.offsetsOf(vararg fragments: String): List<Int> =
   runReadActionBlocking {
     fragments.map { fragment -> file.text.indexOf(fragment) + fragment.indexOf("x") }
@@ -346,8 +367,8 @@ private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.offsetsOf
 private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.findStarlarkUsages(name: String) =
   runReadActionBlocking {
     findUsages(
-      PsiTreeUtil.collectElementsOfType(file, StarlarkNamedElement::class.java)
-        .find { it.name == name }
-        ?: error("StarlarkNamedElement with name '$name' not found"),
+      file.descendantsOfType<StarlarkNamedElement>()
+        .find { it.nameIdentifier != null && it.name == name }
+        ?: error("Declaration '$name' not found"),
     )
   }

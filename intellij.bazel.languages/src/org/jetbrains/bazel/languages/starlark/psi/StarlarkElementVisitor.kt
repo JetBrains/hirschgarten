@@ -24,7 +24,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceExpre
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTrueLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
@@ -235,10 +234,6 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   open fun visitSubscriptionExpression(node: StarlarkSubscriptionExpression) {
-    visitElement(node)
-  }
-
-  open fun visitTargetExpression(node: StarlarkTargetExpression) {
     visitElement(node)
   }
 

@@ -11,15 +11,15 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLit
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkNoneLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTrueLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 
 @ApiStatus.Internal
 object StarlarkAssignmentUtils {
-  fun assignedValueForTarget(target: StarlarkTargetExpression): PsiElement? {
+  fun assignedValueForTarget(target: StarlarkReferenceExpression): PsiElement? {
     val assignment = target.containingAssignment() ?: return null
     return assignment.assignedValueFor(target)
   }
@@ -28,13 +28,13 @@ object StarlarkAssignmentUtils {
     this as? StarlarkAssignmentStatement
     ?: PsiTreeUtil.getParentOfType(this, StarlarkAssignmentStatement::class.java, false)
 
-  private fun StarlarkAssignmentStatement.assignedValueFor(target: StarlarkTargetExpression): PsiElement? {
+  private fun StarlarkAssignmentStatement.assignedValueFor(target: StarlarkReferenceExpression): PsiElement? {
     val lhs = leftHandSide() ?: return null
     val rhs = rightHandSide() ?: return null
     return matchAssignedValue(lhs, rhs, target)
   }
 
-  private fun matchAssignedValue(lhs: PsiElement, rhs: PsiElement, target: StarlarkTargetExpression): PsiElement? {
+  private fun matchAssignedValue(lhs: PsiElement, rhs: PsiElement, target: StarlarkReferenceExpression): PsiElement? {
     if (lhs == target) return rhs
 
     val lhsElements = destructuringTargets(lhs) ?: return null

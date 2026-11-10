@@ -109,8 +109,6 @@ object StarlarkTokenSets {
    */
   val EXPRESSION_ENDS = TokenSet.orSet(OPERAND_STARTS, CLOSE_BRACKETS)
 
-  val ENDS_OF_STATEMENT = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)
-
   val COMPOUND_ASSIGN_OPERATIONS =
     TokenSet.create(
       StarlarkTokenTypes.PLUSEQ,

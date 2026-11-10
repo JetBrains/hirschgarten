@@ -40,7 +40,7 @@ FILE
         PsiElement())(')')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('bazel_depname')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('bazel_depname')
       PsiElement(identifier)('bazel_depname')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')

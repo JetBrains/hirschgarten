@@ -8,7 +8,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadValue
@@ -39,12 +38,12 @@ object StarlarkCallableResolver {
   private fun getCallableFromResolvedReference(resolved: PsiElement): StarlarkCallable? =
     when (resolved) {
       is StarlarkCallable -> resolved
-      is StarlarkTargetExpression -> resolveLambdaAlias(resolved)
+      is StarlarkReferenceExpression -> resolveLambdaAlias(resolved)
       is StarlarkNamedLoadValue -> resolveLoadedCallable(resolved)
       else -> null
     }
 
-  private fun resolveLambdaAlias(target: StarlarkTargetExpression): StarlarkCallable? {
+  private fun resolveLambdaAlias(target: StarlarkReferenceExpression): StarlarkCallable? {
     val assignment = PsiTreeUtil.getParentOfType(target, StarlarkAssignmentStatement::class.java, false) ?: return null
     return findLambdaExpression(assignment)
   }

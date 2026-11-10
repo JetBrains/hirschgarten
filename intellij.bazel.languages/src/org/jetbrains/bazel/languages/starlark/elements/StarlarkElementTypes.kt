@@ -26,7 +26,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceExpre
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTrueLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
@@ -91,7 +90,6 @@ object StarlarkElementTypes {
   val FALSE_LITERAL_EXPRESSION = StarlarkElementType("FALSE_LITERAL_EXPRESSION")
   val FLOAT_LITERAL_EXPRESSION = StarlarkElementType("FLOAT_LITERAL_EXPRESSION")
   val GENERATOR_EXPRESSION = StarlarkElementType("GENERATOR_EXPRESSION")
-  val TARGET_EXPRESSION = StarlarkElementType("TARGET_EXPRESSION")
   val INTEGER_LITERAL_EXPRESSION = StarlarkElementType("INTEGER_LITERAL_EXPRESSION")
   val KEY_VALUE_EXPRESSION = StarlarkElementType("KEY_VALUE_EXPRESSION")
   val LAMBDA_EXPRESSION = StarlarkElementType("LAMBDA_EXPRESSION")
@@ -123,7 +121,6 @@ object StarlarkElementTypes {
       FALSE_LITERAL_EXPRESSION,
       FLOAT_LITERAL_EXPRESSION,
       GENERATOR_EXPRESSION,
-      TARGET_EXPRESSION,
       INTEGER_LITERAL_EXPRESSION,
       KEY_VALUE_EXPRESSION,
       LAMBDA_EXPRESSION,
@@ -194,7 +191,6 @@ object StarlarkElementTypes {
       STAR_EXPRESSION -> StarlarkStarExpression(node)
       STRING_LITERAL_EXPRESSION -> StarlarkStringLiteralExpression(node)
       SUBSCRIPTION_EXPRESSION -> StarlarkSubscriptionExpression(node)
-      TARGET_EXPRESSION -> StarlarkTargetExpression(node)
       TRUE_LITERAL_EXPRESSION -> StarlarkTrueLiteralExpression(node)
       TUPLE_EXPRESSION -> StarlarkTupleExpression(node)
 

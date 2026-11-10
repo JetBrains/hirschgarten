@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.utils
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getSimpleNameOrNull
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
@@ -17,7 +17,7 @@ class StarlarkLoadedSymbol(
   private val loadValue: StarlarkLoadValue,
 ) {
   val staticValueKind: StarlarkStaticValueKind? by lazy(LazyThreadSafetyMode.NONE) {
-    val declaration = loadValue.getLoadValueExpression()?.reference?.resolve() as? StarlarkTargetExpression ?: return@lazy null
+    val declaration = loadValue.getLoadValueExpression()?.reference?.resolve() as? StarlarkReferenceExpression ?: return@lazy null
     val assignedValue = StarlarkAssignmentUtils.assignedValueForTarget(declaration) ?: return@lazy null
     StarlarkStaticValueAnalyzer.valueKind(assignedValue)
   }

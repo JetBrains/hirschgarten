@@ -4,7 +4,7 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.util.descendantsOfType
 import com.intellij.testFramework.PlatformTestUtil
-import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -19,8 +19,8 @@ class StarlarkBindingTest {
     myFixture.configureByFile("Bindings.bzl")
     val dump = runReadActionBlocking {
       val text = myFixture.file.text
-      myFixture.file.descendantsOfType<StarlarkLocalVariableElement>()
-        .mapNotNull { it.getNameIdentifier() }
+      myFixture.file.descendantsOfType<StarlarkReferenceExpression>()
+        .mapNotNull { it.getIdentifier() }
         .sortedBy { it.textOffset }
         .joinToString("\n") { identifier ->
           val position = StringUtil.offsetToLineColumn(text, identifier.textOffset)

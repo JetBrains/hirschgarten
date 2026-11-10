@@ -18,11 +18,12 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndex
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.bindingSite
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkVariadicParameter
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadValue
 import java.awt.Font
@@ -40,7 +41,7 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
     if (!isDeclaration()) return false
     val parent = this.parent
     // Not a variable — unused if it does not refer to anything and is also unreferenced.
-    if (parent !is StarlarkTargetExpression) return parent.reference?.resolve() == null && parent.isUnreferenced()
+    if (parent !is StarlarkReferenceExpression) return parent.reference?.resolve() == null && parent.isUnreferenced()
     // If a variable is not inside assignment, we consider it a fresh declaration
     if (!parent.isInsideAssignStatement()) return parent.isUnreferenced()
     val originalAssignment = parent.reference?.resolve() ?: return parent.isUnreferenced()
@@ -51,7 +52,7 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
 
   private fun PsiElement.isDeclaration(): Boolean =
     elementType == StarlarkTokenTypes.IDENTIFIER &&
-    parent is StarlarkNamedElement &&
+    (parent as? StarlarkNamedElement)?.nameIdentifier == this &&
     parent !is StarlarkVariadicParameter &&
     parent !is StarlarkKeywordVariadicParameter
 
@@ -62,9 +63,9 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
     // if not accessed externally, check for local usages
     val limitedScope = scope.intersectWith(LocalSearchScope(this.containingFile))
     val references = ReferencesSearch.search(this, limitedScope)
-    if (this !is StarlarkTargetExpression) return references.none()
+    if (this !is StarlarkReferenceExpression) return references.none()
     // Variable is unreferenced if only reassignments refer to it.
-    return references.none { it.element !is StarlarkTargetExpression }
+    return references.none { !it.element.isBinding() }
   }
 
   private fun PsiElement.shouldSkipUnreferencedCheck(): Boolean {
@@ -81,12 +82,12 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
   }
 
   private fun PsiElement.isStarlarkTopLevel() = when (this) {
-    is StarlarkTargetExpression -> isTopLevel()
+    is StarlarkReferenceExpression -> isTopLevel()
     is StarlarkFunctionDeclaration -> isTopLevel()
     else -> false
   }
 
-  private fun StarlarkTargetExpression.isInsideAssignStatement(): Boolean = bindingSite() is StarlarkAssignmentStatement
+  private fun StarlarkReferenceExpression.isInsideAssignStatement(): Boolean = bindingSite() is StarlarkAssignmentStatement
 
   private fun AnnotationHolder.annotateUnused(element: PsiElement, name: String) =
     newAnnotation(
@@ -98,7 +99,7 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
     when (element) {
       is StarlarkNamedLoadValue -> "Load value"
       is StarlarkFunctionDeclaration -> "Function"
-      is StarlarkTargetExpression -> "Variable"
+      is StarlarkReferenceExpression -> "Variable"
       is StarlarkParameter -> "Parameter"
       else -> ""
     }

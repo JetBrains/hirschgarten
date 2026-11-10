@@ -5,11 +5,13 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.descendantsOfType
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -83,8 +85,8 @@ class StarlarkUseScopeOptimizerTest {
     myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
-      val myConst = PsiTreeUtil.collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
-        .single { it.name == "MY_CONST" }
+      val myConst = myFixture.file.descendantsOfType<StarlarkReferenceExpression>()
+        .single { it.isBinding() && it.name == "MY_CONST" }
       PsiSearchHelper.getInstance(project).getUseScope(myConst)
     }
     useScope.shouldBeInstanceOf<GlobalSearchScope>()
@@ -124,9 +126,8 @@ class StarlarkUseScopeOptimizerTest {
     myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
-      val privateConst = PsiTreeUtil
-        .collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
-        .single { it.name == "_PRIVATE_CONST" }
+      val privateConst = myFixture.file.descendantsOfType<StarlarkReferenceExpression>()
+        .single { it.isBinding() && it.name == "_PRIVATE_CONST" }
       PsiSearchHelper.getInstance(project).getUseScope(privateConst)
     }
     useScope.shouldBeInstanceOf<LocalSearchScope>()
@@ -145,9 +146,8 @@ class StarlarkUseScopeOptimizerTest {
     myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
-      val localVar = PsiTreeUtil
-        .collectElementsOfType(myFixture.file, StarlarkTargetExpression::class.java)
-        .single { it.name == "local_var" }
+      val localVar = myFixture.file.descendantsOfType<StarlarkReferenceExpression>()
+        .single { it.isBinding() && it.name == "local_var" }
       PsiSearchHelper.getInstance(project).getUseScope(localVar)
     }
     useScope.shouldBeInstanceOf<LocalSearchScope>()
@@ -165,9 +165,8 @@ class StarlarkUseScopeOptimizerTest {
     myFixture.openFileInEditor(defsFile.virtualFile)
 
     val useScope = runReadActionBlocking {
-      val param = PsiTreeUtil
-        .collectElementsOfType(myFixture.file, StarlarkNamedElement::class.java)
-        .single { it.name == "param" }
+      val param = myFixture.file.descendantsOfType<StarlarkNamedElement>()
+        .single { it.nameIdentifier != null && it.name == "param" }
       PsiSearchHelper.getInstance(project).getUseScope(param)
     }
     useScope.shouldBeInstanceOf<LocalSearchScope>()

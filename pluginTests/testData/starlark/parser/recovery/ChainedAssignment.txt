@@ -1,6 +1,6 @@
 FILE
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('a')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('a')
       PsiElement(identifier)('a')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')

@@ -2,7 +2,7 @@ FILE
   StarlarkForStatement(FOR_STATEMENT)
     PsiElement(for)('for')
     PsiWhiteSpace(' ')
-    StarlarkTargetExpression(TARGET_EXPRESSION)('x')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('x')
       PsiElement(identifier)('x')
     PsiErrorElement:',' or in expected, got 'y'
       <empty list>

@@ -24,9 +24,10 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 
 internal class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
   init {
@@ -63,6 +64,7 @@ internal class BazelGlobalFunctionCompletionContributor : CompletionContributor(
     psiElement()
       .withLanguage(StarlarkLanguage)
       .withParent(StarlarkReferenceExpression::class.java)
+      .andNot(psiElement().withParent(psiElement(StarlarkReferenceExpression::class.java).with(bindingCondition)))
       .andNot(psiComment())
       .andNot(psiElement().afterLeaf(psiElement(StarlarkTokenTypes.DOT)))
 
@@ -71,6 +73,12 @@ internal class BazelGlobalFunctionCompletionContributor : CompletionContributor(
       override fun accepts(file: StarlarkFile, context: ProcessingContext): Boolean = file.getBazelFileType() == bazelFileType
     }
 }
+
+// A new name in a target position is no call of a global function.
+private val bindingCondition =
+  object : PatternCondition<StarlarkReferenceExpression>("isBinding") {
+    override fun accepts(reference: StarlarkReferenceExpression, context: ProcessingContext): Boolean = reference.isBinding()
+  }
 
 private abstract class BazelFunctionCompletionProvider : CompletionProvider<CompletionParameters>() {
 

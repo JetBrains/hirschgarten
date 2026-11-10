@@ -1,6 +1,6 @@
 FILE
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('x')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('x')
       PsiElement(identifier)('x')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
@@ -11,7 +11,7 @@ FILE
   PsiErrorElement:Unexpected indent
     <empty list>
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('y')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('y')
       PsiElement(identifier)('y')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
@@ -22,7 +22,7 @@ FILE
   PsiErrorElement:Unexpected indent
     <empty list>
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('z')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('z')
       PsiElement(identifier)('z')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
@@ -31,7 +31,7 @@ FILE
       PsiElement(integer)('3')
   PsiWhiteSpace('\n  ')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('w')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('w')
       PsiElement(identifier)('w')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
@@ -40,7 +40,7 @@ FILE
       PsiElement(integer)('4')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('v')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('v')
       PsiElement(identifier)('v')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
@@ -57,7 +57,7 @@ FILE
     PsiWhiteSpace('\n    ')
     StarlarkStatementList(STATEMENT_LIST)
       StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-        StarlarkTargetExpression(TARGET_EXPRESSION)('b')
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)('b')
           PsiElement(identifier)('b')
         PsiWhiteSpace(' ')
         PsiElement(=)('=')
@@ -68,7 +68,7 @@ FILE
       PsiErrorElement:Unexpected indent
         <empty list>
       StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-        StarlarkTargetExpression(TARGET_EXPRESSION)('c')
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)('c')
           PsiElement(identifier)('c')
         PsiWhiteSpace(' ')
         PsiElement(=)('=')
@@ -77,7 +77,7 @@ FILE
           PsiElement(integer)('2')
       PsiWhiteSpace('\n    ')
       StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-        StarlarkTargetExpression(TARGET_EXPRESSION)('d')
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)('d')
           PsiElement(identifier)('d')
         PsiWhiteSpace(' ')
         PsiElement(=)('=')
@@ -86,7 +86,7 @@ FILE
           PsiElement(integer)('3')
   PsiWhiteSpace('\n')
   StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-    StarlarkTargetExpression(TARGET_EXPRESSION)('e')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('e')
       PsiElement(identifier)('e')
     PsiWhiteSpace(' ')
     PsiElement(=)('=')
