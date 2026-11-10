@@ -525,10 +525,62 @@ class StarlarkRenameTest {
     )
   }
 
+  @Test
+  fun `should rename all bindings from a read`() {
+    myFixture.configureByText(
+      "defs.bzl",
+      """
+      def foo():
+          x = 1
+          x = 2
+          return <caret>x
+      """.trimIndent(),
+    )
+    myFixture.renameAtCaret("value")
+    myFixture.checkResult(
+      """
+      def foo():
+          value = 1
+          value = 2
+          return value
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `should rename all bindings from a reassignment`() {
+    myFixture.configureByText(
+      "defs.bzl",
+      """
+      def foo():
+          x = 1
+          <caret>x = 2
+          return x
+      """.trimIndent(),
+    )
+    myFixture.renameAtCaret("value")
+    myFixture.checkResult(
+      """
+      def foo():
+          value = 1
+          value = 2
+          return value
+      """.trimIndent(),
+    )
+  }
+
   // endregion
 
   private fun conflictMessage(newName: String, fileName: String): String =
     StarlarkBundle.message("rename.name.conflict.already.exists", newName, fileName)
+}
+
+private fun CodeInsightTestFixture.renameAtCaret(newName: String) {
+  timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      renameElementAtCaret(newName)
+    }
+  }
 }
 
 private fun CodeInsightTestFixture.renameStarlarkElement(oldName: String, newName: String) {

@@ -533,4 +533,70 @@ class StarlarkScopeTest {
       """.trimIndent(),
     )
   }
+
+  @Test
+  fun `resolve to list assignment target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      [a, <target>b] = f()
+      <caret>b
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to nested tuple target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      a, (b, <target>c) = f()
+      <caret>c
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to nested tuple loop target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      for a, (b, <target>c) in []:
+          print(<caret>c)
+      """.trimIndent(),
+    )
+  }
+
+
+
+  @Test
+  fun `reassignment resolves to first binding`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      def f():
+          <target>x = 1
+          <caret>x = 2
+          return x
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `augmented assignment resolves to binding`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      def f():
+          <target>x = 1
+          <caret>x += 1
+          return x
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `throwaway name resolves to nothing`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      _ = 1
+      print(<caret>_)
+      """.trimIndent(),
+    )
+  }
 }
