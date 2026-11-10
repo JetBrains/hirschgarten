@@ -10,9 +10,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectSyncScope
 
-internal fun VirtualFile.isResyncable(): Boolean =
-  (isDirectory && Constants.BUILD_FILE_NAMES.any { this.findChild(it) != null })
-  || this.name in Constants.BUILD_FILE_NAMES
+internal fun VirtualFile.isResyncable(): Boolean = isDirectory || this.name in Constants.BUILD_FILE_NAMES
 
 internal sealed class ResyncFilesAction :
   BazelSyncAction({ BazelPluginBundle.message("resync.files.and.directories.action.text") }, BazelPluginIcons.bazelReload) {
