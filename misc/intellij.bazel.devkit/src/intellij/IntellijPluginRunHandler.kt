@@ -49,7 +49,7 @@ internal class IntellijPluginRunHandler(private val configuration: BazelRunConfi
 
   override val isTestHandler: Boolean = false
 
-  // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
+  // Mostly copied from com.intellij.devkit.ide.run.PluginRunConfiguration
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     val ideaJdk =
       findIdeaJdk(state.intellijSdkName) ?: throw ExecutionException(
