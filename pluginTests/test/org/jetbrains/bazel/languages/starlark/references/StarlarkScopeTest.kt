@@ -511,4 +511,26 @@ class StarlarkScopeTest {
       """.trimIndent(),
     )
   }
+
+  @Test
+  fun `qualified assignment does not declare a variable`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      foo = struct()
+      foo.b = 1
+      print(<caret>b)
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `qualified loop target does not declare a variable`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      foo = struct()
+      for foo.b in []:
+          print(<caret>b)
+      """.trimIndent(),
+    )
+  }
 }
