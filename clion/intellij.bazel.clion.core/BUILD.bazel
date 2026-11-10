@@ -62,6 +62,7 @@ jvm_library(
         "//CIDR/cidr-debugger/core",
         "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend",
         "//CIDR/cidr-debugger/profiles/backend",
+        "//CIDR/cidr-debugger/dap",
         "//CIDR/clion-execution",
         "//CIDR/clion-toolchains",
         "//CIDR/cidr-execution",
