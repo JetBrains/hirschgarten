@@ -6,7 +6,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 
@@ -17,8 +16,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 @ApiStatus.Internal
 interface StarlarkReferenceSupport {
   fun getReference(element: StarlarkReferenceExpression): PsiReference?
-
-  fun getReference(element: StarlarkTargetExpression): PsiReference
 
   fun getReference(element: StarlarkArgumentExpression): PsiReference
 

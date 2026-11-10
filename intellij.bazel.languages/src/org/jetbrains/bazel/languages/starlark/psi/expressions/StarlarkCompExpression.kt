@@ -8,6 +8,6 @@ import org.jetbrains.bazel.languages.starlark.psi.isLoopTarget
 
 @ApiStatus.Internal
 abstract class StarlarkCompExpression(node: ASTNode) : StarlarkBaseElement(node) {
-  fun getCompVariables(): List<StarlarkTargetExpression> =
+  fun getCompVariables(): List<StarlarkReferenceExpression> =
     children.filter { it.isLoopTarget() }.flatMap { it.boundNames() }
 }

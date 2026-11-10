@@ -13,8 +13,6 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
 /** The external rules and the element type factory of `Starlark.bnf`. */
 internal object StarlarkParserUtil : GeneratedParserUtilBase() {
-  private val CHAIN_TRAILERS = TokenSet.create(StarlarkTokenTypes.DOT, StarlarkTokenTypes.LPAR, StarlarkTokenTypes.LBRACKET)
-
   /**
    * Removes the bracket pairs from the error state. With them, the error recovery skips a whole bracket group,
    * so after a stray token and an unclosed `(` it takes the rest of the file. The lexer ends an unclosed bracket at a line start,
@@ -56,9 +54,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
 
   /** The offset where a statement starts after a statement error. */
   private val STATEMENT_START_OFFSET = Key.create<Int>("starlark.parser.statement.start.offset")
-
-  private val TARGET_MODE = Key.create<Boolean>("starlark.parser.target.mode")
-
 
   /**
    * Consumes the `,` between two items of a list. When the `,` is missing and [start] can start the next item,
@@ -109,8 +104,7 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   }
 
   /** True when [parser] matches at the current token. Unlike `&`, it adds no expected tokens to the error messages. */
-  @JvmStatic
-  fun lookahead(builder: PsiBuilder, level: Int, parser: Parser): Boolean {
+  private fun lookahead(builder: PsiBuilder, level: Int, parser: Parser): Boolean {
     // In two nested predicates, Grammar-Kit records no expected tokens.
     val outer = enter_section_(builder, level, _AND_)
     val inner = enter_section_(builder, level + 1, _AND_)
@@ -119,37 +113,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     exit_section_(builder, level, outer, result, false, null)
     return result
   }
-
-  /** Parses [parser] in target mode. Each plain name in it is a target. */
-  @JvmStatic
-  fun targetMode(builder: PsiBuilder, level: Int, parser: Parser): Boolean = withFlag(builder, TARGET_MODE, true) { parser.parse(builder, level) }
-
-
-  /** Parses a member chain. In target mode, a chain with a trailer is a normal expression: `a.b = 1` binds no name. */
-  @JvmStatic
-  fun memberChain(builder: PsiBuilder, level: Int, chain: Parser): Boolean {
-    if (builder.getUserData(TARGET_MODE) != true) return chain.parse(builder, level)
-    val ahead = Lookahead(builder)
-    val hasTrailer = ahead.skipPrimary() && ahead.peek() in CHAIN_TRAILERS
-    return withFlag(builder, TARGET_MODE, !hasTrailer) { chain.parse(builder, level) }
-  }
-
-  /** Parses a name. In target mode, it is a target, except `_`. */
-  @JvmStatic
-  fun nameExpression(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
-    if (builder.tokenType !== StarlarkTokenTypes.IDENTIFIER) return false
-    val isTarget = builder.getUserData(TARGET_MODE) == true && builder.tokenText != "_"
-    doneToken(builder, if (isTarget) StarlarkElementTypes.TARGET_EXPRESSION else StarlarkElementTypes.REFERENCE_EXPRESSION)
-    return true
-  }
-
-  @JvmStatic
-  fun atAssignment(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean =
-    findStatementOperator(builder) === StarlarkTokenTypes.EQ
-
-  @JvmStatic
-  fun atAugAssignment(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean =
-    findStatementOperator(builder) in StarlarkTokenSets.COMPOUND_ASSIGN_OPERATIONS
 
   /**
    * Ends a simple statement. On an error, the next statement starts at the current token if a statement can start there.
@@ -262,95 +225,5 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
   private fun startStatementHere(builder: PsiBuilder) {
     builder.tokenType // Skips the whitespace before the current token.
     builder.putUserData(STATEMENT_START_OFFSET, builder.currentOffset)
-  }
-
-  /** Returns the first `=` or augmented assignment operator of the statement outside of brackets. */
-  private fun findStatementOperator(builder: PsiBuilder): IElementType? {
-    val ahead = Lookahead(builder)
-    while (true) {
-      val type = ahead.nextOutsideBrackets() ?: return null
-      when {
-        // A '=' after a lambda gives a default value of the lambda: `lambda a = 1: a` is no assignment.
-        type === StarlarkTokenTypes.LAMBDA_KEYWORD -> return null
-        type === StarlarkTokenTypes.EQ || type in StarlarkTokenSets.COMPOUND_ASSIGN_OPERATIONS -> return type
-        type in StarlarkTokenSets.ENDS_OF_STATEMENT -> return null
-      }
-    }
-  }
-
-  private inline fun <T> withFlag(builder: PsiBuilder, key: Key<Boolean>, value: Boolean, action: () -> T): T {
-    val previous = builder.getUserData(key)
-    builder.putUserData(key, value)
-    try {
-      return action()
-    }
-    finally {
-      builder.putUserData(key, previous)
-    }
-  }
-
-  /** Reads the tokens ahead without moving the builder, and skips whitespace and comments. */
-  private class Lookahead(private val builder: PsiBuilder) {
-    private var step = 0
-
-    init {
-      builder.tokenType // Skips the whitespace before the current token.
-    }
-
-    fun peek(): IElementType? {
-      while (true) {
-        val type = builder.rawLookup(step) ?: return null
-        if (type !in INSIGNIFICANT_TOKENS) return type
-        step++
-      }
-    }
-
-    fun advance() {
-      peek()
-      step++
-    }
-
-    /** Skips a token, or brackets with their content. */
-    fun skipPrimary(): Boolean {
-      val type = peek() ?: return false
-      if (type in StarlarkTokenSets.OPEN_BRACKETS) return skipBrackets()
-      advance()
-      return true
-    }
-
-    fun skipBrackets(): Boolean {
-      var depth = 0
-      while (true) {
-        val type = peek() ?: return false
-        advance()
-        when {
-          type in StarlarkTokenSets.OPEN_BRACKETS -> depth++
-          type in StarlarkTokenSets.CLOSE_BRACKETS -> if (--depth == 0) return true
-          // The lexer gives no STATEMENT_BREAK in brackets, except at the end of the file.
-          type === StarlarkTokenTypes.STATEMENT_BREAK -> return false
-        }
-      }
-    }
-
-    /** Returns the next token outside of brackets, or null at the end of the enclosing brackets or of the file. */
-    fun nextOutsideBrackets(): IElementType? {
-      while (true) {
-        val type = peek() ?: return null
-        when {
-          type in StarlarkTokenSets.OPEN_BRACKETS -> if (!skipBrackets()) return null
-          type in StarlarkTokenSets.CLOSE_BRACKETS -> return null
-          else -> {
-            advance()
-            return type
-          }
-        }
-      }
-    }
-  }
-
-  private fun doneToken(builder: PsiBuilder, type: IElementType) {
-    val marker = builder.mark()
-    builder.advanceLexer()
-    marker.done(type)
   }
 }

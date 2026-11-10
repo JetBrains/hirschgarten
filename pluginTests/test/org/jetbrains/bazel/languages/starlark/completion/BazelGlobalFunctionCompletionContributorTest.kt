@@ -4,6 +4,7 @@ import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldNotContainAnyOf
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
@@ -53,6 +54,14 @@ class BazelGlobalFunctionCompletionContributorTest {
     myFixture.configureByText("ext.bzl", "if True:\n    pr<caret>")
     val lookups = myFixture.completeBasicLookupStrings()
     lookups shouldContainExactlyInAnyOrder listOf("print", "provider", "repr")
+  }
+
+  @Test
+  fun `should not complete functions for a new name in a target position`() {
+    myFixture.configureByText("ext.bzl", "for di<caret> in []:\n    pass")
+    myFixture.completeBasicLookupStrings() shouldNotContainAnyOf listOf("dict", "dir")
+    myFixture.configureByText("ext2.bzl", "def f():\n    di<caret> = 1")
+    myFixture.completeBasicLookupStrings() shouldNotContainAnyOf listOf("dict", "dir")
   }
 
   @Test

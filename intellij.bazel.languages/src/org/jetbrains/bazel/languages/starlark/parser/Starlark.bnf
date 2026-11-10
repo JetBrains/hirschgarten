@@ -11,7 +11,7 @@
   elementTypeHolderClass="org.jetbrains.bazel.languages.starlark.parser._StarlarkParserTypes"
   elementTypeFactory="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserUtil.elementType"
   // An error after a complete expression does not list every operator. A token that the user must see is in its own rule.
-  consumeTokenMethod(".*_tail|comparison_operator|not_in_operator|not_in_keyword|conditional_expression|reference_expression|call_expression|subscription_expression")="consumeTokenFast"
+  consumeTokenMethod(".*_tail|assignment_suffix|aug_assignment_suffix|aug_operator|comparison_operator|not_in_operator|not_in_keyword|conditional_expression|reference_expression|call_expression|subscription_expression")="consumeTokenFast"
   // A name alone is a complete argument or parameter, so a missing '=' after it is no expected token.
   consumeTokenMethod("keyword_prefix|keyword_equals")="consumeTokenFast"
   // A rule with a name gives one item in an error message, not the list of its start tokens.
@@ -116,8 +116,6 @@ private simple_statement ::=
   | continue_statement
   | return_statement
   | load_statement
-  | assignment_statement
-  | aug_assignment_statement
   | expression_statement
 private statement_end ::= <<statementEnd>>
 
@@ -125,12 +123,10 @@ pass_statement ::= 'pass' statement_end { pin=1 }
 break_statement ::= 'break' statement_end { pin=1 }
 continue_statement ::= 'continue' statement_end { pin=1 }
 return_statement ::= 'return' expression? statement_end { pin=1 }
-expression_statement ::= expression statement_end { pin=1 }
-
-// A lookahead finds the '=' first, so a call statement is not parsed twice.
-// A statement that cannot start with an expression, as 'class = 1', is no assignment.
-assignment_statement ::= <<lookahead expression_start>> <<atAssignment>> <<targetMode expression>> '=' expression statement_end { pin=2 }
-aug_assignment_statement ::= <<lookahead expression_start>> <<atAugAssignment>> expression aug_operator expression statement_end { pin=2 }
+// The parser reads the left side once. An assignment operator after it changes the statement into an assignment.
+expression_statement ::= expression (assignment_suffix | aug_assignment_suffix)? statement_end { pin=1 }
+upper assignment_suffix ::= '=' expression { pin=1 elementType=assignment_statement }
+upper aug_assignment_suffix ::= aug_operator expression { pin=1 elementType=aug_assignment_statement }
 private aug_operator ::= '+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>='
 
 load_statement ::= 'load' '(' load_values? ')' statement_end { pin=1 }
@@ -162,8 +158,7 @@ private indented_statements ::= INDENT block_item* (DEDENT | <<eof>>) { pin=1 }
 inline_statement_list ::= inline_statements | <<statementExpected>> inline_statements? { elementType=statement_list }
 private inline_statements ::= simple_line (<<atSameLine>> (simple_line | <<unexpectedStatementToken>>))*
 
-private loop_targets ::= <<targetMode loop_target_list>>
-private loop_target_list ::= loop_target loop_target_tuple?
+private loop_targets ::= loop_target loop_target_tuple?
 left loop_target_tuple ::= ',' (loop_target (',' loop_target)* ','?)? { elementType=tuple_expression }
 private loop_target ::= star_expression | bitwise_or_level
 
@@ -242,8 +237,7 @@ prefix_expression ::= ('+' | '-' | '~') unary_level { pin=1 }
 private power_level ::= member_level power_tail?
 left power_tail ::= '**' unary_level { pin=1 elementType=binary_expression }
 
-private member_level ::= <<memberChain member_chain>>
-private member_chain ::= primary_level member_tail*
+private member_level ::= primary_level member_tail*
 private member_tail ::= reference_expression | call_expression | subscription_expression
 left reference_expression ::= '.' reference_name { pin=1 }
 private reference_name ::= IDENTIFIER
@@ -268,7 +262,7 @@ private keyword_equals ::= '='
 argument_expression ::= test
 
 private primary_level ::=
-    <<nameExpression>>
+    name_expression
   | integer_literal_expression
   | float_literal_expression
   | string_literal_expression
@@ -283,6 +277,7 @@ private expression_start ::=
     IDENTIFIER | INT | FLOAT | STRING | BYTES | 'None' | 'True' | 'False'
   | '(' | '[' | '{' | 'lambda' | 'not' | '-' | '+' | '~' | '*'
 
+name_expression ::= IDENTIFIER { elementType=reference_expression }
 integer_literal_expression ::= INT
 float_literal_expression ::= FLOAT
 string_literal_expression ::= STRING | BYTES
@@ -325,6 +320,8 @@ private comprehension_if ::= 'if' comprehension_condition { pin=1 }
 private comprehension_condition ::= lambda_expression | or_level
 
 // The node types that only 'elementType' attributes use.
+fake assignment_statement ::= expression assignment_suffix
+fake aug_assignment_statement ::= expression aug_assignment_suffix
 fake binary_expression ::= test test
 fake slice_expression ::= test slice_suffix
 fake generator_expression ::= test comprehension

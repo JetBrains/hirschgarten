@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.rename
 
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadActionBlocking
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.descendantsOfType
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.shouldBe
@@ -585,9 +585,9 @@ private fun CodeInsightTestFixture.renameAtCaret(newName: String) {
 
 private fun CodeInsightTestFixture.renameStarlarkElement(oldName: String, newName: String) {
   val element = runReadActionBlocking {
-    PsiTreeUtil.collectElementsOfType(file, StarlarkNamedElement::class.java)
-      .find { it.name == oldName }
-      ?: error("StarlarkNamedElement with name '$oldName' not found")
+    file.descendantsOfType<StarlarkNamedElement>()
+      .find { it.nameIdentifier != null && it.name == oldName }
+      ?: error("Declaration '$oldName' not found")
   }
   timeoutRunBlocking {
     withContext(Dispatchers.EDT) {

@@ -10,17 +10,16 @@ import org.jetbrains.bazel.languages.starlark.lexer.StarlarkHighlightingLexer
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.isRuleTarget
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 
 internal class StarlarkFindUsagesProvider : FindUsagesProvider {
   override fun canFindUsagesFor(psiElement: PsiElement): Boolean =
-    psiElement is StarlarkNamedElement || psiElement is StarlarkReferenceExpression || psiElement.isRuleTarget()
+    psiElement is StarlarkNamedElement || psiElement.isRuleTarget()
 
   override fun getHelpId(psiElement: PsiElement): String =
     when (psiElement) {
-      is StarlarkTargetExpression, is StarlarkReferenceExpression -> "reference.dialogs.findUsages.variable"
+      is StarlarkReferenceExpression -> "reference.dialogs.findUsages.variable"
       else -> HelpID.FIND_OTHER_USAGES
     }
 
@@ -29,7 +28,7 @@ internal class StarlarkFindUsagesProvider : FindUsagesProvider {
     when {
       element.isRuleTarget() -> "target"
       element is StarlarkFunctionDeclaration -> "function"
-      element is StarlarkTargetExpression || element is StarlarkReferenceExpression -> "variable"
+      element is StarlarkReferenceExpression -> "variable"
       else -> ""
     }
 

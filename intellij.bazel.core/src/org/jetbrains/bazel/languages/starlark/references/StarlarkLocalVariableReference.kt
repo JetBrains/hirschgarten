@@ -6,20 +6,21 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiReferenceBase
 import org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionProcessor
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
 internal class StarlarkLocalVariableReference(
-  element: StarlarkLocalVariableElement,
+  element: StarlarkReferenceExpression,
   soft: Boolean
-) : PsiReferenceBase<StarlarkLocalVariableElement>(element, TextRange(0, element.textLength), soft) {
+) : PsiReferenceBase<StarlarkReferenceExpression>(element, TextRange(0, element.textLength), soft) {
 
   override fun resolve(): PsiElement? {
     val element = myElement ?: return null
     val processor = StarlarkResolveProcessor(mutableListOf(), element, element.name)
     SearchUtils.searchInFile(element, processor)
     val resolved = processor.result.firstOrNull()
-    if (element !is StarlarkTargetExpression) return resolved
+    if (!element.isBinding()) return resolved
     return resolved?.takeIf {
       // take if it's reassignment in the same scope
       it.textOffset <= element.textOffset && it.useScope == element.useScope
@@ -34,7 +35,7 @@ internal class StarlarkLocalVariableReference(
     } ?: emptyArray()
 
   override fun handleElementRename(name: String): PsiElement {
-    val oldNode = myElement.getNameIdentifier()?.node ?: return myElement
+    val oldNode = myElement.getIdentifier()?.node ?: return myElement
     val newNode = RenameUtils.createNewName(myElement.project, name)
     myElement.node.replaceChild(oldNode, newNode)
     return myElement

@@ -563,6 +563,19 @@ class StarlarkVariableUsageInspectionTest {
   }
 
   @Test
+  fun `starred and generator targets should bind as in Python`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      a, *b = [1, 2]
+      print(b)
+      c = (x for x in [1])
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `attribute assignment does not bind a variable`() {
     myFixture.configureByText(
       "test.bzl",

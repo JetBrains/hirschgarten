@@ -2,7 +2,7 @@ FILE
   StarlarkForStatement(FOR_STATEMENT)
     PsiElement(for)('for')
     PsiWhiteSpace(' ')
-    StarlarkTargetExpression(TARGET_EXPRESSION)('elem')
+    StarlarkReferenceExpression(REFERENCE_EXPRESSION)('elem')
       PsiElement(identifier)('elem')
     PsiWhiteSpace(' ')
     PsiElement(in)('in')

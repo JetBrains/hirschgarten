@@ -14,7 +14,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentS
 internal class StarlarkQualifiedReferenceExpressionReference (element: StarlarkReferenceExpression) :
   PsiReferenceBase<StarlarkReferenceExpression>(
     element,
-    element.getNameIdentifier()?.textRangeInParent ?: TextRange(0, element.textLength),
+    element.getIdentifier()?.textRangeInParent ?: TextRange(0, element.textLength),
     false,
   ) {
 

@@ -10,7 +10,7 @@ FILE
     PsiWhiteSpace('\n    ')
     StarlarkStatementList(STATEMENT_LIST)
       StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
-        StarlarkTargetExpression(TARGET_EXPRESSION)('m')
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)('m')
           PsiElement(identifier)('m')
         PsiWhiteSpace(' ')
         PsiElement(=)('=')

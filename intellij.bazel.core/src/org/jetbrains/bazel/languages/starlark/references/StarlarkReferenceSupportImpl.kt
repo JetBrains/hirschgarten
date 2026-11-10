@@ -12,9 +12,9 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
@@ -23,11 +23,12 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
 internal class StarlarkReferenceSupportImpl : StarlarkReferenceSupport {
   override fun getReference(element: StarlarkReferenceExpression): PsiReference? = with(element) {
     when {
+      isBinding() -> StarlarkLocalVariableReference(this, true)
       isThrowaway() -> null
       isQualified() -> StarlarkQualifiedReferenceExpressionReference(this)
       (parent as? StarlarkCallExpression)?.asGlobCallOrNull() != null -> StarlarkGlobReference(this)
       (parent as? StarlarkCallExpression)?.getCalledExpression() == this && !isBeforeDot() -> {
-        when (val identifier = getNameIdentifier()) {
+        when (val identifier = getIdentifier()) {
           null -> null
           else -> StarlarkFunctionCallReference(this,  identifier.textRangeInParent)
         }
@@ -35,8 +36,6 @@ internal class StarlarkReferenceSupportImpl : StarlarkReferenceSupport {
       else -> StarlarkLocalVariableReference(this, false)
     }
   }
-
-  override fun getReference(element: StarlarkTargetExpression): PsiReference = StarlarkLocalVariableReference(element, true)
 
   override fun getReference(element: StarlarkArgumentExpression): PsiReference = StarlarkArgumentReference(element, element.textRange)
 

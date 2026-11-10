@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.bindingSite
 import org.jetbrains.bazel.languages.starlark.psi.boundNames
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.isBazelFileTopLevelCall
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
@@ -42,7 +42,7 @@ private class StarlarkStructureViewModel(file: StarlarkFile, editor: Editor?) :
 
   override fun isSuitable(element: PsiElement): Boolean = when (element) {
     is StarlarkFunctionDeclaration -> element.isTopLevel()
-    is StarlarkTargetExpression -> isTopLevelAssignmentTarget(element)
+    is StarlarkReferenceExpression -> isTopLevelAssignmentTarget(element)
     is StarlarkCallExpression -> element.isBazelFileTopLevelCall() && element.isRuleTarget()
     else -> false
   }
@@ -51,7 +51,7 @@ private class StarlarkStructureViewModel(file: StarlarkFile, editor: Editor?) :
 
   override fun isAlwaysLeaf(element: StructureViewTreeElement): Boolean = element !is StarlarkFileStructureViewElement
 
-  private fun isTopLevelAssignmentTarget(target: StarlarkTargetExpression): Boolean =
+  private fun isTopLevelAssignmentTarget(target: StarlarkReferenceExpression): Boolean =
     (target.bindingSite() as? StarlarkAssignmentStatement)?.isTopLevel() == true
 }
 

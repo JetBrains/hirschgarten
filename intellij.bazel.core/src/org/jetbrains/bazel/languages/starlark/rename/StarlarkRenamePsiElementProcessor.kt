@@ -58,7 +58,7 @@ internal class StarlarkRenamePsiElementProcessor : RenamePsiElementProcessor() {
     scopeElements
       .asSequence()
       .flatMap { PsiTreeUtil.collectElementsOfType(it, StarlarkNamedElement::class.java) }
-      .filter { it != element && it.name == newName }
+      .filter { it != element && it.nameIdentifier != null && it.name == newName }
       .filter { candidate ->
         // Only flag a conflict if the candidate is declared in the same or enclosing scope,
         // not in a nested subscope (comprehension, lambda) that doesn't actually conflict.

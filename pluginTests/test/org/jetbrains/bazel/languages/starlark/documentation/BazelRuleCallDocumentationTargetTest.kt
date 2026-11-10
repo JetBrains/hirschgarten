@@ -13,8 +13,9 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.languages.starlark.psi.requireCallWithNameAttribute
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.test.framework.BazelTestApplication
@@ -193,8 +194,8 @@ class BazelRuleCallDocumentationTargetTest {
     )
 
     val element = runReadActionBlocking {
-      myFixture.file.descendantsOfType<StarlarkTargetExpression>()
-        .singleOrNull()
+      myFixture.file.descendantsOfType<StarlarkReferenceExpression>()
+        .singleOrNull { it.isBinding() }
     }.shouldNotBeNull()
     getDocumentationTargets(element)
       .singleOrNull()

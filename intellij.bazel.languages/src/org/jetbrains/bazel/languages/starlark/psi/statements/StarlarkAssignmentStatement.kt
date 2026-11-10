@@ -10,13 +10,14 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.boundNames
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 
 @ApiStatus.Internal
 class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node), StarlarkAssigningStatement {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitAssignmentStatement(this)
 
-  override fun getName(): String? = getTargetExpression()?.name ?: super.getName()
+  override fun getName(): String? = getBoundName()?.name ?: super.getName()
 
   override fun operator(): StarlarkTokenType = StarlarkTokenTypes.EQ
 
@@ -25,5 +26,5 @@ class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node), St
 
   fun isTopLevel(): Boolean = parent is StarlarkFile
 
-  private fun getTargetExpression(): StarlarkTargetExpression? = findChildByClass(StarlarkTargetExpression::class.java)
+  private fun getBoundName(): StarlarkReferenceExpression? = (leftHandSide() as? StarlarkReferenceExpression)?.takeIf { it.isBinding() }
 }

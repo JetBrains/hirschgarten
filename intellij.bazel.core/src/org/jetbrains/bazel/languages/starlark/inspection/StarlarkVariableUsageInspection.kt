@@ -22,7 +22,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
@@ -161,10 +160,10 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
       return false
     }
 
-    private fun isInFirstComprehensionIterable(ref: StarlarkReferenceExpression, firstTarget: StarlarkTargetExpression): Boolean =
+    private fun isInFirstComprehensionIterable(ref: StarlarkReferenceExpression, firstTarget: StarlarkReferenceExpression): Boolean =
       findComprehensionIterableForTarget(firstTarget)?.let { PsiTreeUtil.isAncestor(it, ref, false) } ?: false
 
-    private fun findComprehensionIterableForTarget(target: StarlarkTargetExpression): PsiElement? {
+    private fun findComprehensionIterableForTarget(target: StarlarkReferenceExpression): PsiElement? {
       var current: PsiElement? = target
       while (current != null && current !is StarlarkCompExpression) {
         val next = PsiTreeUtil.skipWhitespacesAndCommentsForward(current)
