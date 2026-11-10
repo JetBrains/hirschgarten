@@ -32,6 +32,16 @@ import kotlin.time.Duration.Companion.minutes
 
 private val RESYNC_ACTIONS_PROJECT = simpleBazelProject(path = "simpleJavaTest")
 
+private const val DIRECTORY_WITHOUT_BUILD_FILE = "resyncDirectory"
+private const val DIRECTORY_PLAIN_FILE = "$DIRECTORY_WITHOUT_BUILD_FILE/README.md"
+private const val DIRECTORY_PACKAGE_BUILD_FILE = "$DIRECTORY_WITHOUT_BUILD_FILE/lib/BUILD"
+
+private val DIRECTORY_PACKAGE_BUILD_FILE_CONTENT = """
+  java_library(
+      name = "lib",
+  )
+""".trimIndent()
+
 private const val ADDED_SOURCE_FILE = "resyncBanner/ResyncBannerTest.java"
 private const val ADDED_BUILD_FILE = "resyncBanner/BUILD"
 
@@ -109,6 +119,18 @@ class ResyncActionsTest : IdeStarterBaseProjectTest() {
             itemsList().any { it == RESYNC_DIRECTORY_ITEM }
           }
           keyboard { escape() }
+        }
+
+        step("resync directory without BUILD file") {
+          addProjectFile(context, DIRECTORY_PLAIN_FILE, "")
+          addProjectFile(context, DIRECTORY_PACKAGE_BUILD_FILE, DIRECTORY_PACKAGE_BUILD_FILE_CONTENT)
+          projectView().projectViewTree.rightClickRowAndWaitForMenu(DIRECTORY_WITHOUT_BUILD_FILE, { it == DIRECTORY_WITHOUT_BUILD_FILE }) { popupMenu() }
+          takeScreenshot("resyncDirectoryWithoutBuildFilePopup")
+          popupMenu().select(RESYNC_DIRECTORY_ITEM)
+          waitForIndicators(5.minutes)
+          takeScreenshot("afterResyncDirectoryWithoutBuildFile")
+          waitForPartialResync(RESYNC_DIRECTORY_ITEM, targetCount = 1)
+          driver.failIfFatalIdeErrorsPresent(RESYNC_DIRECTORY_ITEM)
         }
 
         step("resync BUILD file") {
