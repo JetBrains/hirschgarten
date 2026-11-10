@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.test.framework
 
-import com.intellij.build.BuildViewManager
-import com.intellij.build.SyncViewManager
+import com.intellij.build.BuildProgressListener
 import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.FailureResult
 import com.intellij.build.events.FinishEvent
@@ -94,26 +93,18 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
   override fun dispose() {}
 
   init {
-    buildConsole = TestTaskConsole(
-      object : BuildViewManager(project) {
-        override fun onEvent(buildId: Any, event: BuildEvent) {
-          storeEvent(event)
-          logEvent(event)
-          super.onEvent(buildId, event)
-        }
-      }.also { Disposer.register(this, it) },
-      "", project,
-    )
-
-    syncConsole = TestTaskConsole(
-      object : SyncViewManager(project) {
-        override fun onEvent(buildId: Any, event: BuildEvent) {
-          storeEvent(event)
-          logEvent(event)
-          super.onEvent(buildId, event)
-        }
-      }.also { Disposer.register(this, it) },
-      "", project,
-    )
+    buildConsole = TestTaskConsole(recordingListener(), "", project)
+    syncConsole = TestTaskConsole(recordingListener(), "", project)
   }
+
+  /** Stores and logs each event. It shows no build view, so no work of a build view stays on the EDT after the test. */
+  private fun recordingListener(): BuildProgressListener =
+    object : BuildProgressListener, Disposable {
+      override fun onEvent(buildId: Any, event: BuildEvent) {
+        storeEvent(event)
+        logEvent(event)
+      }
+
+      override fun dispose() {}
+    }.also { Disposer.register(this, it) }
 }
