@@ -72,7 +72,7 @@ sealed interface CcDebugger {
     override fun isBundled(): Boolean = GDB.isBundled()
   }
 
-  /** The bundled `lldb-dap` binary. */
+  /** The bundled `lldb-dap` binary (only available on Linux). */
   object LLDB_DAP : CcDebugger {
 
     override val debugProfileTypeId: String get() = DapDebugProfileType.ID
@@ -84,6 +84,19 @@ sealed interface CcDebugger {
     override fun isBundled(): Boolean = lldbDapBinary().exists()
 
     private fun lldbDapBinary(): File = CidrDebuggerPathManager.getLLDBBinFile("bin/lldb-dap", null, true, "lldb")
+  }
+
+  /** The xcode `lldb-dap` binary. */
+  object XCODE_DAP : CcDebugger {
+
+    override val debugProfileTypeId: String get() = DapDebugProfileType.ID
+
+    override fun createDebugProfileSettings(): BaseState = DapDebugProfileType().createDefaultState().apply {
+      debuggerExecutable = "xcrun"
+      debuggerArguments = "--run lldb-dap"
+    }
+
+    override fun isBundled(): Boolean = true
   }
 }
 

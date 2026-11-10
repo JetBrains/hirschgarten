@@ -22,6 +22,7 @@ import org.jetbrains.bazel.fixtures.ccDebugInfoDialogFixture
 import org.jetbrains.bazel.fixtures.ccDebuggerFixture
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
 import org.jetbrains.bazel.fixtures.startCcDebugSession
+import org.jetbrains.bazel.isMacOS
 import org.jetbrains.bazel.isWindows
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.junit.jupiter.api.Test
@@ -73,15 +74,15 @@ abstract class CcDebugTest(debugger: CcDebugger, bazelVersion: String) {
     class Bazel9 : GdbDap(BazelVersions.BAZEL_9)
   }
 
-  abstract class LldbDap(bazelVersion: String) : CcDebugTest(CcDebugger.LLDB_DAP, bazelVersion) {
+  abstract class LldbDap(bazelVersion: String) : CcDebugTest(if (isMacOS()) CcDebugger.XCODE_DAP else CcDebugger.LLDB_DAP, bazelVersion) {
 
-    @EnabledOnOs(OS.LINUX)
+    @EnabledOnOs(OS.LINUX, OS.MAC)
     class Bazel7 : LldbDap(BazelVersions.BAZEL_7)
 
-    @EnabledOnOs(OS.LINUX)
+    @EnabledOnOs(OS.LINUX, OS.MAC)
     class Bazel8 : LldbDap(BazelVersions.BAZEL_8)
 
-    @EnabledOnOs(OS.LINUX)
+    @EnabledOnOs(OS.LINUX, OS.MAC)
     class Bazel9 : LldbDap(BazelVersions.BAZEL_9)
   }
 
