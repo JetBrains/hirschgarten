@@ -46,6 +46,7 @@
     <module name="intellij.platform.indexing"/>
     <module name="intellij.platform.lang"/>
     <module name="intellij.platform.lang.core"/>
+    <module name="intellij.platform.lang.impl"/>
     <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.projectModel.impl"/>
     <module name="intellij.platform.smRunner"/>
@@ -148,5 +149,7 @@
                      key="inspections.display.name.javastrictdeps"/>
     <runConfigurationProducer implementation="org.jetbrains.bazel.jvm.run.BazelRerunTestConfigurationProducer"/>
     <librarySourcesMismatchSuppressor implementation="org.jetbrains.bazel.java.analysis.BazelInterfaceJarSourceMismatchSuppressor"/>
+    <refactoring.moveHandler implementation="org.jetbrains.bazel.refactoring.BazelJavaMoveFileHandler"
+                             order="after moveJavaFileOrDir"/>
   </extensions>
 </idea-plugin>

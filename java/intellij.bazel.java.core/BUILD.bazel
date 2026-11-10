@@ -91,6 +91,7 @@ jvm_library(
         "@community//platform/testRunner",
         "@community//java/java-backend:backend",
         "@community//plugins/junit",
+        "@community//platform/lang-impl",
         ":community_libraries_opentelemetry_provided",
         ":community_libraries_opentelemetry-extension-kotlin_provided",
     ],
@@ -168,6 +169,7 @@ jvm_library(
         "@community//platform/testRunner:testRunner_test_lib",
         "@community//java/java-backend:backend_test_lib",
         "@community//plugins/junit:junit_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.java.core` end
