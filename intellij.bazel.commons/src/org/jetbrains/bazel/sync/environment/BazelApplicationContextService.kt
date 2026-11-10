@@ -8,8 +8,8 @@ interface BazelApplicationContextService {
     get() = false
   val disableHardLinksOutputFiles: Boolean
     get() = false
-  val forceBazeliskDownload: Boolean
-    get() = false
+  val forcedBazeliskDownload: BazeliskDownload
+    get() = BazeliskDownload.Off
   val enablePty: Boolean
     get() = true
 }

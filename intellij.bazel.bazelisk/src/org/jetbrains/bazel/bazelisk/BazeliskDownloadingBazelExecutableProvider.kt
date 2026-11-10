@@ -16,6 +16,7 @@ import com.intellij.util.system.OS
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
+import org.jetbrains.bazel.sync.environment.BazeliskDownload
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -26,48 +27,37 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.time.Duration.Companion.seconds
 
-/**
- * The version of Bazelisk that the plugin downloads.
- * When you change it, also change [BAZELISK_SHA256].
- * The plugin keeps the download in `<system>/bazel-plugin/bazelisk-<version>`.
- */
-@ApiStatus.Internal
-const val BAZELISK_VERSION: String = "1.30.0"
-
-/**
- * The SHA-256 checksums of the release assets of Bazelisk [BAZELISK_VERSION], by asset name.
- * The plugin keeps the checksums in its code, because a checksum from GitHub gives no protection against a changed GitHub release.
- */
-private val BAZELISK_SHA256: Map<String, String> = mapOf(
-  "bazelisk-darwin-amd64" to "a0e6468b0c6b812f782d8cbfb05824121f6980c0bd70aaa1774fb8272bb7b2ad",
-  "bazelisk-darwin-arm64" to "555d2ff912ccd336d0060bdb5251ef2f62629c6f8fbadb59005a45d5625793ec",
-  "bazelisk-linux-amd64" to "a248ae2b2b62b5baebb748f6fba7203bff1a27e5d01b55399a8406744cb539e8",
-  "bazelisk-linux-arm64" to "b2bcc040c213b44586b121bda6d983c35df121b917c3a7a66fb16f2fa0df1a4f",
-  "bazelisk-windows-amd64.exe" to "5d14a31e9d8a363c48ba1900dbd56764d730835232eb0d113cce255856ffe3ef",
-  "bazelisk-windows-arm64.exe" to "cb832b1d157e0dc5f89108da426f9c6fe087f5b15873e072480ec49cc5afe488",
-)
-
 private val log = logger<BazeliskDownloadingBazelExecutableProvider>()
 private const val MAX_DOWNLOAD_ATTEMPTS = 3
 private val RETRY_BACKOFF = 2.seconds
 
+/**
+ * Finds Bazel on `PATH`, or downloads Bazelisk.
+ *
+ * [BazelApplicationContextService.forcedBazeliskDownload] can force the download and skip the lookup on `PATH`.
+ * The plugin keeps the download in `<system>/bazel-plugin/bazelisk-<version>`.
+ */
 internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvider {
   override suspend fun computeBazelExecutable(project: Project): Path? {
-    if (!service<BazelApplicationContextService>().forceBazeliskDownload) {
+    val forcedFile = service<BazelApplicationContextService>().forcedBazeliskDownload.bazeliskFile(OS.CURRENT, CpuArch.CURRENT)
+    if (forcedFile == null) {
       val inPath = BazelEnvironmentService.getInstance(project).findInPath("bazel", "bazelisk")
       if (inPath != null)
         return inPath
     }
+    val bazeliskFile = forcedFile ?: BazeliskDownload.GitHub.bazeliskFile(OS.CURRENT, CpuArch.CURRENT) ?: run {
+      log.error("Unsupported platform or architecture for bazelisk download")
+      return null
+    }
     return withContext(Dispatchers.IO) {
-      downloadBazelisk(project)
+      downloadBazelisk(project, bazeliskFile)
     }
   }
 
   @Suppress("BlockingMethodInNonBlockingContext")
-  private suspend fun downloadBazelisk(project: Project): Path? {
-    val assetName = bazeliskAssetName() ?: return null
-    val expectedSha256 = BAZELISK_SHA256[assetName] ?: return null
-    val downloadUrl = "https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/$assetName"
+  private suspend fun downloadBazelisk(project: Project, file: BazeliskDownload.BazeliskFile): Path? {
+    val expectedSha256 = file.sha256
+    val downloadUrl = file.url
 
     // Use IntelliJ's system cache directory
     val cacheDir = Path.of(PathManager.getSystemPath(), "bazel-plugin")
@@ -79,7 +69,7 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
       return null
     }
 
-    val bazeliskFile = cacheDir.resolve("bazelisk-$BAZELISK_VERSION")
+    val bazeliskFile = cacheDir.resolve("bazelisk-${file.version}")
     if (Files.exists(bazeliskFile)) {
       try {
         checkFileSha256Checksum(bazeliskFile, expectedSha256)
@@ -142,31 +132,6 @@ internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvi
         attempt++
       }
     }
-  }
-
-  private fun bazeliskAssetName(): String? {
-    val platform =
-      when (OS.CURRENT) {
-        OS.Windows -> "windows"
-        OS.macOS -> "darwin"
-        OS.Linux -> "linux"
-        else -> null
-      }
-
-    val arch =
-      when (CpuArch.CURRENT) {
-        CpuArch.X86_64 -> "amd64"
-        CpuArch.ARM64 -> "arm64"
-        else -> null
-      }
-
-    if (platform == null || arch == null) {
-      log.error("Unsupported platform or architecture for bazelisk download")
-      return null
-    }
-
-    val name = "bazelisk-$platform-$arch"
-    return if (OS.CURRENT == OS.Windows) "$name.exe" else name
   }
 }
 
