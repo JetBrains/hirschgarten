@@ -134,17 +134,12 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     return withFlag(builder, TARGET_MODE, !hasTrailer) { chain.parse(builder, level) }
   }
 
-  /** Parses a name. In target mode, it is a target, except `_`. Otherwise the name `glob` gives a glob expression. */
+  /** Parses a name. In target mode, it is a target, except `_`. */
   @JvmStatic
   fun nameExpression(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean {
     if (builder.tokenType !== StarlarkTokenTypes.IDENTIFIER) return false
-    val text = builder.tokenText
-    val type = when {
-      builder.getUserData(TARGET_MODE) == true && text != "_" -> StarlarkElementTypes.TARGET_EXPRESSION
-      text == "glob" -> StarlarkElementTypes.GLOB_EXPRESSION
-      else -> StarlarkElementTypes.REFERENCE_EXPRESSION
-    }
-    doneToken(builder, type)
+    val isTarget = builder.getUserData(TARGET_MODE) == true && builder.tokenText != "_"
+    doneToken(builder, if (isTarget) StarlarkElementTypes.TARGET_EXPRESSION else StarlarkElementTypes.REFERENCE_EXPRESSION)
     return true
   }
 

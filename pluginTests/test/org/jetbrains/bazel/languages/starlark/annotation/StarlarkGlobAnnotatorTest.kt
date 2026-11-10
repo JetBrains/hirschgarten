@@ -279,4 +279,32 @@ class StarlarkGlobAnnotatorTest {
       myFixture.checkHighlighting(true, false, false)
     }
   }
+
+  @Test
+  fun testBareGlobNameIsNotAnnotated() {
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_library(
+          name = "myLib",
+          srcs = glob,
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun testQualifiedGlobIsNotAnnotated() {
+    myFixture.configureByText(
+      "BUILD",
+      """
+      java_library(
+          name = "myLib",
+          srcs = native.glob(["*.missing"]),
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
 }

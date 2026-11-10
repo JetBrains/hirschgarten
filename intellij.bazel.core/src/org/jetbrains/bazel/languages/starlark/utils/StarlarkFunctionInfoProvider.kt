@@ -6,6 +6,7 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.bazel.Environment
 import org.jetbrains.bazel.languages.starlark.bazel.isKwArgs
 import org.jetbrains.bazel.languages.starlark.bazel.isVarArgs
+import org.jetbrains.bazel.languages.starlark.globbing.asGlobCallOrNull
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -61,6 +62,8 @@ class StarlarkGlobalFunctionInfoProvider : StarlarkFunctionInfoProvider {
   }
 
   private fun StarlarkCallExpression.resolvesToValidTarget(): Boolean {
+    // The callee of a glob call resolves to the matched files, not to a user function.
+    if (asGlobCallOrNull() != null) return false
     val calledExpression = getCalledExpression() as? StarlarkReferenceExpression ?: return false
     val resolved = calledExpression.reference?.resolve()
     return resolved != null

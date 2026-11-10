@@ -13,7 +13,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDoubleStar
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkKeyValueExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
@@ -92,7 +91,6 @@ object StarlarkElementTypes {
   val FALSE_LITERAL_EXPRESSION = StarlarkElementType("FALSE_LITERAL_EXPRESSION")
   val FLOAT_LITERAL_EXPRESSION = StarlarkElementType("FLOAT_LITERAL_EXPRESSION")
   val GENERATOR_EXPRESSION = StarlarkElementType("GENERATOR_EXPRESSION")
-  val GLOB_EXPRESSION = StarlarkElementType("GLOB_EXPRESSION")
   val TARGET_EXPRESSION = StarlarkElementType("TARGET_EXPRESSION")
   val INTEGER_LITERAL_EXPRESSION = StarlarkElementType("INTEGER_LITERAL_EXPRESSION")
   val KEY_VALUE_EXPRESSION = StarlarkElementType("KEY_VALUE_EXPRESSION")
@@ -125,7 +123,6 @@ object StarlarkElementTypes {
       FALSE_LITERAL_EXPRESSION,
       FLOAT_LITERAL_EXPRESSION,
       GENERATOR_EXPRESSION,
-      GLOB_EXPRESSION,
       TARGET_EXPRESSION,
       INTEGER_LITERAL_EXPRESSION,
       KEY_VALUE_EXPRESSION,
@@ -182,7 +179,6 @@ object StarlarkElementTypes {
       FALSE_LITERAL_EXPRESSION -> StarlarkFalseLiteralExpression(node)
       FLOAT_LITERAL_EXPRESSION -> StarlarkFloatLiteralExpression(node)
       GENERATOR_EXPRESSION -> StarlarkGeneratorExpression(node)
-      GLOB_EXPRESSION -> StarlarkGlobExpression(node)
       INTEGER_LITERAL_EXPRESSION -> StarlarkIntegerLiteralExpression(node)
       KEY_VALUE_EXPRESSION -> StarlarkKeyValueExpression(node)
       LAMBDA_EXPRESSION -> StarlarkLambdaExpression(node)
