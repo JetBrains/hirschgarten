@@ -21,8 +21,8 @@ import com.jetbrains.cidr.execution.debugger.backend.lldb.LLDBDriverConfiguratio
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.bazel.assertions.assertNotNull
 import org.jetbrains.bazel.assertions.findTarget
-import org.jetbrains.bazel.clion.run.debug.CcDebugInfoDialogTestHandler
 import org.jetbrains.bazel.clion.run.debug.CcDebugInfoCheck
+import org.jetbrains.bazel.clion.run.debug.CcDebugInfoDialogTestHandler
 import org.jetbrains.bazel.clion.run.debug.CcDebugRunner
 import org.jetbrains.bazel.clion.run.debug.setCcDebugInfoDialogHandlerInTests
 import org.jetbrains.bazel.clion.shared.run.debug.CcDebugInfoChoice
@@ -30,6 +30,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
+import java.io.File
 
 /** A bundled debugger of the IDE and its debug profile type. */
 sealed interface CcDebugger {
@@ -69,6 +70,20 @@ sealed interface CcDebugger {
     }
 
     override fun isBundled(): Boolean = GDB.isBundled()
+  }
+
+  /** The bundled `lldb-dap` binary. */
+  object LLDB_DAP : CcDebugger {
+
+    override val debugProfileTypeId: String get() = DapDebugProfileType.ID
+
+    override fun createDebugProfileSettings(): BaseState = DapDebugProfileType().createDefaultState().apply {
+      debuggerExecutable = lldbDapBinary().path
+    }
+
+    override fun isBundled(): Boolean = lldbDapBinary().exists()
+
+    private fun lldbDapBinary(): File = CidrDebuggerPathManager.getLLDBBinFile("bin/lldb-dap", null, true, "lldb")
   }
 }
 

@@ -61,16 +61,28 @@ abstract class CcDebugTest(debugger: CcDebugger, bazelVersion: String) {
     class Bazel9 : Lldb(BazelVersions.BAZEL_9)
   }
 
-  abstract class Dap(bazelVersion: String) : CcDebugTest(CcDebugger.GDB_DAP, bazelVersion) {
+  abstract class GdbDap(bazelVersion: String) : CcDebugTest(CcDebugger.GDB_DAP, bazelVersion) {
 
     @EnabledOnOs(OS.LINUX)
-    class Bazel7 : Dap(BazelVersions.BAZEL_7)
+    class Bazel7 : GdbDap(BazelVersions.BAZEL_7)
 
     @EnabledOnOs(OS.LINUX)
-    class Bazel8 : Dap(BazelVersions.BAZEL_8)
+    class Bazel8 : GdbDap(BazelVersions.BAZEL_8)
 
     @EnabledOnOs(OS.LINUX)
-    class Bazel9 : Dap(BazelVersions.BAZEL_9)
+    class Bazel9 : GdbDap(BazelVersions.BAZEL_9)
+  }
+
+  abstract class LldbDap(bazelVersion: String) : CcDebugTest(CcDebugger.LLDB_DAP, bazelVersion) {
+
+    @EnabledOnOs(OS.LINUX)
+    class Bazel7 : LldbDap(BazelVersions.BAZEL_7)
+
+    @EnabledOnOs(OS.LINUX)
+    class Bazel8 : LldbDap(BazelVersions.BAZEL_8)
+
+    @EnabledOnOs(OS.LINUX)
+    class Bazel9 : LldbDap(BazelVersions.BAZEL_9)
   }
 
   private val projectFixture = clionBazelProjectFixture("clion/debug", buildProject = true, bazelVersion = bazelVersion) {
