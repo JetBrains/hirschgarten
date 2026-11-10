@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 @ApiStatus.Internal
 object StarlarkTokenSets {
@@ -204,5 +205,45 @@ object StarlarkTokenSets {
       StarlarkTokenTypes.SUBSCRIPTION_EXPRESSION,
       StarlarkTokenTypes.TRUE_LITERAL_EXPRESSION,
       StarlarkTokenTypes.TUPLE_EXPRESSION,
+    )
+
+  /** The tokens that come before the first token of a logical line: a statement break, an indent and a dedent. */
+  val LINE_STARTS =
+    TokenSet.create(
+      StarlarkTokenTypes.STATEMENT_BREAK,
+      StarlarkTokenTypes.INDENT,
+      StarlarkTokenTypes.DEDENT,
+    )
+
+  val SPACES_TABS_AND_COMMENTS = TokenSet.orSet(SPACES_AND_TABS, COMMENT)
+
+  /** The tokens between two simple statements: a statement break and `;`. */
+  val STATEMENT_SEPARATORS = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)
+
+  /** The tokens that cannot start a statement. */
+  val NO_STATEMENT_STARTS =
+    TokenSet.orSet(
+      COMPOUND_ASSIGN_OPERATIONS,
+      CLOSE_BRACKETS,
+      TokenSet.create(
+        StarlarkTokenTypes.EQ,
+        StarlarkTokenTypes.COMMA,
+        StarlarkTokenTypes.COLON,
+        StarlarkTokenTypes.DOT,
+        StarlarkTokenTypes.ELSE_KEYWORD,
+        StarlarkTokenTypes.ELIF_KEYWORD,
+        StarlarkTokenTypes.IN_KEYWORD,
+        StarlarkTokenTypes.AND_KEYWORD,
+        StarlarkTokenTypes.OR_KEYWORD,
+        StarlarkTokenTypes.SEMICOLON,
+      ),
+    )
+
+  /** `:`, and the tokens that end a line: a statement break and a dedent. */
+  val COLON_SEARCH_STOPS =
+    TokenSet.create(
+      StarlarkTokenTypes.COLON,
+      StarlarkTokenTypes.STATEMENT_BREAK,
+      StarlarkTokenTypes.DEDENT,
     )
 }

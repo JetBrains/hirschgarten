@@ -1,7 +1,9 @@
 // This is a generated file. Not intended for manual editing.
-package org.jetbrains.bazel.languages.starlark.elements;
+package org.jetbrains.bazel.languages.starlark.parser.generated;
 
 import com.intellij.psi.tree.IElementType;
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType;
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType;
 
 public interface StarlarkTokenTypes {
 

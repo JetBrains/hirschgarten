@@ -10,6 +10,8 @@ jvm_library(
     name = "languages",
     srcs = glob(
         [
+            "gen/**/*.kt",
+            "gen/**/*.java",
             "src/**/*.kt",
             "src/**/*.java",
             "src/**/*.form",

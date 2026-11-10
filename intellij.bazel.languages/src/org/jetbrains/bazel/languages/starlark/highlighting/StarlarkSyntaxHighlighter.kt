@@ -9,8 +9,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.lexer.StarlarkHighlightingLexer
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 @ApiStatus.Internal
 object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {

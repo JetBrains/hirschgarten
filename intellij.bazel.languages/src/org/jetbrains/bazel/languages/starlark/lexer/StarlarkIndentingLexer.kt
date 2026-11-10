@@ -5,7 +5,8 @@ import com.intellij.lexer.LexerBase
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.lexer.generated._StarlarkLexer
+import org.jetbrains.bazel.languages.starlark.parser.generated.StarlarkTokenTypes
 
 /**
  * The lexer adds these tokens to the tokens of the JFlex lexer:
