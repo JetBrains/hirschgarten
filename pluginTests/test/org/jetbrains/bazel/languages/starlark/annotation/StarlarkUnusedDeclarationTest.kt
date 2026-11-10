@@ -81,4 +81,19 @@ class StarlarkUnusedDeclarationTest {
     SyntheticPsiFileSupport.markFile(psiFile.virtualFile)
     myFixture.checkHighlighting(false, false, true)
   }
+
+  @Test
+  fun testQualifiedAssignmentIsNotUnusedVariable() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      def f():
+          foo = struct()
+          foo.bar = 1
+
+      f()
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(false, false, true)
+  }
 }

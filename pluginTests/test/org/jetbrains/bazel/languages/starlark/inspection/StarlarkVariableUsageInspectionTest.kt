@@ -548,4 +548,17 @@ class StarlarkVariableUsageInspectionTest {
     )
     myFixture.checkHighlighting(true, false, false)
   }
+
+  @Test
+  fun `qualified loop target does not bind a variable`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      foo = struct()
+      for foo.x in []:
+          print(<error descr="$descriptionUndefined">x</error>)
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
 }

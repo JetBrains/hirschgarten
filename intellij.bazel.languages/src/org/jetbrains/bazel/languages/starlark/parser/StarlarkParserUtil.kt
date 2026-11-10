@@ -59,8 +59,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
 
   private val TARGET_MODE = Key.create<Boolean>("starlark.parser.target.mode")
 
-  /** True when the current member chain has no subscription, so its last `.name` can be a target. */
-  private val CHAIN_TARGETABLE = Key.create<Boolean>("starlark.parser.chain.targetable")
 
   /**
    * Consumes the `,` between two items of a list. When the `,` is missing and [start] can start the next item,
@@ -122,43 +120,18 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     return result
   }
 
-  /** Parses [parser] in target mode. Each name in it is a target, except in the arguments and the subscriptions. */
+  /** Parses [parser] in target mode. Each plain name in it is a target. */
   @JvmStatic
   fun targetMode(builder: PsiBuilder, level: Int, parser: Parser): Boolean = withFlag(builder, TARGET_MODE, true) { parser.parse(builder, level) }
 
-  @JvmStatic
-  fun plainMode(builder: PsiBuilder, level: Int, parser: Parser): Boolean = withFlag(builder, TARGET_MODE, false) { parser.parse(builder, level) }
 
-  /**
-   * Parses the primary expression of a member chain. In target mode, a look-ahead reads the trailers of the chain.
-   * A `.` or a subscription in the chain makes the primary expression a normal expression.
-   * A subscription also makes each `.name` of the chain a reference.
-   */
+  /** Parses a member chain. In target mode, a chain with a trailer is a normal expression: `a.b = 1` binds no name. */
   @JvmStatic
-  fun memberChain(builder: PsiBuilder, level: Int, primary: Parser): Boolean {
-    if (builder.getUserData(TARGET_MODE) != true) return primary.parse(builder, level)
+  fun memberChain(builder: PsiBuilder, level: Int, chain: Parser): Boolean {
+    if (builder.getUserData(TARGET_MODE) != true) return chain.parse(builder, level)
     val ahead = Lookahead(builder)
-    if (!ahead.skipPrimary()) return primary.parse(builder, level)
-    var hasDot = false
-    var hasSubscription = false
-    while (true) {
-      when (ahead.peek()) {
-        StarlarkTokenTypes.DOT -> {
-          hasDot = true
-          ahead.advance()
-          if (ahead.peek() === StarlarkTokenTypes.IDENTIFIER) ahead.advance()
-        }
-        StarlarkTokenTypes.LPAR -> if (!ahead.skipBrackets()) break
-        StarlarkTokenTypes.LBRACKET -> {
-          hasSubscription = true
-          if (!ahead.skipBrackets()) break
-        }
-        else -> break
-      }
-    }
-    val result = withFlag(builder, TARGET_MODE, !hasDot && !hasSubscription) { primary.parse(builder, level) }
-    builder.putUserData(CHAIN_TARGETABLE, !hasSubscription)
-    return result
+    val hasTrailer = ahead.skipPrimary() && ahead.peek() in CHAIN_TRAILERS
+    return withFlag(builder, TARGET_MODE, !hasTrailer) { chain.parse(builder, level) }
   }
 
   /** Parses a name. In target mode, it is a target, except `_`. Otherwise the name `glob` gives a glob expression. */
@@ -174,11 +147,6 @@ internal object StarlarkParserUtil : GeneratedParserUtilBase() {
     doneToken(builder, type)
     return true
   }
-
-  /** True when the `.name` that the parser just read is a target: the last trailer of a target chain with no subscription. */
-  @JvmStatic
-  fun attributeTarget(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean =
-    builder.getUserData(TARGET_MODE) == true && builder.getUserData(CHAIN_TARGETABLE) == true && builder.tokenType !in CHAIN_TRAILERS
 
   @JvmStatic
   fun atAssignment(builder: PsiBuilder, @Suppress("UNUSED_PARAMETER") level: Int): Boolean =

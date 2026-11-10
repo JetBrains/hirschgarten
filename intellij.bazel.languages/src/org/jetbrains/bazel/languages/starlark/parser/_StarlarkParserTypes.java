@@ -51,7 +51,6 @@ public interface _StarlarkParserTypes {
   IElementType STRING_LITERAL_EXPRESSION = StarlarkParserUtil.elementType("STRING_LITERAL_EXPRESSION");
   IElementType STRING_LOAD_VALUE = StarlarkParserUtil.elementType("STRING_LOAD_VALUE");
   IElementType SUBSCRIPTION_EXPRESSION = StarlarkParserUtil.elementType("SUBSCRIPTION_EXPRESSION");
-  IElementType TARGET_EXPRESSION = StarlarkParserUtil.elementType("TARGET_EXPRESSION");
   IElementType TRUE_LITERAL_EXPRESSION = StarlarkParserUtil.elementType("TRUE_LITERAL_EXPRESSION");
   IElementType TUPLE_EXPRESSION = StarlarkParserUtil.elementType("TUPLE_EXPRESSION");
   IElementType VARIADIC_PARAMETER = StarlarkParserUtil.elementType("VARIADIC_PARAMETER");

@@ -503,6 +503,28 @@ class StarlarkRenameTest {
     )
   }
 
+  @Test
+  fun `should not rename qualified assignment with variable`() {
+    myFixture.configureByText(
+      "defs.bzl",
+      """
+      x = 1
+      foo = struct()
+      foo.x = 2
+      y = x
+      """.trimIndent(),
+    )
+    myFixture.renameStarlarkElement("x", "value")
+    myFixture.checkResult(
+      """
+      value = 1
+      foo = struct()
+      foo.x = 2
+      y = value
+      """.trimIndent(),
+    )
+  }
+
   // endregion
 
   private fun conflictMessage(newName: String, fileName: String): String =

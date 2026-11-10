@@ -155,7 +155,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '(' <<plainMode arguments>>? ')'
+  // '(' arguments? ')'
   public static boolean argument_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "argument_list")) return false;
     if (!nextTokenIs(b, LPAR)) return false;
@@ -169,10 +169,10 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // <<plainMode arguments>>?
+  // arguments?
   private static boolean argument_list_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "argument_list_1")) return false;
-    plainMode(b, l + 1, _StarlarkParser::arguments);
+    arguments(b, l + 1);
     return true;
   }
 
@@ -267,17 +267,6 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     r = p && statement_end(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
-  }
-
-  /* ********************************************************** */
-  // <<attributeTarget>>
-  public static boolean attribute_target(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "attribute_target")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_ | _UPPER_, TARGET_EXPRESSION, "<attribute target>");
-    r = attributeTarget(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
   }
 
   /* ********************************************************** */
@@ -1870,26 +1859,32 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<memberChain primary_level>> member_tail*
-  static boolean member_level(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "member_level")) return false;
+  // primary_level member_tail*
+  static boolean member_chain(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "member_chain")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = memberChain(b, l + 1, _StarlarkParser::primary_level);
-    r = r && member_level_1(b, l + 1);
+    r = primary_level(b, l + 1);
+    r = r && member_chain_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // member_tail*
-  private static boolean member_level_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "member_level_1")) return false;
+  private static boolean member_chain_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "member_chain_1")) return false;
     while (true) {
       int c = current_position_(b);
       if (!member_tail(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "member_level_1", c)) break;
+      if (!empty_element_parsed_guard_(b, "member_chain_1", c)) break;
     }
     return true;
+  }
+
+  /* ********************************************************** */
+  // <<memberChain member_chain>>
+  static boolean member_level(PsiBuilder b, int l) {
+    return memberChain(b, l + 1, _StarlarkParser::member_chain);
   }
 
   /* ********************************************************** */
@@ -2393,7 +2388,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '.' reference_name attribute_target?
+  // '.' reference_name
   public static boolean reference_expression(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "reference_expression")) return false;
     if (!nextTokenIsFast(b, DOT)) return false;
@@ -2401,17 +2396,9 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _LEFT_, REFERENCE_EXPRESSION, null);
     r = consumeTokenFast(b, DOT);
     p = r; // pin = 1
-    r = r && report_error_(b, reference_name(b, l + 1));
-    r = p && reference_expression_2(b, l + 1) && r;
+    r = r && reference_name(b, l + 1);
     exit_section_(b, l, m, r, p, null);
     return r || p;
-  }
-
-  // attribute_target?
-  private static boolean reference_expression_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "reference_expression_2")) return false;
-    attribute_target(b, l + 1);
-    return true;
   }
 
   /* ********************************************************** */
@@ -2811,7 +2798,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '[' <<plainMode subscription_content>> subscription_end
+  // '[' subscription_content subscription_end
   public static boolean subscription_expression(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "subscription_expression")) return false;
     if (!nextTokenIsFast(b, LBRACKET)) return false;
@@ -2819,7 +2806,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _LEFT_, SUBSCRIPTION_EXPRESSION, null);
     r = consumeTokenFast(b, LBRACKET);
     p = r; // pin = 1
-    r = r && report_error_(b, plainMode(b, l + 1, _StarlarkParser::subscription_content));
+    r = r && report_error_(b, subscription_content(b, l + 1));
     r = p && subscription_end(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;

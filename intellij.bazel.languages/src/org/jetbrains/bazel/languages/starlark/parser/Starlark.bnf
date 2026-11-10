@@ -242,20 +242,20 @@ prefix_expression ::= ('+' | '-' | '~') unary_level { pin=1 }
 private power_level ::= member_level power_tail?
 left power_tail ::= '**' unary_level { pin=1 elementType=binary_expression }
 
-private member_level ::= <<memberChain primary_level>> member_tail*
+private member_level ::= <<memberChain member_chain>>
+private member_chain ::= primary_level member_tail*
 private member_tail ::= reference_expression | call_expression | subscription_expression
-left reference_expression ::= '.' reference_name attribute_target? { pin=1 }
+left reference_expression ::= '.' reference_name { pin=1 }
 private reference_name ::= IDENTIFIER
-upper attribute_target ::= <<attributeTarget>> { elementType=target_expression }
 left call_expression ::= argument_list
-left subscription_expression ::= '[' <<plainMode subscription_content>> subscription_end { pin=1 }
+left subscription_expression ::= '[' subscription_content subscription_end { pin=1 }
 private subscription_end ::= ']'
 
 private subscription_content ::= expression slice_suffix? | slice_suffix { recoverWhile=subscription_recover }
 private subscription_recover ::= !(']' | header_colon | STATEMENT_BREAK)
 upper slice_suffix ::= ':' test? (':' test?)? { elementType=slice_expression }
 
-argument_list ::= '(' <<plainMode arguments>>? ')' { pin=1 }
+argument_list ::= '(' arguments? ')' { pin=1 }
 private arguments ::= !')' argument_item <<comma_tail argument_start ')' argument_item>>* ','? { pin=1 }
 private argument_item ::= argument { recoverWhile=argument_recover }
 private argument_recover ::= !(',' | close_bracket | header_colon | STATEMENT_BREAK | argument_start)
@@ -326,7 +326,6 @@ private comprehension_condition ::= lambda_expression | or_level
 
 // The node types that only 'elementType' attributes use.
 fake binary_expression ::= test test
-fake target_expression ::= IDENTIFIER
 fake slice_expression ::= test slice_suffix
 fake generator_expression ::= test comprehension
 fake list_comp_expression ::= test comprehension
