@@ -561,4 +561,17 @@ class StarlarkVariableUsageInspectionTest {
     )
     myFixture.checkHighlighting(true, false, false)
   }
+
+  @Test
+  fun `attribute assignment does not bind a variable`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      foo = struct()
+      foo.x = 1
+      print(<error descr="$descriptionUndefined">x</error>)
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
 }

@@ -4,7 +4,6 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.util.descendantsOfType
 import com.intellij.testFramework.PlatformTestUtil
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.BazelTestApplication
@@ -25,7 +24,7 @@ class StarlarkBindingTest {
         .sortedBy { it.textOffset }
         .joinToString("\n") { identifier ->
           val position = StringUtil.offsetToLineColumn(text, identifier.textOffset)
-          val role = if (identifier.parent is StarlarkTargetExpression) "binding" else "reference"
+          val role = if (identifier.parent.isBinding()) "binding" else "reference"
           "${position.line + 1}:${position.column + 1} ${identifier.text} $role"
         }
     }

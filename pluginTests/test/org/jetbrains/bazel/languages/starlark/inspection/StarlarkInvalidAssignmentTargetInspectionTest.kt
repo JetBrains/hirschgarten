@@ -15,6 +15,7 @@ class StarlarkInvalidAssignmentTargetInspectionTest {
   private val augmentedSeq = StarlarkBundle.message("inspection.description.assignment.target.augmented.sequence")
   private val invalidCall = StarlarkBundle.message("inspection.description.assignment.target.invalid", "f()")
   private val invalidBinary = StarlarkBundle.message("inspection.description.assignment.target.invalid", "a + b")
+  private val invalidStar = StarlarkBundle.message("inspection.description.assignment.target.invalid", "*a")
 
   @BeforeEach
   fun beforeEach() {
@@ -125,6 +126,19 @@ class StarlarkInvalidAssignmentTargetInspectionTest {
   }
 
   @Test
+  fun `augmented assignment on parenthesized sequence should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      <error descr="$augmentedSeq">([a, b])</error> += [1, 2]
+      <error descr="$augmentedSeq">((c, d))</error> += [1, 2]
+      (e) += 1
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `augmented assignment on identifier lhs should not be highlighted`() {
     myFixture.configureByText(
       "test.bzl",
@@ -149,11 +163,120 @@ class StarlarkInvalidAssignmentTargetInspectionTest {
   }
 
   @Test
+  fun `starred targets should not be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      a, *b = [1, 2, 3]
+      for c, *d in [[1, 2, 3]]:
+          pass
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `starred target with invalid operand should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      a, *<error descr="$invalid">1</error> = [1, 2]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `starred target outside a tuple or a list should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      <error descr="$invalidStar">*a</error> = [1]
+      <error descr="$invalidStar">*a</error> += [1]
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
   fun `for loop unpacking target should not be highlighted`() {
     myFixture.configureByText(
       "test.bzl",
       """
       for [a, b] in [[1,2], [3,4]]:
+        pass
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `parenthesized single targets should not be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      (a) = 1
+      (b), c = 1, 2
+      for (k), v in [(1, 2)]:
+        pass
+      for (m) in [1]:
+        pass
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `parenthesized invalid target should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      (<error descr="$invalid">1</error>) = 1
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `valid targets in nested parentheses should not be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      ((a)) = 1
+      (x.f) = 1
+      (a[0]) = 1
+      ((a, b)) = 1, 2
+      ([a, (b)]) = 1, 2
+      (a), [b, (c)] = 1, [2, 3]
+      ((a)) += 1
+      (x.f) += 1
+      (a[0]) += 1
+      for ((k), v) in pairs:
+        pass
+      for ([a, b]) in pairs:
+        pass
+      for ((m)) in items:
+        pass
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(true, false, false)
+  }
+
+  @Test
+  fun `invalid targets in nested parentheses should be highlighted`() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      ((<error descr="$invalid">1</error>)) = 1
+      (<error descr="$invalidCall">f()</error>) = 1
+      (<error descr="$invalidSlice">a[1:2]</error>) = 1
+      (<error descr="$invalidStar">*a</error>) = [1]
+      a, (<error descr="$invalid">1</error>) = 1, 2
+      [a, ((<error descr="$invalid">1</error>))] = 1, 2
+      (<error descr="$invalid">1</error>) += 1
+      (<error descr="$invalidSlice">a[1:2]</error>) += 1
+      (<error descr="$invalidStar">*a</error>) += [1]
+      for (<error descr="$invalid">1</error>), v in pairs:
         pass
       """.trimIndent(),
     )

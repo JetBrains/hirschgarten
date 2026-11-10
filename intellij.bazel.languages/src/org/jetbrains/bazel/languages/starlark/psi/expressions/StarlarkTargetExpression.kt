@@ -8,13 +8,14 @@ import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.PlatformIcons
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport
+import org.jetbrains.bazel.languages.starlark.psi.bindingSite
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableElement
+import org.jetbrains.bazel.languages.starlark.starlarkProjectScope
 import javax.swing.Icon
 
 @ApiStatus.Internal
@@ -36,16 +37,7 @@ class StarlarkTargetExpression(node: ASTNode) :
     return LocalSearchScope(parent)
   }
 
-  fun isTopLevel(): Boolean {
-    val parent = parent
-    val nextParent = parent.parent
-    val assignmentAncestor = when (parent) {
-      is StarlarkAssignmentStatement -> parent
-      is StarlarkTupleExpression if nextParent is StarlarkAssignmentStatement -> nextParent
-      else -> return false
-    }
-    return assignmentAncestor.isTopLevel()
-  }
+  fun isTopLevel(): Boolean = (bindingSite() as? StarlarkAssignmentStatement)?.isTopLevel() == true
 
   private fun isFilePrivate() = name?.startsWith("_") == true
 }
