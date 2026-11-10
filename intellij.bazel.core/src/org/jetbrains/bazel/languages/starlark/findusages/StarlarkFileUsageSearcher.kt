@@ -10,13 +10,13 @@ import com.intellij.psi.search.GlobalSearchScopeUtil
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.UsageSearchContext
 import com.intellij.psi.search.searches.ReferencesSearch.SearchParameters
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.descendantsOfType
 import com.intellij.util.Processor
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.globbing.getGlob
+import org.jetbrains.bazel.languages.starlark.globbing.asGlobCallOrNull
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
 import org.jetbrains.bazel.languages.starlark.references.findBuildFile
@@ -54,9 +54,10 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
       file.name,
     ) { candidate ->
       val starlarkFile = candidate.findPsiFile(file.project) as? StarlarkFile ?: return@processCandidateFilesForText true
-      PsiTreeUtil.processElements(starlarkFile, StarlarkStringLiteralExpression::class.java) { element ->
-        !isReferringToFile(element, file, starlarkFile) || processor.process(BazelLabelReference(element, true))
-      }
+      starlarkFile
+        .descendantsOfType<StarlarkStringLiteralExpression>()
+        .filter { isReferringToFile(it, file, starlarkFile) }
+        .all { processor.process(BazelLabelReference(it, true)) }
     }
 
   /**
@@ -74,13 +75,11 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
     val buildFile = generateSequence(dir) { it.parent }.firstNotNullOfOrNull(::findBuildFile) ?: return
     if (!scope.contains(buildFile)) return
     val starlarkFile = buildFile.findPsiFile(file.project) as? StarlarkFile ?: return
-    PsiTreeUtil.processElements(starlarkFile, StarlarkGlobExpression::class.java) { element ->
-      val ref = when {
-        element.getGlob()?.match(file.virtualFile) == true -> element.reference
-        else -> null
-      }
-      ref == null || processor.process(ref)
-    }
+    val _ = starlarkFile.descendantsOfType<StarlarkCallExpression>()
+      .mapNotNull { it.asGlobCallOrNull() }
+      .filter { it.matcher()?.match(file.virtualFile) == true }
+      .mapNotNull { it.calledExpression.reference }
+      .all { processor.process(it) }
   }
 
   private fun isReferringToFile(

@@ -46,4 +46,13 @@ class BazelGlobalFunctionDocumentationTargetTest {
 
     myFixture.documentationAtCaret().shouldBeNull()
   }
+
+  @Test
+  fun `should display documentation for glob`() {
+    myFixture.configureByText("BUILD", "gl<caret>ob([])")
+
+    val documentation = myFixture.documentationAtCaret().shouldNotBeNull()
+    documentation shouldContain "glob"
+    documentation.length shouldBeGreaterThan "glob".length
+  }
 }

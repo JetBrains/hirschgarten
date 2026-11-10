@@ -11,12 +11,13 @@ import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.languages.starlark.globbing.getGlob
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
+import org.jetbrains.bazel.languages.starlark.globbing.asGlobCallOrNull
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 
 @ApiStatus.Internal
-class StarlarkGlobReference(element: StarlarkGlobExpression) :
-  PsiPolyVariantReferenceBase<StarlarkGlobExpression>(
+class StarlarkGlobReference(element: StarlarkReferenceExpression) :
+  PsiPolyVariantReferenceBase<StarlarkReferenceExpression>(
     element,
     TextRange(0, element.textLength),
   ),
@@ -25,7 +26,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     val project = element.getProject()
 
     try {
-      val files: List<VirtualFile> = element.getGlob()?.execute() ?: emptyList()
+      val files: List<VirtualFile> = (element.parent as? StarlarkCallExpression)?.asGlobCallOrNull()?.matcher()?.execute() ?: emptyList()
 
       val results: MutableList<ResolveResult> = arrayListOf()
       for (file in files) {

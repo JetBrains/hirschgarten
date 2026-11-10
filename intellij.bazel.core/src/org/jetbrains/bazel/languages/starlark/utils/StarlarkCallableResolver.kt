@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.utils
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.languages.starlark.globbing.asGlobCallOrNull
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -16,6 +17,8 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadVa
 @ApiStatus.Internal
 object StarlarkCallableResolver {
   fun resolve(call: StarlarkCallExpression): StarlarkCallable? {
+    // The callee of a glob call resolves to the matched files, not to a callable.
+    if (call.asGlobCallOrNull() != null) return null
     val expression = call.getCalledExpression() ?: return null
 
     findLambdaExpression(expression)?.let { return it }

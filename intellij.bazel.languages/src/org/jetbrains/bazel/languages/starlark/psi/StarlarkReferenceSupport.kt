@@ -4,7 +4,6 @@ import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.psi.PsiReference
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
@@ -26,8 +25,6 @@ interface StarlarkReferenceSupport {
   fun getReference(element: StarlarkNamedArgumentExpression): PsiReference?
 
   fun getOwnReferences(element: StarlarkNamedArgumentExpression): Collection<PsiSymbolReference>
-
-  fun getReference(element: StarlarkGlobExpression): PsiReference
 
   fun getReference(element: StarlarkStringLiteralExpression): PsiReference?
 

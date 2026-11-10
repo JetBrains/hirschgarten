@@ -407,6 +407,18 @@ class StarlarkFunctionCallValidationInspectionTest {
   }
 
   @Test
+  fun `glob call that matches one file should still be validated`() {
+    myFixture.addFileToProject("a.txt", "")
+    myFixture.configureByText(
+      "BUILD",
+      """
+      glob(["a.txt"], <error descr="$parameterNotFound">unknownParam</error> = 1)
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
   fun `kwargs in global function call should not be highlighted`() {
     myFixture.configureByText(
       "MODULE.bazel",
@@ -625,6 +637,23 @@ class StarlarkFunctionCallValidationInspectionTest {
 
 private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvider {
   override fun functions(project: Project): List<BazelGlobalFunction> = listOf(
+      BazelGlobalFunction(
+        name = "glob",
+        doc = null,
+        environment = listOf(Environment.BUILD),
+        params =
+          listOf(
+            BazelGlobalFunctionParameter(
+              name = "include",
+              positional = true,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = "[]",
+              aliases = emptyList(),
+            ),
+          ),
+      ),
       BazelGlobalFunction(
         name = "simple",
         doc = null,

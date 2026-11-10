@@ -5,10 +5,10 @@ import com.intellij.model.psi.PsiSymbolService
 import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
+import org.jetbrains.bazel.languages.starlark.globbing.asGlobCallOrNull
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement.Companion.relativeTo
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceSupport
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -25,6 +25,7 @@ internal class StarlarkReferenceSupportImpl : StarlarkReferenceSupport {
     when {
       isThrowaway() -> null
       isQualified() -> StarlarkQualifiedReferenceExpressionReference(this)
+      (parent as? StarlarkCallExpression)?.asGlobCallOrNull() != null -> StarlarkGlobReference(this)
       (parent as? StarlarkCallExpression)?.getCalledExpression() == this && !isBeforeDot() -> {
         when (val identifier = getNameIdentifier()) {
           null -> null
@@ -48,10 +49,6 @@ internal class StarlarkReferenceSupportImpl : StarlarkReferenceSupport {
 
   override fun getOwnReferences(element: StarlarkNamedArgumentExpression): Collection<PsiSymbolReference> = with(element) {
     name?.let { listOf(BazelGlobalFunctionArgumentReference(this)) } ?: emptyList()
-  }
-
-  override fun getReference(element: StarlarkGlobExpression): PsiReference {
-    return StarlarkGlobReference(element)
   }
 
   override fun getReference(element: StarlarkStringLiteralExpression): PsiReference? {

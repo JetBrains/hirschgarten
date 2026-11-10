@@ -29,7 +29,7 @@ FILE
   PsiWhiteSpace('\n')
   StarlarkExpressionStatement(EXPRESSION_STATEMENT)
     StarlarkCallExpression(CALL_EXPRESSION)
-      StarlarkGlobExpression(GLOB_EXPRESSION)
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
         PsiElement(identifier)('glob')
       StarlarkArgumentList(ARGUMENT_LIST)
         PsiElement(()('(')

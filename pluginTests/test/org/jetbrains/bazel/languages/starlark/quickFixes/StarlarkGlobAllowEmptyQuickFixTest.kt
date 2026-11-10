@@ -38,4 +38,11 @@ class StarlarkGlobAllowEmptyQuickFixTest {
     myFixture.launchAction(myFixture.findSingleIntention(StarlarkBundle.message("quickfix.glob.allow.empty")))
     myFixture.checkResultByFile("UnresolvedGlob.bzl.after")
   }
+
+  @Test
+  fun testNoArgsGlobAllowEmptyQuickfix() {
+    myFixture.configureByFile("NoArgsGlob.bzl")
+    myFixture.launchAction(myFixture.findSingleIntention(StarlarkBundle.message("quickfix.glob.allow.empty")))
+    myFixture.checkResultByFile("NoArgsGlob.bzl.after")
+  }
 }

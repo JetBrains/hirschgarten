@@ -63,6 +63,8 @@ class StarlarkElementGenerator(val project: Project) {
     return argumentNode
   }
 
+  fun createAllowEmptyArgument(): ASTNode = createNamedArgument("allow_empty = True")
+
   private fun createDummyFile(contents: String): PsiFile {
     val factory = PsiFileFactory.getInstance(project)
     val virtualFile = LightVirtualFile(DUMMY_FILENAME, StarlarkFileType, contents)
