@@ -10,15 +10,13 @@ import com.intellij.lang.PsiStructureViewFactory
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
+import org.jetbrains.bazel.languages.starlark.psi.bindingSite
+import org.jetbrains.bazel.languages.starlark.psi.boundNames
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.isBazelFileTopLevelCall
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
@@ -53,10 +51,8 @@ private class StarlarkStructureViewModel(file: StarlarkFile, editor: Editor?) :
 
   override fun isAlwaysLeaf(element: StructureViewTreeElement): Boolean = element !is StarlarkFileStructureViewElement
 
-  private fun isTopLevelAssignmentTarget(target: StarlarkTargetExpression): Boolean {
-    val assignment = PsiTreeUtil.getParentOfType(target, StarlarkAssignmentStatement::class.java) ?: return false
-    return assignment.isTopLevel() && target in getAssignmentTargets(assignment.leftHandSide())
-  }
+  private fun isTopLevelAssignmentTarget(target: StarlarkTargetExpression): Boolean =
+    (target.bindingSite() as? StarlarkAssignmentStatement)?.isTopLevel() == true
 }
 
 // presentableText is the Structure item name, locationString is shown gray next to the item name
@@ -76,7 +72,7 @@ private class StarlarkFileStructureViewElement(file: StarlarkFile) : PsiTreeElem
         when (child) {
           is StarlarkFunctionDeclaration -> add(StarlarkStructureItem(child))
           is StarlarkAssignmentStatement -> {
-            val targets = getAssignmentTargets(child.leftHandSide())
+            val targets = child.leftHandSide()?.boundNames().orEmpty()
             targets.sortedBy { it.textOffset }.mapTo(this) { StarlarkStructureItem(it) }
           }
           is StarlarkExpressionStatement -> {
@@ -87,13 +83,6 @@ private class StarlarkFileStructureViewElement(file: StarlarkFile) : PsiTreeElem
       }
     }
   }
-}
-
-private fun getAssignmentTargets(element: PsiElement?): List<StarlarkTargetExpression> = when (element) {
-  is StarlarkTargetExpression -> listOf(element)
-  is StarlarkTupleExpression, is StarlarkListLiteralExpression, is StarlarkParenthesizedExpression ->
-    element.children.flatMap { getAssignmentTargets(it) }
-  else -> emptyList()
 }
 
 private class StarlarkStructureItem(element: StarlarkNamedElement) : PsiTreeElementBase<StarlarkNamedElement>(element) {

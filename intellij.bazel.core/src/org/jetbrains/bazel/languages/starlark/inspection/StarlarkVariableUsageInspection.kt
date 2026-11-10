@@ -13,23 +13,20 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils.nearestRelevantBeforeOperator
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.boundNames
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
+import org.jetbrains.bazel.languages.starlark.psi.isBinding
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
@@ -81,34 +78,10 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
     private fun shouldAnalyzeReference(ref: StarlarkReferenceExpression): Boolean {
       val name = ref.name ?: return false
       if (name == "_") return false
-      if (isAssignmentBinding(ref)) return false
+      if (ref.isBinding()) return false
       if (isQualifiedReference(ref)) return false
       if (name in knownGlobalNames) return false
       return true
-    }
-
-    private fun isAssignmentBinding(ref: StarlarkReferenceExpression): Boolean {
-      val assignment = PsiTreeUtil.getParentOfType(ref, StarlarkAssignmentStatement::class.java) ?: return false
-      val lhs = assignment.leftHandSide() ?: return false
-
-      fun containsReference(target: PsiElement): Boolean =
-        when (target) {
-          ref -> true
-          is StarlarkSubscriptionExpression -> false
-          is StarlarkParenthesizedExpression -> target.getTuple()?.let { containsReference(it) } == true
-          is StarlarkTupleExpression -> target.getTargetExpressions().any { containsReference(it) }
-          is StarlarkListLiteralExpression -> {
-            var child = nearestRelevantBeforeOperator(target.firstChild)
-            while (child != null) {
-              if (containsReference(child)) return true
-              child = nearestRelevantBeforeOperator(child.nextSibling)
-            }
-            false
-          }
-          else -> false
-        }
-
-      return containsReference(lhs)
     }
 
     private fun isQualifiedReference(ref: StarlarkReferenceExpression): Boolean {
@@ -273,20 +246,8 @@ class StarlarkVariableUsageInspection : LocalInspectionTool() {
         fun putCallableParameters(scope: PsiElement, callable: StarlarkCallable) =
           callable.getParameters().forEach { putFirstBinding(scope, it.name, it.textOffset) }
 
-        fun putTargetBindings(scope: PsiElement?, target: PsiElement?) {
-          when (target) {
-            is StarlarkTargetExpression, is StarlarkReferenceExpression -> putFirstBinding(scope, target.name, target.textOffset)
-            is StarlarkParenthesizedExpression -> putTargetBindings(scope, target.getTuple())
-            is StarlarkTupleExpression -> target.getTargetExpressions().forEach { putFirstBinding(scope, it.name, it.textOffset) }
-            is StarlarkListLiteralExpression -> {
-              var child = nearestRelevantBeforeOperator(target.firstChild)
-              while (child != null) {
-                putTargetBindings(scope, child)
-                child = nearestRelevantBeforeOperator(child.nextSibling)
-              }
-            }
-          }
-        }
+        fun putTargetBindings(scope: PsiElement?, target: PsiElement?) =
+          target?.boundNames()?.forEach { putFirstBinding(scope, it.name, it.textOffset) }
 
         fun loadSymbolLocalName(loadValue: StarlarkLoadValue): String? = when (loadValue) {
           is StarlarkNamedLoadValue -> loadValue.name

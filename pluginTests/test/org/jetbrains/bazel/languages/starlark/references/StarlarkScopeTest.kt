@@ -545,6 +545,55 @@ class StarlarkScopeTest {
   }
 
   @Test
+  fun `resolve to list target nested in tuple`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      a, [<target>b] = f()
+      <caret>b
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to parenthesized name target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      (<target>p) = 1
+      <caret>p
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to list loop target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      for [a, <target>b] in []:
+          print(<caret>b)
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to parenthesized loop target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      for (<target>x) in []:
+          print(<caret>x)
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to list comprehension target`() {
+    myFixture.verifyTargetOfReferenceAtCaret(
+      """
+      [<caret>j for [i, <target>j] in []]
+      """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `resolve to nested tuple target`() {
     myFixture.verifyTargetOfReferenceAtCaret(
       """

@@ -17,9 +17,8 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.index.StarlarkLoadsIndex
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
+import org.jetbrains.bazel.languages.starlark.psi.bindingSite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
@@ -87,16 +86,7 @@ internal class StarlarkDeclarationAnnotator : Annotator, DumbAware {
     else -> false
   }
 
-  private fun StarlarkTargetExpression.isInsideAssignStatement(): Boolean {
-    var current: PsiElement = this
-    while (true) {
-      when (current.parent) {
-        is StarlarkAssignmentStatement -> return true
-        is StarlarkTupleExpression, is StarlarkParenthesizedExpression -> current = current.parent
-        else -> return false
-      }
-    }
-  }
+  private fun StarlarkTargetExpression.isInsideAssignStatement(): Boolean = bindingSite() is StarlarkAssignmentStatement
 
   private fun AnnotationHolder.annotateUnused(element: PsiElement, name: String) =
     newAnnotation(
