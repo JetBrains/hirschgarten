@@ -155,6 +155,27 @@ class StarlarkStructureViewTest {
   }
 
   @Test
+  fun `outline drops a variable when its target becomes qualified`(): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      withModel("VALUE = 1\n") { model ->
+        replaceInDocument(0, 0, "foo.")
+        assertEquals(emptyList<String?>(), names(model))
+      }
+    }
+  }
+
+  @Test
+  fun `outline adds a variable when a comparison becomes an assignment`(): Unit = timeoutRunBlocking {
+    withContext(Dispatchers.EDT) {
+      withModel("VALUE == 1\n") { model ->
+        assertEquals(emptyList<String?>(), names(model))
+        replaceInDocument(6, 8, "=")
+        assertEquals(listOf("VALUE"), names(model))
+      }
+    }
+  }
+
+  @Test
   fun `BUILD file shows rule targets and the package label`(): Unit = timeoutRunBlocking {
     val buildFile = withContext(Dispatchers.EDT) {
       codeInsightFixture.addFileToProject("MODULE.bazel", "")
@@ -187,6 +208,14 @@ class StarlarkStructureViewTest {
   }
 
   private fun names(model: StructureViewModel): List<String?> = model.root.children.map { it.presentation.presentableText }
+
+  private fun replaceInDocument(start: Int, end: Int, text: String) {
+    val document = codeInsightFixture.editor.document
+    WriteCommandAction.runWriteCommandAction(codeInsightFixture.project) {
+      document.replaceString(start, end, text)
+      PsiDocumentManager.getInstance(codeInsightFixture.project).commitDocument(document)
+    }
+  }
 
   private fun withModel(text: String, check: (StructureViewModel) -> Unit) {
     withModel(codeInsightFixture.configureByText("defs.bzl", text), check)

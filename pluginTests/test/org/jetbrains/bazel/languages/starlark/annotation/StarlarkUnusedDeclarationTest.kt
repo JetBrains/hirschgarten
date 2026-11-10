@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.annotation
 
 import com.intellij.codeInsight.daemon.SyntheticPsiFileSupport
+import com.intellij.lang.annotation.HighlightSeverity
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.junit.jupiter.api.Test
@@ -81,6 +83,42 @@ class StarlarkUnusedDeclarationTest {
     SyntheticPsiFileSupport.markFile(psiFile.virtualFile)
     myFixture.checkHighlighting(false, false, true)
   }
+
+  @Test
+  fun testAugmentedAssignmentIsARead() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      def f():
+          x = 1
+          x += 1
+
+      f()
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting(false, false, true)
+  }
+
+  @Test
+  fun testUnusedVariableWarningGoesAwayWhenTheTargetBecomesQualified() {
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      def f():
+          foo = struct()
+          <caret>x = 1
+          return foo
+
+      f()
+      """.trimIndent(),
+    )
+    weakWarnings() shouldBe listOf("Variable \"x\" is never used")
+    myFixture.type("foo.")
+    weakWarnings() shouldBe emptyList()
+  }
+
+  private fun weakWarnings(): List<String?> =
+    myFixture.doHighlighting(HighlightSeverity.WEAK_WARNING).map { it.description }
 
   @Test
   fun testQualifiedAssignmentIsNotUnusedVariable() {

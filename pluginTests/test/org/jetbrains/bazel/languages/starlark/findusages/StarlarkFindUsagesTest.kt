@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
+import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.psi.util.PsiTreeUtil
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
@@ -262,6 +264,46 @@ class StarlarkFindUsagesTest {
 
   // endregion
 
+  // region Caret position
+
+  @Test
+  fun `should find usages of the first binding from a read`() {
+    myFixture.findUsagesAtCaret(
+      """
+      def f():
+          x = 1
+          x = 2
+          return <caret>x
+      """.trimIndent(),
+    ) shouldBe myFixture.offsetsOf("x = 2", "return x")
+  }
+
+  @Test
+  fun `should find usages of the first binding from the binding`() {
+    myFixture.findUsagesAtCaret(
+      """
+      def f():
+          <caret>x = 1
+          x = 2
+          return x
+      """.trimIndent(),
+    ) shouldBe myFixture.offsetsOf("x = 2", "return x")
+  }
+
+  @Test
+  fun `should find usages of the first binding from a reassignment`() {
+    myFixture.findUsagesAtCaret(
+      """
+      def f():
+          x = 1
+          <caret>x = 2
+          return x
+      """.trimIndent(),
+    ) shouldBe myFixture.offsetsOf("x = 2", "return x")
+  }
+
+  // endregion
+
   // region Unrelated results
 
   @Test
@@ -286,6 +328,20 @@ class StarlarkFindUsagesTest {
 
   // endregion
 }
+
+private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.findUsagesAtCaret(text: String): List<Int> {
+  configureByText("defs.bzl", text)
+  return runReadActionBlocking {
+    val target = TargetElementUtil.findTargetElement(editor, TargetElementUtil.getInstance().allAccepted)
+      ?: error("No target element at the caret")
+    findUsages(target).map { it.element!!.textOffset }.sorted()
+  }
+}
+
+private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.offsetsOf(vararg fragments: String): List<Int> =
+  runReadActionBlocking {
+    fragments.map { fragment -> file.text.indexOf(fragment) + fragment.indexOf("x") }
+  }
 
 private fun com.intellij.testFramework.fixtures.CodeInsightTestFixture.findStarlarkUsages(name: String) =
   runReadActionBlocking {
