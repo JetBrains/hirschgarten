@@ -8,7 +8,7 @@ FILE
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
   PsiWhiteSpace('\n')
   PsiErrorElement:Statement expected, found while
@@ -20,7 +20,7 @@ FILE
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
   PsiWhiteSpace('\n')
   PsiErrorElement:Statement expected, found try
@@ -30,7 +30,7 @@ FILE
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
   PsiWhiteSpace('\n')
   PsiErrorElement:Statement expected, found except
@@ -46,7 +46,7 @@ FILE
   PsiWhiteSpace('\n    ')
   PsiErrorElement:Unexpected indent
     <empty list>
-  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+  StarlarkPassStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
   PsiWhiteSpace('\n')
   PsiErrorElement:Statement expected, found import
