@@ -22,6 +22,7 @@ import org.jetbrains.bazel.test.framework.annotation.EnabledOnBazel
 import org.jetbrains.bsp.protocol.extractData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.EnabledOnOs
 import org.junit.jupiter.api.condition.OS
 
@@ -29,10 +30,9 @@ import org.junit.jupiter.api.condition.OS
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVersionedTest {
 
-  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
+  @DisabledOnOs(OS.MAC, disabledReason = "apple_support requests an outdated macOS SDK on Bazel 7")
   class Bazel7 : CcLocalToolchainTest(BazelVersions.BAZEL_7)
 
-  @EnabledOnOs(OS.LINUX, OS.WINDOWS)
   class Bazel8 : CcLocalToolchainTest(BazelVersions.BAZEL_8)
 
   class Bazel9 : CcLocalToolchainTest(BazelVersions.BAZEL_9)
