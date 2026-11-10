@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.tests.ui
 
-import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
@@ -16,6 +15,7 @@ import org.jetbrains.bazel.data.preCacheBazelisk
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.waitForSyncSucceeded
+import org.jetbrains.bazel.base.withBazelFeatureFlag
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -194,10 +194,9 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
   @Test
   fun `module names in brackets are not shown on content roots`() {
     createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
+      .withBazelFeatureFlag(BazelFeatureFlags.MERGE_SOURCE_ROOTS, false)
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
-        setRegistry(BazelFeatureFlags.MERGE_SOURCE_ROOTS, false.toString())
-
         ideFrame {
           syncBazelProject()
           waitForIndicators(5.minutes)
