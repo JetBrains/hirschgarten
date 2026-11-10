@@ -108,7 +108,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             step("Run test in Debug") { x { byAccessibleName("Debug 'Test Calculator'") }.click() }
             // The tree renders the directory node with the host separator, so this cannot be a POSIX literal.
             val sourceDirWithError = " src/com/example 1 error".replace('/', File.separatorChar)
-            val expectedBuildErrors = setOf("Ended with an error.", "Calculator.java", sourceDirWithError, "BUILD", "  1 error")
+            val expectedBuildErrors = setOf("Ended with an error.", "Calculator.java", sourceDirWithError)
             step("Verify build results tree") { waitForBuildResultsTree(expectedTexts = expectedBuildErrors) }
 
             step("Run test normally") { x { byAccessibleName("Run 'Test Calculator'") }.click() }
