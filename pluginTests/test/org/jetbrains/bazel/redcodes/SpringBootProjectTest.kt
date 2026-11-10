@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.redcodes
 
-import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.readAction
 import com.intellij.spring.SpringInspectionsRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.workspace.model.matchers.shouldBeEqual
@@ -23,8 +22,9 @@ class SpringBootProjectTest {
   @Test
   @DisabledOnOs(OS.WINDOWS) // coursier
   fun testGutterMarks(): Unit = runBlocking(Dispatchers.Default) {
-    val gutters = withContext(Dispatchers.EDT) {
-      fixture.findAllGutters("src/main/java/com/example/greeting/GreetingModule.java").map { gutter ->
+    val marks = fixture.findAllGutters("src/main/java/com/example/greeting/GreetingModule.java")
+    val gutters = readAction {
+      marks.map { gutter ->
         gutter.tooltipText ?: "<null>"
       }
     }
