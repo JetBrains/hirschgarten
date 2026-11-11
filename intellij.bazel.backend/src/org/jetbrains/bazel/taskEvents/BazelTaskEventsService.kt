@@ -85,6 +85,8 @@ class BazelTaskEventsService(private val project: Project) : BazelTaskEventsHand
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
     withListener(params.taskId) {
       params.diagnostics.forEach { diag ->
+        val summary = diag.message.split('\n').take(2).joinToString(" ")
+        val labelReference = if (diag.targetLabel.isSynthetic) "" else "\n\nLabel: ${diag.targetLabel}"
         onDiagnostic(
           params.taskId,
           params.textDocument?.path,
@@ -98,8 +100,8 @@ class BazelTaskEventsService(private val project: Project) : BazelTaskEventsHand
             DiagnosticSeverity.HINT -> Kind.INFO
             null -> Kind.SIMPLE
           },
-          diag.message,
-          null,
+          summary,
+          diag.message + labelReference,
         )
       }
     }
