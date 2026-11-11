@@ -42,6 +42,22 @@ class CcHeaderLanguageTest {
   }
 
   @Test
+  fun testHeaderOnlyTargetKeepsItsHeader(): Unit = timeoutRunBlocking {
+    val file = project.rootDir.findFileByRelativePath("headeronly/lib.h").assertNotNull()
+
+    val configuration = project.findResolveConfiguration("headeronly/lib.h")
+    assertThat(configuration.getDeclaredLanguageKind(file)).isEqualTo(CLanguageKind.CPP)
+  }
+
+  @Test
+  fun testHeaderOfMixedLanguageTargetTakesTheDefault(): Unit = timeoutRunBlocking {
+    val file = project.rootDir.findFileByRelativePath("mixed/lib.h").assertNotNull()
+
+    val configuration = project.findResolveConfiguration("mixed/lib.h")
+    assertThat(configuration.getDeclaredLanguageKind(file)).isEqualTo(CLanguageKind.CPP)
+  }
+
+  @Test
   fun testCppSourceHeaderOnCTarget(): Unit = timeoutRunBlocking {
     val file = project.rootDir.findFileByRelativePath("c/lib.h").assertNotNull()
 

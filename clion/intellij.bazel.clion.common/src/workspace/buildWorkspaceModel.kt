@@ -59,11 +59,10 @@ internal suspend fun buildWorkspaceModel(model: OCWorkspace.ModifiableModel, con
       addFile(file, languageKind)
     }
 
-    // headers might contain sources files, which are only guaranteed to compile in the same language as the sources
+    // A header has no language of its own, so it takes the one language of the sources of its target.
+    val headerLanguageKind = sourceLanguageKinds.singleOrNull() ?: DEFAULT_LANGUAGE_KIND
     for (file in config.headers) {
-      for (language in sourceLanguageKinds) {
-        addFile(file, language)
-      }
+      addFile(file, headerLanguageKind)
     }
 
     workspaceConfig.getLanguageCompilerSettings(CLanguageKind.C).apply {

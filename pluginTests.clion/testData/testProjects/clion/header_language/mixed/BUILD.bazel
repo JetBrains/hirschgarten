@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# Compiles C and C++. The C file comes last, so taking the last source would give the header C.
+cc_library(
+    name = "lib",
+    srcs = [
+        "b.cc",
+        "a.c",
+    ],
+    hdrs = ["lib.h"],
+    copts = ["-DMIXED=1"],
+)
