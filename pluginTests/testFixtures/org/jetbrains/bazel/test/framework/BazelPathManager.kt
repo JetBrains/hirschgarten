@@ -33,12 +33,6 @@ object BazelPathManager {
       .resolve("testRegistry")
   }
 
-  /** The Bazel downloader config of the tests. It sends the downloads through the JetBrains cache redirector. */
-  val downloaderConfig: Path by lazy {
-    testDataRoot
-      .resolve("bazel_downloader.cfg")
-  }
-
   val integrationTestProjectRoot: Path by lazy {
     pluginSourceRoot.resolve("integrationTests")
   }

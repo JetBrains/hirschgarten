@@ -38,7 +38,7 @@ internal class BazelTestRcIsolationTest {
 
   @Test
   fun `large downloads go through the cache redirector`() {
-    assertThat(BazelPathManager.downloaderConfig.readLines())
+    assertThat(BazelPathManager.testProjectsRoot.resolve("base").resolve(BazelTestCaches.DOWNLOADER_CONFIG_NAME).readLines())
       .contains("rewrite ^dl\\.google\\.com/(.*)$ https://cache-redirector.jetbrains.com/dl.google.com/$1")
   }
 
@@ -48,11 +48,11 @@ internal class BazelTestRcIsolationTest {
     val outputBase = projectRoot.resolve("output-base")
 
     bazelVersion.writeText("7.7.1")
-    BazelTestCaches.configureBazelCaches(projectRoot, "redcodes/go_strict_deps", outputBase)
+    BazelTestCaches.configureBazelCaches(projectRoot, "redcodes/go_strict_deps", outputBase, useDownloaderConfig = true)
     assertThat(projectRoot.resolve(".bazelrc").readLines()).anyMatch { it.startsWith("common --experimental_downloader_config=") }
 
     bazelVersion.writeText("9.1.0")
-    BazelTestCaches.configureBazelCaches(projectRoot, "redcodes/go_strict_deps", outputBase)
+    BazelTestCaches.configureBazelCaches(projectRoot, "redcodes/go_strict_deps", outputBase, useDownloaderConfig = true)
     assertThat(projectRoot.resolve(".bazelrc").readLines())
       .anyMatch { it.startsWith("common --downloader_config=") }
       .noneMatch { it.startsWith("common --experimental_downloader_config=") }

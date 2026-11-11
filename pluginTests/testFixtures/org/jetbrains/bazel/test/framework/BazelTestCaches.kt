@@ -21,6 +21,9 @@ object BazelTestCaches {
   private const val BAZEL_SETTINGS_START = "# BEGIN IntelliJ Bazel unit-test settings"
   private const val BAZEL_SETTINGS_END = "# END IntelliJ Bazel unit-test settings"
 
+  /** The name of the Bazel downloader config in the root of a test project. */
+  const val DOWNLOADER_CONFIG_NAME: String = "bazel_downloader.cfg"
+
   // The tmpdir is the same for every test, because --action_env=TMP is part of the action key.
   private fun testSettings(jvmToolchains: Boolean): List<String> {
     val bazelCachesPath: String = run {
@@ -46,12 +49,16 @@ object BazelTestCaches {
    *
    * Call it after the copy of the test project. The block keeps the lines of a project `.bazelrc`, and it comes after
    * them, so its settings win.
+   *
+   * When [useDownloaderConfig] is set, Bazel reads the [DOWNLOADER_CONFIG_NAME] file in [projectRoot].
+   * The base test project holds the file, and it sends the downloads through the JetBrains cache redirector.
    */
   fun configureBazelCaches(
     projectRoot: Path,
     testProjectPath: String,
     outputBase: Path,
     registries: List<URI> = defaultRegistries,
+    useDownloaderConfig: Boolean = false,
     jvmToolchains: Boolean = true,
   ) {
     val cacheRoot = testCacheRoot()
@@ -77,7 +84,10 @@ object BazelTestCaches {
         add("common --repo_contents_cache=${repoContentsCache.toBazelRcPath()}")
       }
       add("common --disk_cache=${diskCache.toBazelRcPath()}")
-      add("common --${bazelVersion.downloaderConfigFlag()}=${BazelPathManager.downloaderConfig.toBazelRcPath()}")
+      if (useDownloaderConfig) {
+        // Bazel resolves a relative path against the workspace root.
+        add("common --${bazelVersion.downloaderConfigFlag()}=$DOWNLOADER_CONFIG_NAME")
+      }
       registries.forEach { add("common --registry=$it") }
     }
     writeManagedBazelrcBlock(projectRoot.resolve(".bazelrc"), lines)
