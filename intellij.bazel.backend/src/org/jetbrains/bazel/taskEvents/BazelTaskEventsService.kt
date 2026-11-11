@@ -99,6 +99,7 @@ class BazelTaskEventsService(private val project: Project) : BazelTaskEventsHand
             null -> Kind.SIMPLE
           },
           diag.message,
+          null,
         )
       }
     }

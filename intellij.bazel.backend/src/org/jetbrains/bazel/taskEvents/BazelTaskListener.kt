@@ -17,6 +17,7 @@ interface BazelTaskListener {
     character: Int,
     severity: MessageEvent.Kind,
     message: String,
+    description: String?,
   ) {
   }
 
