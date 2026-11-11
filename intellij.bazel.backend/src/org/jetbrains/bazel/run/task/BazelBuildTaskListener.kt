@@ -45,6 +45,7 @@ class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskLi
     character: Int,
     severity: MessageEvent.Kind,
     message: String,
+    description: String?,
   ) {
     taskConsole.addDiagnosticMessage(
       taskId = taskId,
@@ -55,7 +56,7 @@ class BazelBuildTaskListener(private val taskConsole: TaskConsole) : BazelTaskLi
       line = line,
       column = character,
       message = message,
-      description = null,
+      description = description,
       severity = severity,
     )
   }
