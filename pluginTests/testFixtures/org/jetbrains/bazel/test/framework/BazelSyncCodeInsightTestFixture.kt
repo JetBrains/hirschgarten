@@ -2,8 +2,10 @@ package org.jetbrains.bazel.test.framework
 
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
 import com.intellij.python.pyproject.model.evolution.EvoPyProjectModel
+import com.intellij.testFramework.IndexingTestUtil
 import com.intellij.testFramework.common.runAllSuspend
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -13,6 +15,7 @@ import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
+import com.intellij.testFramework.refreshVfs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
@@ -24,9 +27,14 @@ import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.test.framework.testproject.workspaceRootFixture
 import java.net.URI
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.createParentDirectories
 
 private val LOG = fileLogger()
+
+val useJetBrainsCacheRedirector: AtomicBoolean = AtomicBoolean(true)
 
 /**
  * This fixture provides necessary functionality to perform a full Bazel sync in tests without a full IDE.
@@ -101,7 +109,7 @@ fun bazelProjectFixture(
     val projectRoot = testBazel.workspaceRoot
     LOG.info("Initialized the Bazel project ${project.name} at $projectRoot")
 
-    BazelTestProject.copy(project, projectRoot, projectPath, testBazel.outputBase, projectsRoot, jvmToolchains, bazelVersion, registries)
+    copyTestProjectDir(project, projectRoot, projectPath, testBazel.outputBase, projectsRoot, jvmToolchains, bazelVersion, registries)
     if (projectView != null) {
       applyProjectView(project, projectRoot, projectView)
     }
@@ -182,7 +190,7 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override fun shouldTrackVirtualFilePointers(): Boolean = false
 
   override fun copyBazelTestProject(path: String) {
-    BazelTestProject.copy(project, projectRoot, path, outputBase)
+    copyTestProjectDir(project, projectRoot, path, outputBase)
     testProjectPath = path
   }
 
@@ -193,7 +201,9 @@ class BazelSyncCodeInsightTestFixtureImpl(
   override fun setBazelVersion(version: String) {
     writeBazelVersion(projectRoot, version)
     // The cache settings depend on the Bazel version.
-    testProjectPath?.let { BazelTestCaches.configureBazelCaches(projectRoot, it, outputBase) }
+    testProjectPath?.let {
+      BazelTestCaches.configureBazelCaches(projectRoot, it, outputBase, useDownloaderConfig = useJetBrainsCacheRedirector.get())
+    }
   }
 
   override suspend fun performBazelSync(scope: ProjectSyncScope) {
@@ -217,3 +227,64 @@ class BazelSyncCodeInsightTestFixtureImpl(
     }
   }
 }
+
+/**
+ * Copies the base project, then the test project at [path], into [projectRoot].
+ *
+ * [path] is relative to [projectsRoot]. The base project always comes from the shared
+ * [BazelPathManager.testProjectsRoot], and it is copied first, so a file from [path] overwrites a base
+ * file with the same name.
+ *
+ * It also writes the Bazel settings and caches, refreshes the VFS, and waits for the indexes of
+ * [project]. When [jvmToolchains] is set, it adds the JVM toolchains: the Java runtime and the Kotlin
+ * standard library. A pure C++ project does not need them.
+ *
+ * [outputBase] is the temporary Bazel output base owned by the test fixture.
+ * [bazelVersion] replaces the `.bazelversion` file of the test project.
+ *
+ * [registries] are URI to local or remote registries used by the test fixture. If set and BCR should be
+ * accessible, it needs to be provided here as well. The default is [BazelTestCaches.defaultRegistries].
+ */
+private fun copyTestProjectDir(
+  project: Project,
+  projectRoot: Path,
+  path: String,
+  outputBase: Path,
+  projectsRoot: Path = BazelPathManager.testProjectsRoot,
+  jvmToolchains: Boolean = true,
+  bazelVersion: String? = null,
+  registries: List<URI> = BazelTestCaches.defaultRegistries,
+) {
+  LOG.info("Copying the test project $path into $projectRoot (jvmToolchains=$jvmToolchains)")
+  BazelServerProbe.registerWorkspace(projectRoot)
+  copyDir(BazelPathManager.testProjectsRoot.resolve("base"), projectRoot)
+  copyDir(projectsRoot.resolve(path), projectRoot)
+  if (bazelVersion != null) {
+    writeBazelVersion(projectRoot, bazelVersion)
+  }
+  BazelTestCaches.configureBazelCaches(
+    projectRoot,
+    path,
+    outputBase,
+    registries,
+    useDownloaderConfig = useJetBrainsCacheRedirector.get(),
+    jvmToolchains = jvmToolchains,
+  )
+  if (jvmToolchains) {
+    LOG.info("Adding the JVM toolchains")
+    BazelTestCaches.findKotlinStdlibInClasspath()
+      .copyTo(projectRoot.resolve("toolchains").resolve("kotlin-stdlib.jar").createParentDirectories())
+  }
+
+  LOG.info("Refreshing the VFS of $projectRoot")
+  projectRoot.refreshVfs()
+  IndexingTestUtil.waitUntilIndexesAreReady(project)
+}
+
+// FileUtil.copyDir is the same recursive copy the platform CodeInsightTestFixture uses; it needs java.io.File.
+// Supports overwrite
+@Suppress("SSBasedInspection")
+private fun copyDir(from: Path, to: Path) {
+  FileUtil.copyDir(from.toFile(), to.toFile())
+}
+

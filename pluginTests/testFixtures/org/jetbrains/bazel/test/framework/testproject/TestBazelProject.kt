@@ -43,6 +43,7 @@ import org.jetbrains.bazel.test.framework.installIdeProxyConfiguration
 import org.jetbrains.bazel.test.framework.installStableJdkPaths
 import org.jetbrains.bazel.test.framework.installTestBazeliskDownload
 import org.jetbrains.bazel.test.framework.installTestConsoleService
+import org.jetbrains.bazel.test.framework.useJetBrainsCacheRedirector
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
@@ -99,7 +100,8 @@ private fun Project.installInternal(
     installTestConsoleService(project, lifetime)
     installHostRcIsolation(lifetime)
     installStableJdkPaths(lifetime)
-    installTestBazeliskDownload(lifetime)
+    if (useJetBrainsCacheRedirector.get())
+      installTestBazeliskDownload(lifetime)
   }
   else {
     val moduleFile = root.resolve(MODULE_BAZEL_FILE_NAME)

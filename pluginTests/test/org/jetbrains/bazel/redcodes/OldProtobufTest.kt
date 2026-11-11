@@ -8,12 +8,15 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelSyncCodeInsightFixture
 import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
 
 @BazelTestApplication
 class OldProtobufTest {
   private val fixture by bazelSyncCodeInsightFixture("redcodes/old_protobuf", buildProject = true)
 
   @Test
+  @EnabledOnOs(OS.LINUX) // abseil :(
   fun testProtoHighlighting() = runBlocking(Dispatchers.Default) {
     withContext(Dispatchers.EDT) {
       fixture.checkHighlighting("consumerJava/Main.java")
