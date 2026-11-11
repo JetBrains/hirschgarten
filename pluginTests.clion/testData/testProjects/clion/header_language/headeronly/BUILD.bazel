@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# No srcs, so no source language. The copt keeps the target in an equivalence class of its own.
+cc_library(
+    name = "lib",
+    hdrs = ["lib.h"],
+    copts = ["-DHEADER_ONLY=1"],
+)
