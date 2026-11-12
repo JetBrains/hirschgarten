@@ -87,6 +87,7 @@ private class CcDebugInfoDialog(project: Project, private val request: CcDebugIn
       }.resizableRow()
     }.apply {
       expanded = request.expandDetails
+      packWindowHeight = true
     }
   }
 
