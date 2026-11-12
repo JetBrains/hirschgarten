@@ -195,7 +195,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             // The dialog replaces the targets field after each change of the targets.
             // One replacement of the text keeps the paste away from a field that is on its way out.
             targetsField.click()
-            driver.invokeAction($$"$SelectAll", component = targetsField.component)
+            invokeAction($$"$SelectAll", component = targetsField.component)
             targetsField.pasteText("//:calculator_test")
 
             waitContainsText("Test filter:")
