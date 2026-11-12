@@ -2,6 +2,7 @@ package org.jetbrains.bazel.tests.run
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.getNotifications
+import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.setRegistry
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
@@ -185,16 +186,16 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
               !hasText(jvmSpecificRunConfigText)
             }
 
-            val targetsField = x { byClass("EditorComponentImpl") }.waitFound()
+            val targetsField = x { byJavaClass("com.intellij.openapi.editor.impl.EditorComponentImpl") }.waitFound()
             targetsField.click()
             targetsField.pasteText("//:main")
 
             waitContainsText(jvmSpecificRunConfigText)
 
+            // The dialog replaces the targets field after each change of the targets.
+            // One replacement of the text keeps the paste away from a field that is on its way out.
             targetsField.click()
-            keyboard {
-              repeat("//:main".length) { backspace() }
-            }
+            driver.invokeAction($$"$SelectAll", component = targetsField.component)
             targetsField.pasteText("//:calculator_test")
 
             waitContainsText("Test filter:")
