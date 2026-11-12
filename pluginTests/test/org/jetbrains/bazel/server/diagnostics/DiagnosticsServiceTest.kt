@@ -31,7 +31,7 @@ class DiagnosticsServiceTest {
       """.trimIndent()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"))
+    val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"), isCommandLineFormattedOutput = true)
 
     // then
     val expected =
@@ -52,13 +52,6 @@ class DiagnosticsServiceTest {
   fun `should extract diagnostics for error in one source file`() {
     val output =
       """
-            |Loading:
-            |Loading: 0 packages loaded
-            |Analyzing: target //path/to/package:test (0 packages loaded, 0 targets configured)
-            |INFO: Analyzed target //path/to/package:test (0 packages loaded, 0 targets configured).
-            |INFO: Found 1 target...
-            |[0 / 3] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-            |ERROR: /user/workspace/path/to/package/BUILD:12:37: scala //path/to/package:test failed: (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac @bazel-out/darwin-fastbuild/bin/path/to/package/test.jar-0.params
             |path/to/package/Test.scala:3: error: type mismatch;
             | found   : String("test")
             | required: Int
@@ -72,11 +65,6 @@ class DiagnosticsServiceTest {
             |  at io.bazel.rulesscala.worker.Worker.persistentWorkerMain(Worker.java:92)
             |  at io.bazel.rulesscala.worker.Worker.workerMain(Worker.java:46)
             |  at io.bazel.rulesscala.scalac.ScalacWorker.main(ScalacWorker.java:26)
-            |Target //path/to/package:test failed to build
-            |Use --verbose_failures to see the command lines of failed build steps.
-            |INFO: Elapsed time: 0.220s, Critical Path: 0.09s
-            |INFO: 2 processes: 2 internal.
-            |FAILED: Build did NOT complete successfully
       """.trimMargin()
 
     // when
@@ -106,13 +94,6 @@ class DiagnosticsServiceTest {
   fun `should extract diagnostics for error in 2 source files`() {
     val output =
       """
-            |Loading:
-            |Loading: 0 packages loaded
-            |Analyzing: target //path/to/package:test (0 packages loaded, 0 targets configured)
-            |INFO: Analyzed target //path/to/package:test (0 packages loaded, 0 targets configured).
-            |INFO: Found 1 target...
-            |[0 / 3] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-            |ERROR: /user/workspace/path/to/package/BUILD:12:37: scala //path/to/package:test failed (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac @bazel-out/darwin-fastbuild/bin/path/to/package/test.jar-0.params
             |path/to/package/Test1.scala:21: error: type mismatch;
             |  found   : Int(42)
             |  required: String
@@ -131,14 +112,6 @@ class DiagnosticsServiceTest {
             |  at io.bazel.rulesscala.worker.Worker.persistentWorkerMain(Worker.java:92)
             |  at io.bazel.rulesscala.worker.Worker.workerMain(Worker.java:46)
             |  at io.bazel.rulesscala.scalac.ScalacWorker.main(ScalacWorker.java:26)
-            |Target //path/to/package:test failed to build
-            |Use --verbose_failures to see the command lines of failed build steps.
-            |INFO: Elapsed time: 0.216s, Critical Path: 0.12s
-            |INFO: 2 processes: 2 internal.
-            |FAILED: Build did NOT complete successfully
-            |FAILED: Build did NOT complete successfully
-            |FAILED: Build did NOT complete successfully
-            |
       """.trimMargin()
 
     // when
@@ -178,15 +151,13 @@ class DiagnosticsServiceTest {
   }
 
   @Test
-  fun `parse multiple errors from color formatted command line output`() {
+  fun `parse errors from color formatted command line output`() {
     // given
     val tmpFile = createTempFile().toAbsolutePath()
     val output =
       """
         |[31m[1mERROR: [0mmodule extension @@googleapis+//:extensions.bzl%switched_rules does not generate repository "com_google_googleapis_imports", yet it is imported as "com_google_googleapis_imports" in the usage at https://bcr.bazel.build/modules/grpc/1.66.0.bcr.2/MODULE.bazel:39:31
         |[31m[1mERROR: [0mResults may be incomplete as 1 extension failed.
-        |[31m[1mERROR: [0m$tmpFile:3:11: KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains
-        |[31m[1mERROR: [0mBuild did NOT complete successfully
       """.trimMargin()
 
     // when
@@ -207,21 +178,6 @@ class DiagnosticsServiceTest {
             Position.NONE,
             "Results may be incomplete as 1 extension failed.",
           ),
-          errorDiagnostic(
-            Position.NONE,
-            "Build did NOT complete successfully",
-          ),
-        ),
-        publishDiagnosticsParams(
-          textDocument =
-            TextDocumentIdentifier(
-              Path("$tmpFile"),
-            ),
-          buildTarget = label,
-          errorDiagnostic(
-            Position.fromHumanReadable(3, 11),
-            message = "KotlinCompile //commons/src/main/kotlin/org/jetbrains/bsp/protocol:protocol { kt: 65, java: 0, srcjars: 0 } for darwin_arm64 failed: (Exit 1): build failed: error executing KotlinCompile command (from target //commons/src/main/kotlin/org/jetbrains",
-          ),
         ),
       )
     diagnostics shouldContainExactlyInAnyOrder expected
@@ -231,13 +187,6 @@ class DiagnosticsServiceTest {
   fun `should extract diagnostics for 2 errors in 1 source file`() {
     val output =
       """
-            |Loading:
-            |Loading: 0 packages loaded
-            |Analyzing: target //path/to/package:test (0 packages loaded, 0 targets configured)
-            |INFO: Analyzed target //path/to/package:test (0 packages loaded, 0 targets configured).
-            |INFO: Found 1 target...
-            |[0 / 3] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-            |ERROR: /user/workspace/path/to/package/BUILD:12:37: scala //path/to/package:test failed (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac @bazel-out/darwin-fastbuild/bin/path/to/package/test.jar-0.params
             |path/to/package/Test.scala:21: error: type mismatch;
             |  found   : Int(42)
             |  required: String
@@ -256,13 +205,6 @@ class DiagnosticsServiceTest {
             |  at io.bazel.rulesscala.worker.Worker.persistentWorkerMain(Worker.java:92)
             |  at io.bazel.rulesscala.worker.Worker.workerMain(Worker.java:46)
             |  at io.bazel.rulesscala.scalac.ScalacWorker.main(ScalacWorker.java:26)
-            |Target //path/to/package:test failed to build
-            |Use --verbose_failures to see the command lines of failed build steps.
-            |INFO: Elapsed time: 0.216s, Critical Path: 0.12s
-            |INFO: 2 processes: 2 internal.
-            |FAILED: Build did NOT complete successfully
-            |FAILED: Build did NOT complete successfully
-            |FAILED: Build did NOT complete successfully
       """.trimMargin()
     // when
     val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"))
@@ -301,16 +243,6 @@ class DiagnosticsServiceTest {
     // given
     val output =
       """
-      Invoking: /opt/example_mde/bin/bazel build --bes_backend=grpc://localhost:53483 --build_event_publish_all_actions -- //plugin-bazel/src/main/java/org/jetbrains/bazel/server/diagnostics:diagnostics //executioncontext/api:api //executioncontext/workspacecontext:workspacecontext //executioncontext/installationcontext/src/test/java/org/jetbrains/bazel/installationcontext/entities/mappers:InstallationContextDebuggerAddressEntityMapperTest //plugin-bazel/src/main/java/org/jetbrains/bazel/server/sync/dependencytree:dependencytree //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bep:bep //executioncontext/projectview/src/main/java/org/jetbrains/bazel/projectview/parser:parser_kotlin //e2e/src/main/java/org/jetbrains/bazel:BazelBspActionGraphV1Test //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser/splitter:ProjectViewRawSectionsTest //executioncontext/installationcontext/src/test/java/org/jetbrains/bazel/installationcontext/entities/mappers:InstallationContextJavaPathEntityMapperTest //commons/src/test/java/org/jetbrains/bazel/commons:BetterFilesTest //e2e/src/main/java/org/jetbrains/bazel:BazelBspActionGraphV2Test //install/src/main/java/org/jetbrains/bazel/install:install //e2e:BazelBspActionGraphV1Test //e2e/src/main/java/org/jetbrains/bazel:BazelBspJava11ProjectTest //e2e:BazelBspCppProjectTest //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser/sections:ProjectViewExcludableListSectionParserTest //executioncontext/projectview/src/main/java/org/jetbrains/bazel/projectview/parser/sections:sections //executioncontext/projectview/src/main/java/org/jetbrains/bazel/projectview/parser/splitter:splitter //e2e:BazelBspActionGraphV2Test //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bsp:bsp //executioncontext/api/src/main/java/org/jetbrains/bazel/executioncontext/api/entries:entries //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/model:ProjectViewTest //e2e/src/main/java/org/jetbrains/bazel:BazelBspCppProjectTest //bazelrunner/src/main/java/org/jetbrains/bazel/bazelrunner:bazelrunner //e2e:BazelBspJava11ProjectTest //bazelrunner:bazelrunner //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser:ProjectViewParserImplTest //executioncontext/installationcontext/src/test/java/org/jetbrains/bazel/installationcontext:InstallationContextConstructorTest //executioncontext/workspacecontext/src/test/java/org/jetbrains/bazel/workspacecontext:WorkspaceContextConstructorImplTest //plugin-bazel/src/main/java/org/jetbrains/bazel/server:server //executioncontext/installationcontext/src/main/java/org/jetbrains/bazel/installationcontext/entities/mappers:mappers //executioncontext/installationcontext/src/main/java/org/jetbrains/bazel/installationcontext/entities:entities //bazelrunner/src/main/java/org/jetbrains/bazel/bazelrunner/utils:utils //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser/sections:ProjectViewListSectionParserTest //commons/src/main/java/org/jetbrains/bazel/commons:commons //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bsp/config:config //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bsp/services:services //bazelrunner/src/main/java/org/jetbrains/bazel/bazelrunner/outputs:outputs //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bsp/managers:managers //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bsp/info:info //e2e:BazelBspSampleRepoTest //bazelrunner:params //install:bsp-install //executioncontext/api/src/main/java/org/jetbrains/bazel/executioncontext/api/entries/mappers:mappers //plugin-bazel/src/test/java/org/jetbrains/bazel/server/sync:ProjectStorageTest //e2e/src/main/java/org/jetbrains/bazel:BazelBspSampleRepoTest //executioncontext/workspacecontext/src/main/java/org/jetbrains/bazel/workspacecontext/entries:entries //e2e:BazelBspEntireRepositoryImportTest //executioncontext/api/src/main/java/org/jetbrains/bazel/executioncontext/api:api //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser:parser_mock_test_impl //executioncontext/projectview:parser //plugin-bazel/src/main/java/org/jetbrains/bazel:bsp-install //executioncontext/workspacecontext/src/test/java/org/jetbrains/bazel/workspacecontext:WorkspaceContextTest //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser/splitter:ProjectViewRawSectionTest //e2e/src/main/java/org/jetbrains/bazel:BazelBspEntireRepositoryImportTest //e2e:BazelBspJava8ProjectTest //executioncontext/installationcontext/src/test/java/org/jetbrains/bazel/installationcontext:InstallationContextTest //plugin-bazel/src/main/java/org/jetbrains/bazel/server:bsp-run //executioncontext/projectview:model //commons:commons //executioncontext/workspacecontext/src/main/java/org/jetbrains/bazel/workspacecontext/entries/mappers:mappers //plugin-bazel/src/main/java/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser/sections:ProjectViewSingletonSectionParserTest //e2e/src/main/java/org/jetbrains/bazel:BazelBspJava8ProjectTest //executioncontext/projectview/src/main/java/org/jetbrains/bazel/projectview/model/sections:sections //logger/src/main/java/org/jetbrains/bazel/logger:logger //plugin-bazel/src/test/java/org/jetbrains/bazel/server/bsp/utils:InternalAspectsResolverTest //executioncontext/projectview/src/test/java/org/jetbrains/bazel/projectview/parser/splitter:ProjectViewSectionSplitterTest //executioncontext/workspacecontext/src/main/java/org/jetbrains/bazel/workspacecontext:workspacecontext //logger:logger //plugin-bazel/src/main/java/org/jetbrains/bazel/server/diagnostics/parser:parser //plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics //executioncontext/projectview/src/main/java/org/jetbrains/bazel/projectview/model:model //install/src/main/java/org/jetbrains/bazel/install/cli:cli //executioncontext/workspacecontext/src/test/java/org/jetbrains/bazel/workspacecontext/entries/mappers:WorkspaceContextTargetsEntityMapperTest //plugin-bazel/src/main/java/org/jetbrains/bazel/server/bsp/utils:utils //executioncontext/installationcontext/src/main/java/org/jetbrains/bazel/installationcontext:installationcontext //plugin-bazel/src/test/java/org/jetbrains/bazel/server/bsp/utils:SourceRootGuesserTest //install:install //plugin-bazel/src/test/java/org/jetbrains/bazel/server/sync/dependencytree:DependencyTreeTest //plugin-bazel/src/main/java/org/jetbrains/bazel/server/sync/proto:bsp_target_info_proto //plugin-bazel/src/main/java/org/jetbrains/bazel/server/sync:sync //executioncontext/projectview/src/main/java/org/jetbrains/bazel/projectview/parser:parser //plugin-bazel/src/main/java/org/jetbrains/bazel:bsp-lib //bazelrunner/src/main/java/org/jetbrains/bazel/bazelrunner/params:params //commons/src/test/java/org/jetbrains/bazel/commons:FormatTest //e2e:all //e2e/src/main/java/org/jetbrains/bazel/base:base
-      Loading:
-      Loading: 0 packages loaded
-      WARNING: The target pattern '//e2e:all' is ambiguous: ':all' is both a wildcard, and the name of an existing sh_binary rule; using the latter interpretation
-      Analyzing: 89 targets (0 packages loaded, 0 targets configured)
-      INFO: Analyzed 89 targets (0 packages loaded, 0 targets configured).
-      INFO: Found 89 targets...
-      [0 / 4] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-      [1 / 4] KotlinCompile //plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics { kt: 1, java: 0, srcjars: 0 } for darwin; 1s worker
-      ERROR: /Users/uwawrzyk/workspace/bazel-bsp/server/src/test/java/org/jetbrains/bazel/server/diagnostics/BUILD:3:15: KotlinCompile //plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics { kt: 1, java: 0, srcjars: 0 } for darwin failed: (Exit 1): build failed: error executing command bazel-out/host/bin/external/io_bazel_rules_kotlin/src/main/kotlin/build ... (remaining 1 argument skipped)
       server/src/test/java/org/jetbrains/bazel/server/diagnostics/DiagnosticsServiceTest.kt:12:18: error: type mismatch: inferred type is String but Int was expected
       val int: Int = "STRING"
       ^
@@ -325,10 +257,6 @@ class DiagnosticsServiceTest {
       server/src/test/java/org/jetbrains/bazel/server/diagnostics/DiagnosticsServiceTest.kt:13:24: error: the integer literal does not conform to the expected type String
       val string: String = 1
       ^
-      INFO: Elapsed time: 2.590s, Critical Path: 1.90s
-      INFO: 2 processes: 2 internal.
-      FAILED: Build did NOT complete successfully
-      Command completed in 2.7s (exit code 1)
       """.trimIndent()
 
     // when
@@ -368,9 +296,7 @@ class DiagnosticsServiceTest {
   fun `parse scala errors with warnings`() {
     // given
     val output =
-      """[88 / 93] [Prepa] BazelWorkspaceStatusAction stable-status.txt; 12s ... (3 actions, 2 running)
-                   |ERROR: /user/workspace/project/src/main/scala/com/example/project/BUILD:1:14: scala //project/src/main/scala/com/example/project:project failed: (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac '--jvm_flag=-Xss10m' '--jvm_flag=-Xms512m' '--jvm_flag=-Xmx5G' ... (remaining 1 argument skipped)
-                   |project/src/main/scala/com/example/project/File1.scala:11: error: type mismatch;
+      """          |project/src/main/scala/com/example/project/File1.scala:11: error: type mismatch;
                    |  found   : String("sd")
                    |  required: Int
                    |    val x: Int = "sd"
@@ -386,7 +312,6 @@ class DiagnosticsServiceTest {
                    |                     ^
                    |three warnings found
                    |one error found
-                   |Build failed
       """.trimMargin()
 
     // when
@@ -641,11 +566,7 @@ class DiagnosticsServiceTest {
   fun `parse scala warnings`() {
     // given
     val output =
-      """INFO: Invocation ID: 80bcd33a-6782-438c-b212-4f28df8a8433
-                   |INFO: Analyzed 12 targets (0 packages loaded, 0 targets configured).
-                   |INFO: Found 12 targets...
-                   |INFO: From scala //intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool:
-                   |intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala:14: warning: match may not be exhaustive.
+      """          |intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala:14: warning: match may not be exhaustive.
                    |It would fail on the following inputs: Bundled(_), BundledCrossVersion(_, _, _), Direct(_), Empty(), FromSources(_, _), Versioned((x: String forSome x not in "com.intellijUpdaterPlugin"), _, _)
                    |    key match {
                    |    ^
@@ -702,21 +623,12 @@ class DiagnosticsServiceTest {
   fun `parse java messy errors`() {
     // given
     val output =
-      """ERROR: /Users/uwawrzyk/workspace/bazel-bsp/server/src/main/java/org/jetbrains/bazel/server/sync/BUILD:3:13: Compiling Java headers server/src/main/java/org/jetbrains/bazel/server/sync/libsync-hjar.jar (34 source files) failed: (Exit 1): java failed: error executing command external/remotejdk11_macos/bin/java -XX:-CompactStrings '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED' ... (remaining 95 arguments skipped)
-                   |
-                   |Use --sandbox_debug to see verbose messages from the sandbox
-                   |server/src/main/java/org/jetbrains/bazel/server/sync/ProjectResolver.java:20: error: symbol not found org.jetbrains.bazel.server.bsp.config.ProjectViewProvider
+      """          |server/src/main/java/org/jetbrains/bazel/server/sync/ProjectResolver.java:20: error: symbol not found org.jetbrains.bazel.server.bsp.config.ProjectViewProvider
                    |import org.jetbrains.bazel.server.bsp.config.ProjectViewProvider;
                    |       ^
                    |server/src/main/java/org/jetbrains/bazel/server/sync/ProjectResolver.java:37: error: could not resolve ProjectViewProvider
                    |      ProjectViewProvider projectViewProvider,
                    |      ^
-                   |ERROR: /Users/uwawrzyk/workspace/bazel-bsp/server/src/main/java/org/jetbrains/bazel/server/bsp/services/BUILD:3:13 Building server/src/main/java/org/jetbrains/bazel/server/bsp/services/libservices.jar (1 source file) failed: (Exit 1): java failed: error executing command external/remotejdk11_macos/bin/java -XX:-CompactStrings '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED' ... (remaining 95 arguments skipped)
-                   |
-                   |Use --sandbox_debug to see verbose messages from the sandbox
-                   |INFO: Elapsed time: 2.163s, Critical Path: 1.62s
-                   |INFO: 6 processes: 6 internal.
-                   |FAILED: Build did NOT complete successfully
       """.trimMargin()
 
     // when
@@ -755,25 +667,11 @@ class DiagnosticsServiceTest {
     // given
     val output =
       """
-      Loading: 
-      Loading: 0 packages loaded
-      WARNING: The target pattern '//e2e:all' is ambiguous: ':all' is both a wildcard, and the name of an existing sh_binary rule; using the latter interpretation
-      Analyzing: 91 targets (0 packages loaded, 0 targets configured)
-      INFO: Analyzed 91 targets (0 packages loaded, 0 targets configured).
-      INFO: Found 91 targets...
-      [0 / 5] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-      INFO: From KotlinCompile //plugin-bazel/src/main/java/org/jetbrains/bazel/server/diagnostics:diagnostics { kt: 9, java: 0, srcjars: 0 } for darwin:
-      [2 / 20] [Prepa] JdepsMerge //plugin-bazel/src/main/java/org/jetbrains/bazel/server/diagnostics:diagnostics { jdeps: 2 }
-      warning: '-Xuse-experimental' is deprecated and will be removed in a future release
-      ERROR: /Users/marcin.abramowicz/dev/ww/bazel-bsp/server/src/main/java/org/jetbrains/bazel/server/bep/BUILD:3:13: Building server/src/main/java/org/jetbrains/bazel/server/bep/libbep-class.jar (4 source files) failed: (Exit 1): java failed: error executing command external/remotejdk11_macos/bin/java -XX:-CompactStrings '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED' '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED' ... (remaining 17 arguments skipped)
       server/src/main/java/org/jetbrains/bazel/server/bep/BepServer.java:55: error: cannot find symbol
           return new BepStreamObserver(thi, responseObserver);
                                        ^
         symbol:   variable thi
         location: class BepServer
-      INFO: Elapsed time: 2.279s, Critical Path: 2.07s
-      INFO: 6 processes: 3 internal, 3 worker.
-      FAILED: Build did NOT complete successfully
       """.trimIndent()
 
     // when
@@ -878,20 +776,6 @@ class DiagnosticsServiceTest {
     // given
     val output =
       """
-      Invoking: '/Users/user/path/to/project/bazelisk' 'build' '--tool_tag=bazelbsp:3.2.0' '--keep_going' '--build_event_binary_file=/var/folders/4k/foo.tmp' '--bes_outerr_buffer_size=10' '--build_event_publish_all_actions' '--inject_repository=bazelbsp_aspect=/Users/user/path/to/project/.bazelbsp' '--curses=no' '--color=yes' '--noprogress_in_terminal_title' '--target_pattern_file=/Users/user/path/to/project/.bazelbsp/targets/targets-1'
-      AUTH: Skipping running of authorizer, it was already run today
-      AUTH: To forcefully re-run authorizer remove the following file: /Users/user/path/to/project/out/.private.packages.auth.last.run.txt
-      INFO: Invocation ID: de143285-266a-487f-99db-f3305c481600
-      Computing main repo mapping: 
-      Loading: 
-      Loading: 1 packages loaded
-      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (6 packages loaded, 6 targets configured)
-      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (134 packages loaded, 7089 targets configured)
-      INFO: Analyzed target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (1342 packages loaded, 104001 targets configured).
-      [1 / 1] no actions running
-      [675 / 676] [Sched] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}
-      [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
-      ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
       Kotlinc Runner: Error: Unresolved reference 'foo'.
         /Users/user/path/to/project/src/Foo.kt:25:90
       Kotlinc Runner: Error: Unresolved reference 'bar'.
@@ -902,16 +786,6 @@ class DiagnosticsServiceTest {
       fun ShortArray.toList(): List<Short>
       fun <K, V> Map<out K, V>.toList(): List<Pair<K, V>>
       	/Users/user/path/to/project/src/package/Zoo.kt:31:3
-      INFO: Found 1 target...
-      Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
-      Use --verbose_failures to see the command lines of failed build steps.
-      INFO: Elapsed time: 7.501s, Critical Path: 3.29s
-      INFO: 2 processes: 675 action cache hit, 2 internal.
-      ERROR: Build did NOT complete successfully
-      FAILED: 
-      INFO: Build Event Protocol files produced successfully.
-      
-      Command completed in 7.6s (exit code 1)
       """.trimIndent()
 
     // when
@@ -958,20 +832,6 @@ class DiagnosticsServiceTest {
     // given
     val output =
       """
-      Invoking: '/Users/user/path/to/project/bazelisk' 'build' '--tool_tag=bazelbsp:3.2.0' '--keep_going' '--build_event_binary_file=/var/folders/4k/foo.tmp' '--bes_outerr_buffer_size=10' '--build_event_publish_all_actions' '--inject_repository=bazelbsp_aspect=/Users/user/path/to/project/.bazelbsp' '--curses=no' '--color=yes' '--noprogress_in_terminal_title' '--target_pattern_file=/Users/user/path/to/project/.bazelbsp/targets/targets-1'
-      AUTH: Skipping running of authorizer, it was already run today
-      AUTH: To forcefully re-run authorizer remove the following file: /Users/user/path/to/project/out/.private.packages.auth.last.run.txt
-      INFO: Invocation ID: de143285-266a-487f-99db-f3305c481600
-      Computing main repo mapping: 
-      Loading: 
-      Loading: 1 packages loaded
-      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (6 packages loaded, 6 targets configured)
-      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (134 packages loaded, 7089 targets configured)
-      INFO: Analyzed target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (1342 packages loaded, 104001 targets configured).
-      [1 / 1] no actions running
-      [675 / 676] [Sched] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}
-      [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
-      ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
       Javac Runner: Error: cannot find symbol
         symbol:   variable bar
         location: class Bar
@@ -986,16 +846,6 @@ class DiagnosticsServiceTest {
         location: class Zoo
         /Users/user/path/to/project/src/package/Zoo.java:33:44
         code: "zoo"
-      INFO: Found 1 target...
-      Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
-      Use --verbose_failures to see the command lines of failed build steps.
-      INFO: Elapsed time: 7.501s, Critical Path: 3.29s
-      INFO: 2 processes: 675 action cache hit, 2 internal.
-      ERROR: Build did NOT complete successfully
-      FAILED: 
-      INFO: Build Event Protocol files produced successfully.
-      
-      Command completed in 7.6s (exit code 1)
       """.trimIndent()
 
     // when
@@ -1048,20 +898,6 @@ class DiagnosticsServiceTest {
     val specialCharsPathSegment = "path with #!@$%^&(){}[]+=-_"
     val output =
       """
-      Invoking: '/Users/user/path/to/project/bazelisk' 'build' '--tool_tag=bazelbsp:3.2.0' '--keep_going' '--build_event_binary_file=/var/folders/4k/foo.tmp' '--bes_outerr_buffer_size=10' '--build_event_publish_all_actions' '--inject_repository=bazelbsp_aspect=/Users/user/path/to/project/.bazelbsp' '--curses=no' '--color=yes' '--noprogress_in_terminal_title' '--target_pattern_file=/Users/user/path/to/project/.bazelbsp/targets/targets-1'
-      AUTH: Skipping running of authorizer, it was already run today
-      AUTH: To forcefully re-run authorizer remove the following file: /Users/user/path/to/project/out/.private.packages.auth.last.run.txt
-      INFO: Invocation ID: de143285-266a-487f-99db-f3305c481600
-      Computing main repo mapping: 
-      Loading: 
-      Loading: 1 packages loaded
-      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (6 packages loaded, 6 targets configured)
-      Analyzing: target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (134 packages loaded, 7089 targets configured)
-      INFO: Analyzed target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (1342 packages loaded, 104001 targets configured).
-      [1 / 1] no actions running
-      [675 / 676] [Sched] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}
-      [675 / 676] compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5}; 1s disk-cache, remote-cache, multiplex-worker
-      ERROR: /Users/user/path/to/project/BUILD.bazel:21:12: compile @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics (kt: 739, java: 5} failed: (Exit -1): java failed: error executing JvmCompile command (from target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics) external/community++jbr_toolchains+remotejbr21_macos_aarch64/bin/java -Xms4g -Xmx20g '-XX:SoftRefLRUPolicyMSPerMB=50' '-XX:NonProfiledCodeHeapSize=512m' '-XX:ProfiledCodeHeapSize=512m' ... (remaining 21 arguments skipped)
       Javac Runner: Error: cannot find symbol
         symbol:   variable bar
         location: class Bar
@@ -1074,16 +910,6 @@ class DiagnosticsServiceTest {
         code: "zoo"  
       Kotlinc Runner: Error: Unresolved reference 'foo'.
         /Users/user/$specialCharsPathSegment/to/project/src/Foo.kt:25:90
-      INFO: Found 1 target...
-      Target @//plugin-bazel/src/test/java/org/jetbrains/bazel/server/diagnostics:diagnostics failed to build
-      Use --verbose_failures to see the command lines of failed build steps.
-      INFO: Elapsed time: 7.501s, Critical Path: 3.29s
-      INFO: 2 processes: 675 action cache hit, 2 internal.
-      ERROR: Build did NOT complete successfully
-      FAILED: 
-      INFO: Build Event Protocol files produced successfully.
-      
-      Command completed in 7.6s (exit code 1)
       """.trimIndent()
 
     // when
@@ -1131,42 +957,14 @@ class DiagnosticsServiceTest {
     diagnostics shouldContainExactlyInAnyOrder expected
   }
 
-  @Test
-  fun `BUILD file error in BEP progress event`() {
-    // given
-    val output =
-      """
-        ERROR: /Users/pasynkov/Work/ultimate/plugins/bazel/pluginTests/BUILD.bazel:84:12: compile //plugins/bazel/pluginTests:pluginTests_test_lib (kt: 300, java: 1) failed: (Exit -1): java failed: error executing JvmCompile command (from _jvm_library_jps rule target //plugins/bazel/pluginTests:pluginTests_test_lib) external/community++jbr_toolchains+remotejbr25_macos_aarch64/bin/java -XX:+UseG1GC '-XX:MinHeapFreeRatio=40' '-XX:MaxHeapFreeRatio=40' -Xmx10g -Xms256m '-XX:SoftRefLRUPolicyMSPerMB=50' ... (remaining 15 arguments skipped)
-      """.trimIndent()
-
-    // when
-    val label = Label.parse("//:calculator")
-
-    val diagnostics =
-      extractDiagnostics(output, label, isCommandLineFormattedOutput = true)
-
-    // then
-    val expected =
-      listOf(
-        publishDiagnosticsParams(
-          TextDocumentIdentifier(Path("/Users/pasynkov/Work/ultimate/plugins/bazel/pluginTests/BUILD.bazel")),
-          label,
-          errorDiagnostic(
-            Position.fromHumanReadable(84, 12),
-            "compile //plugins/bazel/pluginTests:pluginTests_test_lib (kt: 300, java: 1) failed: (Exit -1): java failed: error executing JvmCompile command (from _jvm_library_jps rule target //plugins/bazel/pluginTests:pluginTests_test_lib) external/community++jbr_toolchains+remotejbr25_macos_aarch64/bin/java -XX:+UseG1GC '-XX:MinHeapFreeRatio=40' '-XX:MaxHeapFreeRatio=40' -Xmx10g -Xms256m '-XX:SoftRefLRUPolicyMSPerMB=50' ... (remaining 15 arguments skipped)",
-          ),
-        ),
-      )
-    diagnostics shouldContainExactlyInAnyOrder expected
-  }
 
   @Test
   @EnabledOnOs(OS.WINDOWS)
-  fun `BUILD file error in BEP progress event with Windows drive letter in path`() {
+  fun `BUILD file error with Windows drive letter in path`() {
     // given
     val output =
       """
-        [0;31;91mERROR: [0mZ:/buildagent/work/89e70edcf4afcfd6/out/ide-tests/cache/projects/unpacked/simplebazelprojectsfortesting/importrunconfigurations/BUILD:6:13: Building libcalculator.jar (1 source file) failed: (Exit 1): java.exe failed: error executing Javac command (from java_library rule target //:calculator) external\rules_java++toolchains+remotejdk25_win\bin\java.exe --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED ... (remaining 19 arguments skipped)
+        [0;31;91mERROR: [0mZ:/buildagent/work/89e70edcf4afcfd6/out/ide-tests/cache/projects/unpacked/simplebazelprojectsfortesting/importrunconfigurations/BUILD:6:13: in something_something rule ... visibility ...
       """.trimIndent()
 
     // when
@@ -1184,7 +982,7 @@ class DiagnosticsServiceTest {
           errorDiagnostic(
             Position.fromHumanReadable(6, 13),
             """
-              Building libcalculator.jar (1 source file) failed: (Exit 1): java.exe failed: error executing Javac command (from java_library rule target //:calculator) external\rules_java++toolchains+remotejdk25_win\bin\java.exe --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED ... (remaining 19 arguments skipped)
+               in something_something rule ... visibility ...
             """.trimIndent(),
           ),
         ),
