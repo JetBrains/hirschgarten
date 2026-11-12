@@ -5,6 +5,7 @@ import com.intellij.openapi.util.io.NioFiles
 import com.intellij.util.io.Decompressor
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.sha256Hex
+import com.intellij.util.system.OS
 import java.io.IOException
 import java.nio.file.FileSystemException
 import java.nio.file.Files
@@ -12,6 +13,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.time.Duration.Companion.seconds
 
 private val LOG = fileLogger()
 
@@ -30,6 +32,8 @@ object BazelRegistrySnapshot {
   private const val SHA256 = "ddcd494b74cc75d8dd9eaf19b810c3dc660c08b0f67fe504b4f9d4ceda51e870"
   private const val GITHUB_URL = "https://github.com/bazelbuild/bazel-central-registry/archive/$COMMIT.zip"
   private const val REDIRECTOR_URL = "https://cache-redirector.jetbrains.com/github.com/bazelbuild/bazel-central-registry/archive/$COMMIT.zip"
+  private const val MOVE_ATTEMPTS = 30
+  private val MOVE_RETRY_DELAY = 1.seconds
 
   /** Returns the registry directory in [cacheRoot]. The first call downloads and unpacks the archive. */
   @Synchronized
@@ -47,19 +51,33 @@ object BazelRegistrySnapshot {
 
       val unpacked = staging.resolve("registry")
       Decompressor.Zip(archive).removePrefixPath("bazel-central-registry-$COMMIT").extract(unpacked)
-      try {
-        Files.move(unpacked, registry, StandardCopyOption.ATOMIC_MOVE)
-      }
-      catch (e: FileSystemException) {
-        // another process moved its snapshot first
-        if (!registry.resolve("bazel_registry.json").exists()) throw e
-      }
+      moveSnapshot(unpacked, registry)
       LOG.info("Unpacked the BCR snapshot into $registry")
     }
     finally {
       NioFiles.deleteRecursively(staging)
     }
     return registry
+  }
+
+  private fun moveSnapshot(unpacked: Path, registry: Path) {
+    repeat(MOVE_ATTEMPTS) { attempt ->
+      try {
+        Files.move(unpacked, registry, StandardCopyOption.ATOMIC_MOVE)
+        return
+      }
+      catch (e: FileSystemException) {
+        // another process moved its snapshot first
+        if (registry.resolve("bazel_registry.json").exists()) return
+
+        if (OS.CURRENT != OS.Windows || attempt == MOVE_ATTEMPTS - 1) throw e
+
+        // Windows denies the move of a directory while a process has a file of that directory open. On the build
+        // agents the move failed in rare cases, immediately after the unpack. The process that has the file open is not known.
+        LOG.info("Retrying the move of the BCR snapshot into $registry, attempt ${attempt + 1} failed: $e")
+        Thread.sleep(MOVE_RETRY_DELAY.inWholeMilliseconds)
+      }
+    }
   }
 
   private fun archiveUrls(): List<String> {
