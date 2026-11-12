@@ -9,22 +9,20 @@ filegroup(
 filegroup(
     name = "compiler",
     srcs = select({
-       "@bazel_tools//src/conditions:windows": ["compiler.bat"],
-       "//conditions:default": ["compiler.sh"],
+        "@bazel_tools//src/conditions:windows": ["compiler.bat"],
+        "//conditions:default": ["compiler.sh"],
     }),
+    visibility = ["//visibility:public"],
 )
 
 cc_toolchain_config(
     name = "toolchain_config",
-    compiler = select({
-        "@bazel_tools//src/conditions:windows": "compiler.bat",
-        "//conditions:default": "compiler.sh",
-    }),
+    compiler_stub = ":compiler",
 )
 
 cc_toolchain(
     name = "cc_toolchain",
-    all_files = ":empty",
+    all_files = ":compiler",
     ar_files = ":empty",
     compiler_files = ":compiler",
     dwp_files = ":empty",

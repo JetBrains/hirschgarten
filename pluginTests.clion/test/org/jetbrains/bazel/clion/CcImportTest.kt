@@ -16,6 +16,7 @@ import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.isWindows
 import org.jetbrains.bazel.test.framework.BazelVersionedTest
 import org.jetbrains.bazel.test.framework.BazelVersions
 import org.jetbrains.bazel.test.framework.majorBazelVersion
@@ -158,10 +159,16 @@ abstract class CcImportTest(override val bazelVersion: String) : BazelVersionedT
     assertThat(data.compilerName).isEqualTo("false")
     assertThat(data.cppOption.asList()).contains("-D__DEFINE__", "-std=c++17")
     assertThat(data.cOption.asList()).contains("-D__DEFINE__", "-std=c17")
-    assertThat(data.cCompiler).isHost("/usr/bin/false")
-    assertThat(data.cppCompiler).isHost("/usr/bin/false")
     assertThat(data.builtInIncludeDirectories).isEmpty()
     assertThat(data.sysroot).isNull()
     assertThat(data.cppEnvironment).containsEntry("ENV_VARIABLE", "ENV_VALUE")
+
+    if (isWindows()) {
+      assertThat(data.cCompiler).isExternal("cc_false_toolchain+", "compiler.bat")
+      assertThat(data.cppCompiler).isExternal("cc_false_toolchain+", "compiler.bat")
+    } else {
+      assertThat(data.cCompiler).isExternal("cc_false_toolchain+", "compiler.sh")
+      assertThat(data.cppCompiler).isExternal("cc_false_toolchain+", "compiler.sh")
+    }
   }
 }
