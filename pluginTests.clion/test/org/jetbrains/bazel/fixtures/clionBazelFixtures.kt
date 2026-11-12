@@ -36,6 +36,8 @@ import kotlin.time.Duration.Companion.minutes
  * The test project can resolve modules from the local test registry, [BazelPathManager.testRegistry],
  * for example the `cc_false_toolchain`.
  *
+ * The setup fails when the sync reports a warning or an error.
+ *
  * For the backend to actually come up, `RESHARPER_HOST_BIN` must point at a built `dotnet/Bin.RiderBackend`.
  */
 @TestOnly
@@ -60,7 +62,7 @@ internal fun clionBazelProjectFixture(
       ) { writeProjectView(it, projectView) }.init()
     },
     waitForSymbols = { project ->
-      assertLastSyncSucceeded(project)
+      assertLastSyncSucceeded(project, allowWarnings = false)
 
       LOG.info("Calling after project opened (engine)")
       LanguageEngine.INSTANCE.afterProjectOpened(project)
