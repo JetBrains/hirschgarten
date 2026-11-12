@@ -9,9 +9,11 @@ import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.UnnamedConfigurable
+import com.intellij.openapi.options.newEditor.SettingsDialog
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.emptyText
@@ -22,19 +24,19 @@ import com.intellij.ui.components.TextComponentEmptyText
 import com.intellij.ui.components.fields.ExtendableTextComponent
 import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.COLUMNS_SHORT
 import com.intellij.ui.dsl.builder.DslComponentProperty
-import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.action.registered.openProjectView
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import java.awt.Component
 import java.io.IOException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
-import javax.swing.JTextField
 import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isExecutable
@@ -47,7 +49,6 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     helpTopic = "",
   ),
   Configurable.WithEpDependencies {
-  private val projectViewPathField: JTextField
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
 
@@ -64,7 +65,6 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     ) { buildifierExecutablePathField.text = "" }
 
   init {
-    projectViewPathField = initProjectViewFileField()
     buildifierExecutablePathField = initBuildifierExecutablePathField()
     runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
   }
@@ -78,7 +78,17 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   override fun createPanel(): DialogPanel =
     panel {
-      row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
+      ProjectViewService.getInstance(project).projectViewPath?.let { projectViewPath ->
+        row(BazelPluginBundle.message("project.settings.project.view.label")) {
+          link(projectViewPath.toString()) { event -> openProjectViewAndCloseSettings(event.source as Component) }
+            .comment(
+              BazelPluginBundle.message(
+                "project.settings.project.view.comment",
+                BazelPluginBundle.message("action.load.project.view.file"),
+              ),
+            )
+        }
+      }
       row(BazelPluginBundle.message("project.settings.buildifier.label")) {
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
       }
@@ -90,11 +100,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
         .forEach { appendDslConfigurable(it) }
     }
 
-  private fun initProjectViewFileField(): JTextField =
-    JTextField().apply {
-      isEditable = false
-      columns(COLUMNS_SHORT)
-    }
+  private fun openProjectViewAndCloseSettings(source: Component) {
+    (DialogWrapper.findInstance(source) as? SettingsDialog)?.doOKAction()
+    BazelCoroutineService.getInstance(project).start { openProjectView(project) }
+  }
 
   private fun initBuildifierExecutablePathField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
@@ -149,7 +158,6 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
   override fun reset() {
     super<BoundCompositeSearchableConfigurable>.reset()
     val savedSettings = project.bazelProjectSettings
-    projectViewPathField.text = ProjectViewService.getInstance(project).projectViewPath.toString()
 
     detectedBuildifier = BuildifierUtil.detectBuildifierExecutable(project)
     buildifierExecutablePathField.text = savedSettings.buildifierExecutablePath?.toString().orEmpty()
