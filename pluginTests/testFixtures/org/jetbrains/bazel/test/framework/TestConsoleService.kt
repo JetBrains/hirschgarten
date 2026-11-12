@@ -23,17 +23,24 @@ import org.jetbrains.bazel.ui.console.task.TestTaskConsole
  *
  * A sync that ends in a partial success does not log an error, so a test that expects a clean sync must call this. The
  * failure message lists the sync warnings and errors. A partial success fails here, unlike [ProjectSyncOutcome.isSuccessful].
+ *
+ * When [allowWarnings] is false, this also fails if the sync console of [project] has a warning or an error.
  */
-fun assertLastSyncSucceeded(project: Project) {
+fun assertLastSyncSucceeded(project: Project, allowWarnings: Boolean = true) {
   val outcome = SyncStatusService.getInstance(project).status.value.lastOutcome
-  if (outcome?.completionResult == ProjectSyncCompletionResult.SUCCESS) return
+  val succeeded = outcome?.completionResult == ProjectSyncCompletionResult.SUCCESS
+  if (succeeded && allowWarnings) return
 
-  val console = ConsoleService.getInstance(project) as TestConsoleService
-  val diagnostics = console.syncDiagnostics.joinToString("\n")
-  throw AssertionError(
-    "The last sync did not succeed. Its result: ${outcome?.completionResult ?: "no sync finished"}. Sync diagnostics:\n$diagnostics",
-    outcome?.failureCause,
-  )
+  val diagnostics = (ConsoleService.getInstance(project) as TestConsoleService).syncDiagnostics
+  if (succeeded && diagnostics.isEmpty()) return
+
+  val reason = if (succeeded) {
+    "reported ${diagnostics.size} warning(s) or error(s)"
+  }
+  else {
+    "did not succeed. Its result: ${outcome?.completionResult ?: "no sync finished"}"
+  }
+  throw AssertionError("The last sync $reason. Sync diagnostics:\n${diagnostics.joinToString("\n")}", outcome?.failureCause)
 }
 
 internal class TestConsoleService(project: Project) : ConsoleService, Disposable {
