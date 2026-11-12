@@ -64,7 +64,6 @@ internal class DiagnosticsParserImpl : DiagnosticsParser {
   companion object {
     private val Parsers =
       listOf(
-        BazelRootMessageParser,
         CompilerDiagnosticParser,
         IntelliJRunnerOutputParser,
         Scala3CompilerDiagnosticParser,
