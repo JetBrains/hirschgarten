@@ -7,15 +7,13 @@ import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.toPath
-import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.toPath
-
-private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
 @ApiStatus.Internal
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
@@ -48,9 +46,9 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   private fun mapLocalRepositories(fileLocation: ArtifactLocation, localRepositories: LocalRepositoryMapping): ArtifactLocation {
     if (!(fileLocation.rootPath.startsWith("../") || fileLocation.rootPath.startsWith("external/"))) return fileLocation
     val rootSegments = fileLocation.rootPath.split('/')
-    val localPath = localRepositories.localRepositories[rootSegments[1]] ?: return fileLocation
+    val localPath: Path = localRepositories.localRepositories[rootSegments[1]] ?: return fileLocation
     // Update relative path, keeping bazel's file-system hierarchy separator
-    val newRelativePath = localPath.toString().replace(File.separator, BAZEL_COMPONENT_SEPARATOR) + "/" + fileLocation.relativePath
+    val newRelativePath = localPath.invariantSeparatorsPathString + "/" + fileLocation.relativePath
     return ArtifactLocation.newBuilder().setRootPath("").setRelativePath(newRelativePath).setIsSource(fileLocation.isSource).build()
   }
 
@@ -109,8 +107,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   fun getWorkspaceRelativePath(path: Path): String =
     bazelInfo.workspaceRoot
       .relativize(path)
-      .toString()
-      .replace(File.separator, BAZEL_COMPONENT_SEPARATOR)
+      .invariantSeparatorsPathString
 
   fun resolve(path: Path): Path =
     when {
