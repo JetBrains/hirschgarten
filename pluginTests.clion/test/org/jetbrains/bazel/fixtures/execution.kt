@@ -15,11 +15,13 @@ import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.testFramework.common.waitUntil
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -33,10 +35,17 @@ import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
+private val LOG = fileLogger()
+
 internal val EXECUTION_TIMEOUT: Duration = 10.minutes
 
+/**
+ * [output] is the standard output of the run without the test service messages. [console] is all the text of the run
+ * console in the order of arrival, so it also has the error output and the service messages.
+ */
 internal class BazelExecutionResult(
   val output: String,
+  val console: String,
   val exitCode: Int,
   val testsRoot: SMTestProxy.SMRootTestProxy?,
 ) {
@@ -46,8 +55,12 @@ internal class BazelExecutionResult(
   val testNames: List<String>
     get() = leaves.map { test -> test.parent?.takeUnless { it === testsRoot }?.let { "${it.name}.${test.name}" } ?: test.name }
 
+  /** The state of the run, for the message of a failed assertion on this result. */
+  val diagnostics: String
+    get() = "exit code: $exitCode\ntest tree: $testNames\nconsole:\n$console"
+
   fun assertSuccess() {
-    assertThat(exitCode).withFailMessage(output).isEqualTo(0)
+    assertThat(exitCode).withFailMessage { diagnostics }.isEqualTo(0)
   }
 }
 
@@ -63,6 +76,7 @@ internal suspend fun Project.executeBazelConfiguration(configuration: BazelRunCo
   coroutineScope {
     withContext(Dispatchers.EDT) {
       val output = StringBuffer()
+      val console = StringBuffer()
       val exitCode = CompletableDeferred<Int>()
 
       // register the listener first before starting the run config
@@ -74,6 +88,7 @@ internal suspend fun Project.executeBazelConfiguration(configuration: BazelRunCo
             handler.addProcessListener(
               object : ProcessListener {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                  console.append(event.text)
                   if (ProcessOutputType.isStdout(outputType) && !event.text.startsWith("##teamcity[")) {
                     output.append(event.text)
                   }
@@ -101,13 +116,19 @@ internal suspend fun Project.executeBazelConfiguration(configuration: BazelRunCo
       environment.callback = ProgramRunner.Callback { deferredDescriptor.complete(it) }
       runner.execute(environment)
       val descriptor = deferredDescriptor.await().assertNotNull()
-      val code = withTimeout(5.minutes) { exitCode.await() }
+      val code = try {
+        withTimeout(5.minutes) { exitCode.await() }
+      }
+      catch (e: TimeoutCancellationException) {
+        LOG.warn("${configuration.name} did not terminate. Its console:\n$console")
+        throw e
+      }
 
       val testsRoot = (descriptor.executionConsole as? SMTRunnerConsoleView)?.resultsViewer?.testsRootNode
       if (testsRoot != null) {
         waitUntil("the test tree of ${configuration.name} is complete") { !testsRoot.isInProgress }
       }
 
-      return@withContext BazelExecutionResult(output.toString(), code, testsRoot)
+      return@withContext BazelExecutionResult(output.toString(), console.toString(), code, testsRoot)
     }
   }
