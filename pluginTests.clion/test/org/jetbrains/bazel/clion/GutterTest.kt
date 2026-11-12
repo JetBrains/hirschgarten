@@ -170,7 +170,7 @@ class GutterTest {
     assertThat(readAction { locatedElement.containingFile.virtualFile }).isEqualTo(readAction { element.element.containingFile.virtualFile })
 
     val rerunExtension = BazelTestRerunExtension.getInstance(configuration).assertNotNull()
-    assertThat(rerunExtension.isRerunOf(configuration, result.leaves)).isTrue()
+    assertThat(readAction { rerunExtension.isRerunOf(configuration, result.leaves) }).isTrue()
   }
 
   private suspend fun testElement(
