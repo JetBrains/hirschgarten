@@ -138,7 +138,7 @@ abstract class ExecutionTest(private val executorId: String) {
     result.assertSuccess()
 
     val line = result.output.lines().firstOrNull { it.startsWith(ECHO_OUTPUT_MARKER) }
-    requireNotNull(line)
+    requireNotNull(line) { "no '$ECHO_OUTPUT_MARKER' line in the output of //main:$target\n${result.diagnostics}" }
 
     val path = Path.of(line.substring(ECHO_OUTPUT_MARKER.length))
     assertThat(Files.exists(path)).isTrue()

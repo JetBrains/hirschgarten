@@ -160,10 +160,9 @@ class GutterTest {
     result.assertSuccess()
 
     val leaf = result.leaves.singleOrNull()
-    assertThat(leaf).withFailMessage("expected only '$test' in the test tree, but got ${result.testNames}").isNotNull()
-    assertThat(leaf!!.name).isEqualTo(test)
+    assertThat(leaf?.name).withFailMessage { "expected only '$test' in the test tree\n${result.diagnostics}" }.isEqualTo(test)
 
-    val location = readAction { leaf.getLocation(project, GlobalSearchScope.allScope(project)) }
+    val location = readAction { leaf!!.getLocation(project, GlobalSearchScope.allScope(project)) }
     val locatedElement = location?.psiElement
     checkNotNull(locatedElement)
     assertThat(readAction { locatedElement.textRange }).isEqualTo(readAction { element.element.textRange })
