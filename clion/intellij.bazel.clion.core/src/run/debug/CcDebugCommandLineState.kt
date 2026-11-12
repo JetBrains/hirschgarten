@@ -186,13 +186,13 @@ private class CcTestConsoleBuilder(private val environment: ExecutionEnvironment
 }
 
 private fun MutableMap<Path, Path>.putLocalRepoMapping(execroot: Path, workspace: Path, repoMapping: RepoMapping) {
-  for ([name, path] in repoMapping.getLocalRepositories().localRepositories) {
+  for ((name, path) in repoMapping.getLocalRepositories().localRepositories) {
     put(execroot.resolve("external", name), workspace.resolve(path))
   }
 }
 
 private fun configureGdbDriver(driver: DebuggerDriver, sourceMappings: Map<Path, Path>) {
-  for ([from, to] in sourceMappings) {
+  for ((from, to) in sourceMappings) {
     driver.executeInterpreterCommand("set substitute-path \"$from\" \"$to\"")
   }
 }
@@ -231,7 +231,7 @@ private fun configureDapDriver(driver: DebuggerDriver, sourceMappings: Map<Path,
   // the DAP driver gives an IDE path the debugger path of the first mapping with the longest IDE path,
   // and only a relative debugger path matches both `lib/impl.cc` and the `./lib/hdr.h` that the compiler records for a header
   val relativeFirst = sourceMappings.entries.sortedBy { it.key.isAbsolute }
-  for ([index, mapping] in relativeFirst.withIndex()) {
+  for ((index, mapping) in relativeFirst.withIndex()) {
     driver.addPathMapping(index, mapping.key.toString(), mapping.value.toString())
   }
 }

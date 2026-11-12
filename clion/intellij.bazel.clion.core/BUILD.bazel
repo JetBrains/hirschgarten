@@ -126,6 +126,7 @@ jvm_library(
         "//CIDR/cidr-debugger/core:core_test_lib",
         "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend_test_lib",
         "//CIDR/cidr-debugger/profiles/backend:backend_test_lib",
+        "//CIDR/cidr-debugger/dap:dap_test_lib",
         "//CIDR/clion-execution:clion-execution_test_lib",
         "//CIDR/clion-toolchains:clion-toolchains_test_lib",
         "//CIDR/cidr-execution:cidr-execution_test_lib",
