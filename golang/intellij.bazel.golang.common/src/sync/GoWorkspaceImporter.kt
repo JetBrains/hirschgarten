@@ -26,7 +26,6 @@ import org.jetbrains.bazel.sync.workspace.importer.BazelWorkspaceImporterFactory
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
@@ -56,7 +55,7 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
       is WorkspaceImporterPhase.Initialize -> {
         val importDepth = snapshot.commonSyncConfig.importDepth
         val goBuildTargetList = snapshot.targetGraph.findAllTargetsAtDepth(maxDepth = importDepth, useRelaxedDependencyExpansion = true)
-          .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
+          .mapNotNull { snapshot.targets.findTargetByKey(it) }
           .filterBuildTarget<GoBuildTarget>()
           .toList()
         goTargets = goBuildTargetList.associate { (target, goTarget) -> target.key to goTarget }

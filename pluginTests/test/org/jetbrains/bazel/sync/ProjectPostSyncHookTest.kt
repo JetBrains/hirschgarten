@@ -21,7 +21,7 @@ import org.jetbrains.bazel.test.framework.testproject.buildTarget
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.test.framework.testproject.workspaceLocations
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -74,7 +74,7 @@ class ProjectPostSyncHookTest {
     }
   }
 
-  private fun staleGoTarget(): TestBuildTarget {
+  private fun staleGoTarget(): BuildTarget {
     val kind = TargetKind(kind = "go_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(LanguageClass("go", setOf("go"))))
     return buildTarget("//app:go_default_library", kind) {
       srcs("app/main.go")

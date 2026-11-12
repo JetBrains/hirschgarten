@@ -22,9 +22,9 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
 import org.jetbrains.bazel.target.getTargetDataForLabel
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isRegularFile
 
@@ -48,21 +48,21 @@ object PythonBazelRunUtils {
       .orEmpty()
 }
 
-private fun PyFile.getPythonBazelMainFileTargets(): List<BuildTarget> =
+private fun PyFile.getPythonBazelMainFileTargets(): List<BuildTargetInfo> =
   getPythonBazelTargets().filter { isMainFileInTarget(it) }
 
-private fun PyFile.getPythonBazelTestTargets(): List<BuildTarget> =
+private fun PyFile.getPythonBazelTestTargets(): List<BuildTargetInfo> =
   getPythonBazelTargets().filter { it.kind.ruleType == RuleType.TEST }
 
-private fun PyFile.getPythonBazelTargets(): List<BuildTarget> {
+private fun PyFile.getPythonBazelTargets(): List<BuildTargetInfo> {
   val targetUtils = project.targetStorage
   val file = virtualFile ?: return emptyList()
   return targetUtils.getTargetsForFile(file).mapNotNull { label ->
-    targetUtils.getTargetSummary(label)?.takeIf { it.kind.languageClasses.contains(PythonLanguageClass.PYTHON) }
+    targetUtils.getTargetInfo(label)?.takeIf { it.kind.languageClasses.contains(PythonLanguageClass.PYTHON) }
   }
 }
 
-private fun PyFile.isMainFileInTarget(target: BuildTarget): Boolean {
+private fun PyFile.isMainFileInTarget(target: BuildTargetInfo): Boolean {
   if (target.kind.ruleType != RuleType.BINARY && target.kind.ruleType != RuleType.TEST) {
     return false
   }

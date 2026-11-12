@@ -44,10 +44,10 @@ import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BuildTarget
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 /**
  * Runs and debugs an `intellij_dev_java_launcher` target.
@@ -99,7 +99,7 @@ internal class IntellijDevLaunchRunHandlerProvider : RunHandlerProvider {
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = IntellijDevLaunchRunHandler(configuration)
 
-  override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+  override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
     targets.singleOrNull()?.kind?.kind == INTELLIJ_DEV_JAVA_LAUNCHER_KIND
 }
 

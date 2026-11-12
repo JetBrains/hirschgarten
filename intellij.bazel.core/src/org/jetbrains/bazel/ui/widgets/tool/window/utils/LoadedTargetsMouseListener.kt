@@ -32,8 +32,7 @@ import org.jetbrains.bazel.ui.gutters.BazelRunLocation
 import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
@@ -41,7 +40,7 @@ import java.awt.event.MouseEvent
 internal abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
 
-  abstract fun getSelectedBuildTarget(): BuildTarget?
+  abstract fun getSelectedBuildTarget(): BuildTargetInfo?
 
   abstract fun getSelectedDirectory(): VirtualFile?
 
@@ -87,7 +86,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
       .show(component, x, y)
   }
 
-  private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
+  private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
     DefaultActionGroup().apply {
       addAction(copyTargetIdAction)
       addSeparator()
@@ -116,7 +115,7 @@ internal abstract class LoadedTargetsMouseListener(private val project: Project)
 
 @ApiStatus.Internal
 @RequiresEdt
-fun runOrBuildTarget(project: Project, target: BuildTarget) {
+fun runOrBuildTarget(project: Project, target: BuildTargetInfo) {
   when (target.kind.ruleType) {
     RuleType.TEST, RuleType.BINARY -> {
       val location = BazelRunLocation(project, target)

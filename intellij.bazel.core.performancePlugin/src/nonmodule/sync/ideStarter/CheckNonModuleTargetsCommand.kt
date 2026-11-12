@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 
 internal class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
@@ -21,12 +22,12 @@ internal class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackC
       "Expected targets: ${expectedTargets}, actual: ${loadedTargets.toSet()}"
     }
 
-    val binInfo = checkNotNull(targetUtils.getTargetSummary(Label.parse("//:bin"))) { "No info for //:bin" }
+    val binInfo = checkNotNull(targetUtils.getTargetInfo(Label.parse("//:bin"))) { "No info for //:bin" }
     check(binInfo.kind.ruleType == RuleType.BINARY) {
       "Expected //:bin to be runnable, actual: ${binInfo.kind.ruleType}"
     }
 
-    val testInfo = checkNotNull(targetUtils.getTargetSummary(Label.parse("//:test"))) { "No info for //:test" }
+    val testInfo = checkNotNull(targetUtils.getTargetInfo(Label.parse("//:test"))) { "No info for //:test" }
     check(testInfo.kind.ruleType == RuleType.TEST) {
       "Expected //:test to be testable, actual: ${testInfo.kind.ruleType}"
     }

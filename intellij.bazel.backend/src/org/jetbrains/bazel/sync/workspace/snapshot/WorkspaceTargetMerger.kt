@@ -2,10 +2,9 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.copy
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.isManual
@@ -29,9 +28,7 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
       .map { (key, group) ->
         if (group.size == 1) {
           val target = group.single()
-          object : BuildTarget by target {
-            override val key: WorkspaceTargetKey = key
-          }
+          target.copy(info = target.info.copy(key = key))
         }
         else {
           // keep it deterministic
@@ -45,19 +42,17 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
       log.warn("Trying to merge incompatible ${BuildTarget::class}, ${key}, workspace model could be incorrect.")
     }
 
-    return object : BuildTarget by left {
-      override val key: WorkspaceTargetKey = key
-
-      override val kind: TargetKind = left.kind.copy(languageClasses = left.kind.languageClasses + right.kind.languageClasses)
-
-      override val dependencies: List<DependencyLabel> = (left.dependencies + right.dependencies)
-        .distinctBy { it.copy(targetKey = it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)) }
-
-      override val sources: OutputLocationCollection = mergeLocationCollections(left.sources, right.sources)
-      override val resources: OutputLocationCollection = mergeLocationCollections(left.resources, right.resources)
-
-      override val data: List<BuildTargetData> = mergeBuildData(left.data.asSequence() + right.data.asSequence())
-    }
+    return BuildTarget(
+      info = left.info.copy(
+        key = key,
+        kind = left.kind.copy(languageClasses = left.kind.languageClasses + right.kind.languageClasses),
+      ),
+      dependencies = (left.dependencies + right.dependencies)
+        .distinctBy { it.copy(targetKey = it.targetKey.copy(aspectIds = WorkspaceAspectIds.EMPTY)) },
+      sources = mergeLocationCollections(left.sources, right.sources),
+      resources = mergeLocationCollections(left.resources, right.resources),
+      data = mergeBuildData(left.data.asSequence() + right.data.asSequence()),
+    )
   }
 
   private fun BuildTarget.isCompatibleWith(other: BuildTarget): Boolean =

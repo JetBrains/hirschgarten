@@ -7,6 +7,7 @@ import com.esotericsoftware.kryo.kryo5.util.Pool
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.util.SlowOperations
 import com.intellij.util.io.CorruptedException
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap
 import it.unimi.dsi.fastutil.ints.IntArrayList
@@ -23,15 +24,12 @@ import org.h2.mvstore.type.LongDataType
 import org.h2.mvstore.type.StringDataType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
-import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.BuildTargetInfo
+import org.jetbrains.bsp.protocol.data
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.file.Path
@@ -41,11 +39,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 private const val INITIAL_VALUE_BUFFER_SIZE = 8 * 1024
 private const val ENCODE_CHUNK_SIZE = 256
-
-private val EMPTY_FILE_SETS = HeavyWorkspaceTarget(
-  sources = OutputLocationCollection.EMPTY,
-  resources = OutputLocationCollection.EMPTY,
-)
 
 // limit frame encoder threads to avoid lock contention on kryo instance pool
 private val ENCODE_DISPATCHER = Dispatchers.IO.limitedParallelism(KRYO_POOL_INSTANCES)
@@ -57,7 +50,7 @@ private val KRYO_OUTPUT_POOL: Pool<Output> =
 
 /**
  * Storage is split into [SnapshotGeneration], each generation is set of MVStore maps
- * that together are used to reconstruct original [BuildTarget] based on loading conditions [TargetLoadOptions],
+ * that together are used to reconstruct the original [BuildTarget], or only its [BuildTargetInfo],
  *
  * We must always keep previous snapshot generation in order to have fallback in case of update failure/cancellation,
  * this might cause storage file on disk be 2x larger than actual data, but the good news is that is barely impact read/write
@@ -88,7 +81,7 @@ class SnapshotStorage(
     private val log = logger<SnapshotStorage>()
 
     private val GENERATION_MAP_SUFFIXES =
-      listOf("id2PartialTarget", "id2TargetDeps", "id2HeavyTarget", "id2TargetData", "file2KeyIds", "executables", "strings", "refs")
+      listOf("id2PartialTarget", "id2TargetContent", "id2TargetData", "file2KeyIds", "executables", "strings", "refs")
 
     private fun mapName(generation: Int, suffix: String) = "snapshot.g$generation.$suffix"
 
@@ -148,8 +141,7 @@ class SnapshotStorage(
       generation = generation,
       storage = this,
       id2PartialTarget = openFrameMap(mapName(generation, "id2PartialTarget"), IntegerDataType.INSTANCE),
-      id2TargetDeps = openFrameMap(mapName(generation, "id2TargetDeps"), IntegerDataType.INSTANCE),
-      id2HeavyTarget = openFrameMap(mapName(generation, "id2HeavyTarget"), IntegerDataType.INSTANCE),
+      id2TargetContent = openFrameMap(mapName(generation, "id2TargetContent"), IntegerDataType.INSTANCE),
       id2TargetData = openFrameMap(mapName(generation, "id2TargetData"), LongDataType.INSTANCE),
       file2KeyIds = openMap(mapName(generation, "file2KeyIds"), LongDataType.INSTANCE, IntListDataType),
       executables = openMap(mapName(generation, "executables"), IntegerDataType.INSTANCE, IntListDataType),
@@ -301,8 +293,7 @@ class SnapshotGeneration internal constructor(
   val generation: Int,
   private val storage: SnapshotStorage,
   private val id2PartialTarget: MVMap<Int, ValueFrame>,
-  private val id2TargetDeps: MVMap<Int, ValueFrame>,
-  private val id2HeavyTarget: MVMap<Int, ValueFrame>,
+  private val id2TargetContent: MVMap<Int, ValueFrame>,
 
   // key: (keyId, buildTargetId) packed into long
   private val id2TargetData: MVMap<Long, ValueFrame>,
@@ -328,155 +319,124 @@ class SnapshotGeneration internal constructor(
 
   private fun <T> decodeValue(frame: ValueFrame, type: Class<T>): T = storage.decodeFrame(frame, type, stringTable, refTable)
 
-  private fun composeNewWorkspaceTarget(
-    partialSnapshot: PersistentWorkspaceSnapshot,
-    key: WorkspaceTargetKey,
-    options: TargetLoadOptions,
-  ): BuildTarget? {
+  private fun decodeInfo(key: WorkspaceTargetKey, frame: ValueFrame): BuildTargetInfo {
+    val partial = decodeValue(frame, PartialWorkspaceTarget::class.java)
+    return BuildTargetInfo(
+      key = key,
+      kind = partial.kind,
+      generatorName = partial.generatorName,
+      isTestOnly = partial.isTestOnly,
+      tags = partial.tags,
+      workspaceName = partial.workspaceName,
+    )
+  }
+
+  private inline fun composeTarget(
+    info: BuildTargetInfo,
+    contentFrame: ValueFrame,
+    // invoked in ascending typeId order, so the bulk scan may back this with a forward-only cursor over the packed-key map
+    dataFrameForType: (typeId: Int) -> ValueFrame?,
+  ): BuildTarget {
+    val content = decodeValue(contentFrame, WorkspaceTargetContent::class.java)
+    val typeIds = storage.allBuildTargetIds
+    val data = ArrayList<BuildTargetData>()
+    for (n in typeIds.indices) {
+      // a target has frames only for the data types it holds
+      val frame = dataFrameForType(typeIds.getInt(n)) ?: continue
+      data += decodeValue(frame, BuildTargetData::class.java)
+    }
+    return BuildTarget(
+      info = info,
+      dependencies = content.dependencies,
+      sources = content.sources,
+      resources = content.resources,
+      data = data,
+    )
+  }
+
+  private fun loadTarget(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey): BuildTarget? {
     val keyId = partialSnapshot.keyId2Target.getReverseOrDefault(key, -1)
     if (keyId < 0) {
       // TODO: assert
       return null
     }
     val partialFrame = id2PartialTarget[keyId] ?: return null
-    val partialData = decodeValue(partialFrame, PartialWorkspaceTarget::class.java)
-    return composeFromFrames(
-      key = key,
-      options = options,
-      partialData = partialData,
-      depsFrame = { frameOf(id2TargetDeps, keyId) },
-      heavyFrame = { frameOf(id2HeavyTarget, keyId) },
-      dataFrameForType = { typeId -> frameOf(id2TargetData, BuildTargetPack.pack(keyId, typeId)) },
-    )
+    val contentFrame = id2TargetContent[keyId] ?: return null
+    return composeTarget(decodeInfo(key, partialFrame), contentFrame) { typeId -> id2TargetData[BuildTargetPack.pack(keyId, typeId)] }
   }
 
-  private inline fun composeFromFrames(
-    key: WorkspaceTargetKey,
-    options: TargetLoadOptions,
-    partialData: PartialWorkspaceTarget,
-    crossinline depsFrame: () -> ValueFrame?,
-    crossinline heavyFrame: () -> ValueFrame?,
-    // invoked in ascending typeId order (both id sources below are sorted), so the bulk scan may
-    // back this with a forward-only cursor over the packed-key map
-    crossinline dataFrameForType: (typeId: Int) -> ValueFrame?,
-  ): BuildTarget {
-    val depsSection = LazyTargetSection(TargetSection.DEPS in options.sections) { decodeDeps(depsFrame()) }
-    val fileSetsSection = LazyTargetSection(TargetSection.FILE_SETS in options.sections) { decodeFileSets(heavyFrame()) }
-    val dataTypeIds = when (val hint = options.targetData) {
-      is BuildTargetLoadHint.Subset -> typeIdsOf(hint.data)
-      BuildTargetLoadHint.All, BuildTargetLoadHint.None -> storage.allBuildTargetIds
-    }
-    val dataSection = LazyTargetSection(options.targetData != BuildTargetLoadHint.None) {
-      decodeData(dataTypeIds, dataFrameForType)
-    }
-    return LazyWorkspaceTarget(
-      key = key,
-      kind = partialData.kind,
-      generatorName = partialData.generatorName,
-      isTestOnly = partialData.isTestOnly,
-      tags = partialData.tags,
-      workspaceName = partialData.workspaceName,
-      loaded = options.copy(sections = options.sections + TargetSection.INFO),
-      depsSection = depsSection,
-      fileSetsSection = fileSetsSection,
-      dataSection = dataSection,
-    )
-  }
-
-  // an absent frame is a valid state, e.g. a retired generation, and decodes to an empty section
-  private fun decodeDeps(frame: ValueFrame?): List<DependencyLabel> =
-    if (frame == null) listOf() else decodeValue(frame, WorkspaceTargetDeps::class.java).dependencies
-
-  private fun decodeFileSets(frame: ValueFrame?): HeavyWorkspaceTarget =
-    if (frame == null) EMPTY_FILE_SETS else decodeValue(frame, HeavyWorkspaceTarget::class.java)
-
-  private inline fun decodeData(typeIds: IntList, dataFrameForType: (typeId: Int) -> ValueFrame?): List<BuildTargetData> {
-    val loadedData = ArrayList<BuildTargetData>(typeIds.size)
-    for (n in typeIds.indices) {
-      // a target has frames only for the data types it holds
-      val frame = dataFrameForType(typeIds.getInt(n)) ?: continue
-      loadedData += decodeValue(frame, BuildTargetData::class.java)
-    }
-    return loadedData
-  }
-
-  private fun typeIdsOf(types: Set<Class<out BuildTargetData>>): IntList {
-    val typeIds = IntArrayList(types.size)
-    for (type in types) {
-      val typeId = storage.kryo.universe.type2Id.getOrDefault(type, -1)
-      if (typeId < 0) {
-        // TODO: assert
-        continue
-      }
-      typeIds.add(typeId)
-    }
-    // ascending, per the dataFrameForType ordering contract
-    typeIds.sort(null)
-    return typeIds
-  }
-
-  // guarded frame read
-  private fun <K> frameOf(map: MVMap<K, ValueFrame>, mapKey: K): ValueFrame? {
+  fun findTargetInfo(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey): BuildTargetInfo? {
     if (!isLive()) {
       return null
     }
-    return map[mapKey]
+    fullTargetCache.getIfPresent(key)?.let { return it.info }
+    val keyId = partialSnapshot.keyId2Target.getReverseOrDefault(key, -1)
+    if (keyId < 0) {
+      return null
+    }
+    val partialFrame = id2PartialTarget[keyId] ?: return null
+    return decodeInfo(key, partialFrame)
   }
 
-  fun scanAllTargets(partialSnapshot: PersistentWorkspaceSnapshot, options: TargetLoadOptions): Sequence<BuildTarget> = sequence {
+  fun scanAllTargetInfos(partialSnapshot: PersistentWorkspaceSnapshot): Sequence<BuildTargetInfo> = sequence {
     if (!isLive()) {
       return@sequence
     }
-    val skipDeps = TargetSection.DEPS !in options.sections
-    val skipFileSets = TargetSection.FILE_SETS !in options.sections
-    val skipData = options.targetData == BuildTargetLoadHint.None
-    val depsCursor = if (skipDeps) null else PeekingEntryCursor(id2TargetDeps) { it.toLong() }
-    val heavyCursor = if (skipFileSets) null else PeekingEntryCursor(id2HeavyTarget) { it.toLong() }
-    val dataCursor = if (skipData) null else PeekingEntryCursor(id2TargetData) { it }
+    for ((keyId, partialFrame) in id2PartialTarget.entries) {
+      val key = partialSnapshot.keyId2Target.get(keyId) ?: continue
+      yield(decodeInfo(key, partialFrame))
+    }
+  }
+
+  fun findOrLoadTarget(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey): BuildTarget? {
+    SlowOperations.assertSlowOperationsAreAllowed()
+    if (!isLive()) {
+      return null
+    }
+    return fullTargetCache.get(key) { loadTarget(partialSnapshot, it) }
+  }
+
+  fun scanAllTargets(partialSnapshot: PersistentWorkspaceSnapshot): Sequence<BuildTarget> = sequence {
+    SlowOperations.assertSlowOperationsAreAllowed()
+    if (!isLive()) {
+      return@sequence
+    }
+    val contentCursor = PeekingEntryCursor(id2TargetContent) { it.toLong() }
+    val dataCursor = PeekingEntryCursor(id2TargetData) { it }
 
     for ((keyId, partialFrame) in id2PartialTarget.entries) {
       val key = partialSnapshot.keyId2Target.get(keyId) ?: continue
-      val partialData = decodeValue(partialFrame, PartialWorkspaceTarget::class.java)
+      val contentFrame = contentCursor.advanceTo(keyId.toLong()) ?: continue
 
-      val depsFrame = depsCursor?.advanceTo(keyId.toLong())
-      val heavyFrame = heavyCursor?.advanceTo(keyId.toLong())
-
-      // composeFromFrames requests typeIds ascending and keyIds ascend across iterations, so the
+      // composeTarget requests typeIds ascending and keyIds ascend across iterations, so the
       // packed keys form one ascending pass over the data map, stale rows of skipped keyIds are
       // discarded raw by the next advanceTo
-      val target = composeFromFrames(
-        key = key,
-        options = options,
-        partialData = partialData,
-        depsFrame = { depsFrame ?: frameOf(id2TargetDeps, keyId) },
-        heavyFrame = { heavyFrame ?: frameOf(id2HeavyTarget, keyId) },
-      ) { typeId ->
-        val packedKey = BuildTargetPack.pack(keyId, typeId)
-        if (dataCursor == null) {
-          frameOf(id2TargetData, packedKey)
-        }
-        else {
-          dataCursor.advanceTo(packedKey)
-        }
+      val target = composeTarget(decodeInfo(key, partialFrame), contentFrame) { typeId ->
+        dataCursor.advanceTo(BuildTargetPack.pack(keyId, typeId))
       }
       yield(target)
     }
   }
 
-  fun findOrLoadTarget(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey, options: TargetLoadOptions): BuildTarget? {
+  fun <T : BuildTargetData> findTargetData(partialSnapshot: PersistentWorkspaceSnapshot, key: WorkspaceTargetKey, type: Class<T>): T? {
+    SlowOperations.assertSlowOperationsAreAllowed()
     if (!isLive()) {
       return null
     }
-    // cached full target satisfies any request
-    fullTargetCache.getIfPresent(key)?.let { return it }
-    if (options == TargetLoadOptions.ALL) {
-      return fullTargetCache.get(key) { composeNewWorkspaceTarget(partialSnapshot, it, TargetLoadOptions.ALL) }
+    fullTargetCache.getIfPresent(key)?.let { return it.data(type) }
+    val keyId = partialSnapshot.keyId2Target.getReverseOrDefault(key, -1)
+    if (keyId < 0) {
+      return null
     }
-    // partial loads are the memory-light bulk path: composed fresh, never cached
-    return composeNewWorkspaceTarget(partialSnapshot, key, options)
+    val typeId = storage.kryo.universe.type2Id.getOrDefault(type, -1)
+    if (typeId < 0) {
+      // TODO: assert
+      return null
+    }
+    val frame = id2TargetData[BuildTargetPack.pack(keyId, typeId)] ?: return null
+    return type.cast(decodeValue(frame, BuildTargetData::class.java))
   }
 
-  // TODO: assert not partial
   @VisibleForTesting
   fun saveTarget(target: WorkspaceTargetToSave) {
     val encoded = storage.kryo.valuePool.use { kryo -> KRYO_OUTPUT_POOL.use { output -> encodeTarget(target, kryo, output) } }
@@ -544,8 +504,8 @@ class SnapshotGeneration internal constructor(
       tags = raw.tags,
       workspaceName = raw.workspaceName,
     )
-    val targetDeps = WorkspaceTargetDeps(dependencies = raw.dependencies)
-    val heavyTarget = HeavyWorkspaceTarget(
+    val content = WorkspaceTargetContent(
+      dependencies = raw.dependencies,
       sources = raw.sources,
       resources = raw.resources,
     )
@@ -564,8 +524,7 @@ class SnapshotGeneration internal constructor(
     return EncodedWorkspaceTarget(
       keyId = target.keyId,
       partialFrame = storage.encodeFrame(kryo, output, partialTarget, stringTable, refTable),
-      depsFrame = storage.encodeFrame(kryo, output, targetDeps, stringTable, refTable),
-      heavyFrame = storage.encodeFrame(kryo, output, heavyTarget, stringTable, refTable),
+      contentFrame = storage.encodeFrame(kryo, output, content, stringTable, refTable),
       dataFrames = sortedData.map { (dataId, data) -> dataId to storage.encodeFrame(kryo, output, data, stringTable, refTable) },
     )
   }
@@ -574,8 +533,7 @@ class SnapshotGeneration internal constructor(
   private fun appendTarget(encoded: EncodedWorkspaceTarget) {
     val keyId = encoded.keyId
     id2PartialTarget.append(keyId, encoded.partialFrame)
-    id2TargetDeps.append(keyId, encoded.depsFrame)
-    id2HeavyTarget.append(keyId, encoded.heavyFrame)
+    id2TargetContent.append(keyId, encoded.contentFrame)
     for ((dataId, frame) in encoded.dataFrames) {
       id2TargetData.append(BuildTargetPack.pack(keyId, dataId), frame)
     }
@@ -651,8 +609,7 @@ class SnapshotGeneration internal constructor(
 private class EncodedWorkspaceTarget(
   val keyId: Int,
   val partialFrame: ValueFrame,
-  val depsFrame: ValueFrame,
-  val heavyFrame: ValueFrame,
+  val contentFrame: ValueFrame,
 
   // (dataId, frame) sorted ascending by dataId
   // TODO: maybe Int2ArrayMap<...> here?

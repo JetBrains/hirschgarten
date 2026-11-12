@@ -7,7 +7,6 @@ import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.CcTargetUtils
 import org.jetbrains.bazel.clion.workspace.findTargetToolchain
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -17,7 +16,7 @@ internal suspend fun Project.findTargets(label: Label): List<BuildTarget> {
 
   return snapshot.targetGraph.allTargets
     .filter { it.label == label }
-    .mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
+    .mapNotNull { snapshot.targets.findTargetByKey(it) }
     .toList()
 }
 

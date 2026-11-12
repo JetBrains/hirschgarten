@@ -54,7 +54,7 @@ internal class BazelExecutionResult(
 internal suspend fun Project.createBazelConfiguration(label: Label): BazelRunConfiguration {
   val settings = RunManager.getInstanceAsync(this).createConfiguration(label.toString(), bazelRunConfigurationFactory)
   val configuration = settings.configuration as BazelRunConfiguration
-  val targets = listOf(findTarget(label))
+  val targets = listOf(findTarget(label).info)
   configuration.updateTargets(listOf(label), RunHandlerProvider.getRunHandlerProvider(this, targets))
   return configuration
 }

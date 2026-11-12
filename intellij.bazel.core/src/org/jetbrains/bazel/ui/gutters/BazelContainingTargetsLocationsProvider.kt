@@ -7,9 +7,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ThreeState
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 /**
  * Needed because [com.intellij.execution.actions.RunConfigurationProducer] can only produce one configuration per one location.
@@ -29,19 +29,19 @@ class BazelContainingTargetsLocationsProvider : MultipleRunLocationsProvider() {
   /**
    * This can also include non-executable targets (for synthetic run gutters)
    */
-  private fun getTargets(element: PsiElement): List<BuildTarget> {
+  private fun getTargets(element: PsiElement): List<BuildTargetInfo> {
     val targetUtils = element.project.targetStorage
     val containingFile = element.containingFile?.virtualFile ?: return emptyList()
     val normalTargets = targetUtils.getTargetsForFile(containingFile)
-      .mapNotNull { targetUtils.getTargetSummary(it) }
+      .mapNotNull { targetUtils.getTargetInfo(it) }
     val executableTargets = targetUtils.getExecutableTargetsForFile(containingFile)
-      .mapNotNull { targetUtils.getTargetSummary(it) }
+      .mapNotNull { targetUtils.getTargetInfo(it) }
     val normalLabels = normalTargets.mapTo(HashSet()) { it.id }
     val dependentTargets = executableTargets.filter { it.id !in normalLabels }
     return (normalTargets + filterDependentTargets(element, dependentTargets)).distinctBy { it.id }
   }
 
-  private fun filterDependentTargets(element: PsiElement, targets: List<BuildTarget>): List<BuildTarget> {
+  private fun filterDependentTargets(element: PsiElement, targets: List<BuildTargetInfo>): List<BuildTargetInfo> {
     if (targets.size < 2) return targets
     val matches = BazelEntryPointMatcher.matchAll(element, targets)
     // in case element is not recognized as an entry point of any given targets, keep all targets

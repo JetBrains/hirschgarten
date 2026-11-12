@@ -23,7 +23,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.utils.ExecutableInfo
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.concurrent.atomic.AtomicReference
 
@@ -82,7 +82,7 @@ internal class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelR
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelGoTestHandler = BazelGoTestHandler(configuration)
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
       targets.all { it.kind.includesGo() && it.kind.ruleType == RuleType.TEST }
 
     override val googleHandlerId: String = "BlazeGoTestConfigurationHandlerProvider"

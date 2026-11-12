@@ -9,7 +9,6 @@ import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.javaLibrary
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
@@ -215,7 +214,7 @@ class WorkspaceSnapshotMergeTest {
     targets.let { map ->
       val key = targetGraph.findTargetByKey(WorkspaceTargetKey(label = Label.parse(label)))
                 ?: error("target not found: $label")
-      val target = map.findTargetByKey(key, TargetLoadOptions.ALL) ?: error("target not loaded: $label")
+      val target = map.findTargetByKey(key) ?: error("target not loaded: $label")
       target.dependencies.map { it.targetKey.label.toString() }
     }
 }

@@ -21,7 +21,6 @@ import org.jetbrains.bazel.run.synthetic.SyntheticRunTargetTemplateGenerator
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
 import org.jetbrains.bazel.ui.gutters.BazelRunLocation
-import org.jetbrains.bsp.protocol.id
 
 internal class SyntheticRunConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
   override fun isDumbAware(): Boolean = true

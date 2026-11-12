@@ -32,23 +32,25 @@ import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
+import org.jetbrains.bazel.target.allTestableTargetInfos
 import org.jetbrains.bazel.target.baseDirectory
 import org.jetbrains.bazel.target.getTargetDataForLabel
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.id
 import java.nio.file.Path
 import kotlin.io.path.useLines
 
-private fun BuildTarget.usesJetBrainsTestRunner(project: Project): Boolean =
+private fun BuildTargetInfo.usesJetBrainsTestRunner(project: Project): Boolean =
   JetBrainsTestRunner.TAG in tags ||
   usesJetBrainsTestRunnerCompat(project) ||
   JetBrainsTestRunner.Detector.anyDetects(project, id)
 
 // only needed for some time to keep the JetBrains test runner recognizable for outdated branches (without "jetbrains_test_runner" tag)
-private fun BuildTarget.usesJetBrainsTestRunnerCompat(project: Project): Boolean {
+private fun BuildTargetInfo.usesJetBrainsTestRunnerCompat(project: Project): Boolean {
   return kind.ruleType == RuleType.TEST &&
          project.targetStorage.getTargetDataForLabel<JvmBuildTarget>(id)?.mainClass in wellKnownJetBrainsTestRunnerImpls
 }
@@ -63,17 +65,17 @@ private fun targetsUseJetBrainsTestRunner(project: Project, targets: List<Label>
   val expandedTargets = targets.asSequence().flatMap { expandWildcardTarget(project, it) }
   val targetStorage = project.targetStorage
   return expandedTargets.all { label ->
-    targetStorage.getTargetSummary(label)?.usesJetBrainsTestRunner(project) ?: JetBrainsTestRunner.Detector.anyDetects(project, label)
+    targetStorage.getTargetInfo(label)?.usesJetBrainsTestRunner(project) ?: JetBrainsTestRunner.Detector.anyDetects(project, label)
   }
 }
 
 private fun expandWildcardTarget(project: Project, target: Label): List<Label> {
   if (target.target !is AllRuleTargets) return listOf(target)
-  val testableSummaries = project.targetStorage.allTestableSummaries()
-  if (testableSummaries.isEmpty()) return listOf(target)  // Monorepo with JPS case
+  val testableTargets = project.targetStorage.allTestableTargetInfos()
+  if (testableTargets.isEmpty()) return listOf(target)  // Monorepo with JPS case
   val baseDirectory = findReferredPackage(project, target.assumeResolved())?.toNioPathOrNull()
                       ?: return listOf(target)
-  return testableSummaries
+  return testableTargets
     .filter { it.baseDirectory(project)?.startsWith(baseDirectory) ?: false }
     .map { it.id }
            .takeIf { it.isNotEmpty() } ?: listOf(target)
@@ -174,7 +176,7 @@ internal class JetBrainsTestRerunExtension : BazelTestRerunExtension {
 
 @ApiStatus.Internal
 class JetBrainsTestFilterExtension : JvmTestFilterExtension {
-  override fun isApplicable(project: Project, target: BuildTarget): Boolean = target.usesJetBrainsTestRunner(project)
+  override fun isApplicable(project: Project, target: BuildTargetInfo): Boolean = target.usesJetBrainsTestRunner(project)
 
   override fun getTestFilter(className: String, method: PsiMethod?): String =
     if (method == null) className else "$className:${method.name}:${method.getMethodParameterTypes()}"
@@ -221,7 +223,7 @@ internal class JetBrainsTestSuiteHandler : BazelRunHandler {
 
     override fun canRun(
       project: Project,
-      targets: List<BuildTarget>,
+      targets: List<BuildTargetInfo>,
     ): Boolean =
       targets.all { it.kind.kind == "test_suite" && it.usesJetBrainsTestRunner(project) }
 

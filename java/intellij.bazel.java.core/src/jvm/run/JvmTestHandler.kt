@@ -25,7 +25,7 @@ import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.TestParams
 
 @ApiStatus.Internal
@@ -72,7 +72,7 @@ class JvmTestHandler(private val configuration: BazelRunConfiguration) : BazelRu
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler(configuration)
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
       targets.all {
         (it.kind.isJvmTarget() && it.kind.ruleType == RuleType.TEST)
       }

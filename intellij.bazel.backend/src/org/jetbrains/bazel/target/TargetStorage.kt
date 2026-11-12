@@ -21,9 +21,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
-import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
-import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
@@ -31,10 +28,9 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
-import org.jetbrains.bsp.protocol.data
-import org.jetbrains.bsp.protocol.id
 import org.jetbrains.bsp.protocol.isManual
 import java.nio.file.Path
 
@@ -72,27 +68,27 @@ class CachedSnapshotView(val snapshot: WorkspaceSnapshot) {
     outputLocationResolver = DefaultOutputLocationResolver.createExecrootResolving(snapshot.bazelInfo)
   }
 
-  private val target2Summary: Map<WorkspaceTargetKey, BuildTarget> =
-    snapshot.targets.allTargets(TargetLoadOptions.SUMMARY)
+  private val target2Info: Map<WorkspaceTargetKey, BuildTargetInfo> =
+    snapshot.targets.allTargetInfos()
       .filter { it.key in importKeys }
       .associateBy { it.key }
 
-  val summaries: List<BuildTarget> = target2Summary.values.toList()
+  val infos: List<BuildTargetInfo> = target2Info.values.toList()
 
-  val label2Summary: Map<Label, BuildTarget> =
-    label2Key.mapNotNull { (label, key) -> target2Summary[key]?.let { label to it } }.toMap()
+  val label2Info: Map<Label, BuildTargetInfo> =
+    label2Key.mapNotNull { (label, key) -> target2Info[key]?.let { label to it } }.toMap()
 
   val shortLabels: List<String> by lazy {
-    summaries.map { it.id.toShortString(snapshot.repoMapping) }
+    infos.map { it.id.toShortString(snapshot.repoMapping) }
   }
 
   val executableShortLabels: List<String> by lazy {
-    summaries.filter { it.kind.isExecutable }
+    infos.filter { it.kind.isExecutable }
       .map { it.id.toShortString(snapshot.repoMapping) }
   }
 
-  val allTestableSummaries: List<BuildTarget> by lazy {
-    summaries.filter { it.kind.ruleType == RuleType.TEST && !it.isManual }
+  val allTestableInfos: List<BuildTargetInfo> by lazy {
+    infos.filter { it.kind.ruleType == RuleType.TEST && !it.isManual }
   }
 
   fun targetsForPath(path: Path): List<Label> =
@@ -112,11 +108,7 @@ class CachedSnapshotView(val snapshot: WorkspaceSnapshot) {
   fun <T : BuildTargetData> data(label: Label, type: Class<T>): T? {
     val cached = dataCache.get(label to type) {
       val key = label2Key[label] ?: return@get EmptyBuildTargetData
-      val options = TargetLoadOptions(
-        sections = setOf(TargetSection.INFO),
-        targetData = BuildTargetLoadHint.Subset(setOf(type)),
-      )
-      snapshot.targets.findTargetByKey(key, options)?.data(type) ?: EmptyBuildTargetData
+      snapshot.targets.findTargetData(key, type) ?: EmptyBuildTargetData
     }
     return if (cached === EmptyBuildTargetData) {
       null
@@ -144,6 +136,8 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   private fun view(): CachedSnapshotView = views.value
 
+  internal fun canonicalLabel(label: Label): Label? = label.toCanonicalLabelOrThis(project)
+
   val allTargetShortLabels: List<String>
     get() = view().shortLabels
 
@@ -159,16 +153,9 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
     view().snapshot.fileToTarget.removeMapping(file)
   }
 
-  fun allTargets(): Sequence<Label> = allTargetSummaries().asSequence().map { it.id }
+  fun allTargets(): Sequence<Label> = view().infos.asSequence().map { it.id }
 
-  fun allTargetSummaries(): List<BuildTarget> = view().summaries
-
-  fun allTestableSummaries(): List<BuildTarget> = view().allTestableSummaries
-
-  fun getTargetSummary(label: Label): BuildTarget? =
-    label.toCanonicalLabelOrThis(project)?.let { view().label2Summary[it] }
-
-  fun getTotalTargetCount(): Int = view().summaries.size
+  fun getTotalTargetCount(): Int = view().infos.size
 
   fun getTargetsForPath(path: Path): List<Label> = view().targetsForPath(path)
 
@@ -178,7 +165,7 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
     val path = file.toNioPathOrNull() ?: return emptyList()
     val view = view()
     val targetsForFile = view.targetsForPath(path)
-    val executableDirectTargets = targetsForFile.filter { label -> view.label2Summary[label]?.kind?.isExecutable == true }
+    val executableDirectTargets = targetsForFile.filter { label -> view.label2Info[label]?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
       return targetsForFile.flatMap { view.executableTargetsFor(it) }.distinct()
     }
@@ -187,10 +174,10 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
   fun getExecutableTargetsForTarget(target: Label): List<Label> = view().executableTargetsFor(target)
 
-  fun isLibrary(target: Label): Boolean = getTargetSummary(target)?.kind?.ruleType == RuleType.LIBRARY
+  fun isLibrary(target: Label): Boolean = getTargetInfo(target)?.kind?.ruleType == RuleType.LIBRARY
 
   fun <T : BuildTargetData> getTargetDataForLabel(label: Label, type: Class<T>): T? =
-    label.toCanonicalLabelOrThis(project)?.let { view().data(it, type) }
+    canonicalLabel(label)?.let { view().data(it, type) }
 
   fun getTotalFileCount(): Int = view().snapshot.fileToTarget.size
 
@@ -202,6 +189,23 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
 
 @ApiStatus.Internal
 inline fun <reified T : BuildTargetData> TargetStorage.getTargetDataForLabel(label: Label): T? = getTargetDataForLabel(label, T::class.java)
+
+@ApiStatus.Internal
+fun TargetStorage.getTargetInfo(label: Label): BuildTargetInfo? =
+  canonicalLabel(label)?.let { views.value.label2Info[it] }
+
+@ApiStatus.Internal
+fun TargetStorage.allTargetInfos(): List<BuildTargetInfo> = views.value.infos
+
+@ApiStatus.Internal
+fun TargetStorage.allTestableTargetInfos(): List<BuildTargetInfo> = views.value.allTestableInfos
+
+@ApiStatus.Internal
+fun TargetStorage.getBuildTarget(label: Label): BuildTarget? {
+  val view = views.value
+  val key = canonicalLabel(label)?.let { view.label2Key[it] } ?: return null
+  return view.snapshot.targets.findTargetByKey(key)
+}
 
 val Project.targetStorage: TargetStorage
   @ApiStatus.Internal

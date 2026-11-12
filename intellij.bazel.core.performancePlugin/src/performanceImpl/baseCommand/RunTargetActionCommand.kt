@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.runOrBuildTarget
 
@@ -17,7 +18,7 @@ internal abstract class RunTargetActionCommand(text: String, line: Int) : Playba
 
   private suspend fun executeRunTargetAction(project: Project) {
     val id = getTargetId(project) ?: return
-    val targetInfo = project.targetStorage.getTargetSummary(id) ?: return
+    val targetInfo = project.targetStorage.getTargetInfo(id) ?: return
     withContext(Dispatchers.EDT) { runOrBuildTarget(project, targetInfo) }
   }
 

@@ -14,6 +14,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bsp.protocol.id
@@ -86,7 +87,7 @@ internal class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<
   private fun guessDeployInfoPath(project: Project, targetLabel: Label): Path? {
     val bazelBinPath = project.workspaceSnapshotOrNull?.bazelInfo?.bazelBin ?: return null
 
-    val targetInfo = project.targetStorage.getTargetSummary(targetLabel) ?: return null
+    val targetInfo = project.targetStorage.getTargetInfo(targetLabel) ?: return null
 
     // bazel-bin mirrors the package path of a main workspace target
     if (!targetInfo.id.isMainWorkspace) {

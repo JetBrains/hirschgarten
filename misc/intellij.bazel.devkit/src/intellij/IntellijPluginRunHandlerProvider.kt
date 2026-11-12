@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 internal class IntellijPluginRunHandlerProvider : RunHandlerProvider {
   override val id: String
@@ -18,6 +18,6 @@ internal class IntellijPluginRunHandlerProvider : RunHandlerProvider {
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = IntellijPluginRunHandler(configuration)
 
-  override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+  override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
     targets.singleOrNull()?.kind?.kind == "intellij_plugin_debug_target"
 }

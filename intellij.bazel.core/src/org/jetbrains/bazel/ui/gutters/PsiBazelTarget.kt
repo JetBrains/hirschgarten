@@ -6,12 +6,12 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.FakePsiElement
 import org.jetbrains.annotations.NonNls
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 /**
  * A fake PSI element for cases where we want to get executor actions from Bazel target tool window, for example.
  */
-internal class PsiBazelTarget(private val project: Project, val target: BuildTarget) : FakePsiElement() {
+internal class PsiBazelTarget(private val project: Project, val target: BuildTargetInfo) : FakePsiElement() {
   override fun getParent(): PsiElement? = null
 
   override fun getContainingFile(): PsiFile? = null

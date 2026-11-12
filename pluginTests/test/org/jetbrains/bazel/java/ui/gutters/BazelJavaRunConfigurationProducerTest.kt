@@ -21,7 +21,7 @@ import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.testBazel
-import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test
 class BazelJavaRunConfigurationProducerTest {
   private val myFixture by bazelCodeInsightFixture()
 
-  private val mockTarget = NonImportedBuildTarget(
+  private val mockTarget = BuildTargetInfo(
     Label.synthetic("mock"),
     TargetKind(
       kind = "java_binary",
@@ -41,7 +41,7 @@ class BazelJavaRunConfigurationProducerTest {
     ),
   )
 
-  private val jetBrainsTestRunnerTarget = NonImportedBuildTarget(
+  private val jetBrainsTestRunnerTarget = BuildTargetInfo(
     Label.synthetic("mock-test"),
     TargetKind(
       kind = "java_test",

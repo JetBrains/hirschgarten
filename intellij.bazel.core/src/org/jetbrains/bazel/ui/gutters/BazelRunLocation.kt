@@ -4,11 +4,11 @@ import com.intellij.execution.PsiLocation
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 class BazelRunLocation(
-  val target: BuildTarget,
+  val target: BuildTargetInfo,
   /**
    * If provided, this can be, for example, a test method in PSI, from which a test filter can be derived.
    */
@@ -17,6 +17,6 @@ class BazelRunLocation(
   /**
    * No other information except the target itself is available, e.g., from Bazel target tool window.
    */
-  constructor(project: Project, target: BuildTarget) :
+  constructor(project: Project, target: BuildTargetInfo) :
     this(target, PsiLocation(PsiBazelTarget(project, target)))
 }

@@ -8,11 +8,11 @@ import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetMap
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.copy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -204,13 +204,17 @@ class WorkspaceTargetGraphTest {
       val shadow = shadowTarget("//dep", aspectIds = listOf("aspect")).copy(
         dependencies = listOf(DependencyLabel(WorkspaceTargetKey(Label.parse("//shadowLeaf")), DependencyLabelKind.COMPILE)),
       )
-      val otherConfiguration = shadowTarget("//dep", aspectIds = listOf("aspect")).copy(
-        key = WorkspaceTargetKey(
-          label = Label.parse("//dep"),
-          configuration = WorkspaceConfigurationId.of("other"),
-          aspectIds = WorkspaceAspectIds.of(listOf("aspect")),
-        ),
-      )
+      val otherConfiguration = shadowTarget("//dep", aspectIds = listOf("aspect")).let {
+        it.copy(
+          info = it.info.copy(
+            key = WorkspaceTargetKey(
+              label = Label.parse("//dep"),
+              configuration = WorkspaceConfigurationId.of("other"),
+              aspectIds = WorkspaceAspectIds.of(listOf("aspect")),
+            ),
+          ),
+        )
+      }
       val root = workspaceTargetWithShadowDeps(
         aspectIds = emptyList(),
         rawDeps = listOf(WorkspaceTargetKey(Label.parse("//dep"))),
@@ -695,10 +699,10 @@ class WorkspaceTargetGraphTest {
     InMemoryWorkspaceTargetMap(targets.associateBy { it.key })
 
   private fun Sequence<WorkspaceTargetKey>.resolved(map: WorkspaceTargetMap): Set<BuildTarget> =
-    mapNotNull { map.findTargetByKey(it, TargetLoadOptions.ALL) }.toSet()
+    mapNotNull { map.findTargetByKey(it) }.toSet()
 
   private fun WorkspaceTargetKey?.resolved(map: WorkspaceTargetMap): BuildTarget? =
-    this?.let { map.findTargetByKey(it, TargetLoadOptions.ALL) }
+    this?.let { map.findTargetByKey(it) }
 
   private fun workspaceTarget(
     id: String,
@@ -706,7 +710,7 @@ class WorkspaceTargetGraphTest {
     compileDeps: List<Pair<String, String?>> = emptyList(),
     runtimeDeps: List<String> = emptyList(),
     generatorName: String? = null,
-  ): TestBuildTarget {
+  ): BuildTarget {
     val label = Label.parse(id)
     val compileConfiguredDeps = compileDeps.map { (depLabel, depConfig) ->
       DependencyLabel(
@@ -729,7 +733,7 @@ class WorkspaceTargetGraphTest {
     )
   }
 
-  private fun shadowTarget(id: String, aspectIds: List<String>): TestBuildTarget {
+  private fun shadowTarget(id: String, aspectIds: List<String>): BuildTarget {
     val label = Label.parse(id)
     val targetKey = WorkspaceTargetKey(label, aspectIds = WorkspaceAspectIds.of(aspectIds))
     return TestBuildTarget(
@@ -744,7 +748,7 @@ class WorkspaceTargetGraphTest {
   private fun workspaceTargetWithShadowDeps(
     aspectIds: List<String>,
     rawDeps: List<WorkspaceTargetKey>,
-  ): TestBuildTarget {
+  ): BuildTarget {
     val label = Label.parse("//proto")
     val targetKey = WorkspaceTargetKey(label, aspectIds = WorkspaceAspectIds.of(aspectIds))
     return TestBuildTarget(

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.redcodes
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.target.allTargetInfos
 import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.test.framework.BazelTestApplication
@@ -18,7 +19,7 @@ class AttrAspectsTest {
   fun `attr_aspects in project view is honored`() {
     val targetStorage = project.targetStorage
     val repoMapping = targetStorage.repoMapping()
-    val workspaceTargets = targetStorage.allTargetSummaries().asSequence()
+    val workspaceTargets = targetStorage.allTargetInfos().asSequence()
       .filter { it.isWorkspace(repoMapping) }
       .map { it.id }
       .toSet()

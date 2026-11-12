@@ -1,2 +1,3 @@
 kotlin/jvm/internal/DefaultConstructorMarker
 org/jetbrains/bsp/protocol/BuildTarget
+org/jetbrains/bsp/protocol/BuildTargetInfo

@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.workspace.snapshot
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
@@ -20,7 +19,7 @@ inline fun <reified T : BuildTargetData> Sequence<BuildTarget>.filterBuildTarget
 
 @get:ApiStatus.Internal
 val WorkspaceSnapshot.allTargets: Sequence<BuildTarget>
-  get(): Sequence<BuildTarget> = targetGraph.allTargets.mapNotNull { targets.findTargetByKey(it, TargetLoadOptions.ALL) }
+  get(): Sequence<BuildTarget> = targetGraph.allTargets.mapNotNull { targets.findTargetByKey(it) }
 
 @get:ApiStatus.Internal
 val WorkspaceSnapshot.commonSyncConfig: CommonWorkspaceSyncConfig

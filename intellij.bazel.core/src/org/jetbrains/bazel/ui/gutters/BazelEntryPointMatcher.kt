@@ -5,8 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ThreeState
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 /**
  * Tells which targets from a given set run the code at a PSI element.
@@ -31,7 +30,7 @@ interface BazelEntryPointMatcher {
    * A Kotlin file can hold more than one class, and a Java class can hold nested classes.
    * Each of these classes can be the entry point of a different target.
    */
-  fun match(element: PsiElement, targets: List<BuildTarget>): Map<Label, ThreeState>
+  fun match(element: PsiElement, targets: List<BuildTargetInfo>): Map<Label, ThreeState>
 
   companion object {
     val ep: ExtensionPointName<BazelEntryPointMatcher> = ExtensionPointName("org.jetbrains.bazel.entryPointMatcher")
@@ -40,7 +39,7 @@ interface BazelEntryPointMatcher {
      * Returns one result for each target in [targets] from all matchers.
      * The results combine as [BazelEntryPointMatcher.match] describes.
      */
-    fun matchAll(element: PsiElement, targets: List<BuildTarget>): Map<Label, ThreeState> {
+    fun matchAll(element: PsiElement, targets: List<BuildTargetInfo>): Map<Label, ThreeState> {
       val matches = targets.associateTo(mutableMapOf()) { it.id to ThreeState.UNSURE }
       ep.forEachExtensionSafe { matcher ->
         for ((key, value) in matcher.match(element, targets)) {

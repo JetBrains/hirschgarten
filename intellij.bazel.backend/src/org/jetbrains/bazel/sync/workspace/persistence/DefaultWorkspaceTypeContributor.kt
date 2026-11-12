@@ -9,10 +9,9 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
-import org.jetbrains.bazel.sync.workspace.persistence.mvstore.HeavyWorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.persistence.mvstore.PersistentWorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.persistence.mvstore.PartialWorkspaceTarget
-import org.jetbrains.bazel.sync.workspace.persistence.mvstore.WorkspaceTargetDeps
+import org.jetbrains.bazel.sync.workspace.persistence.mvstore.WorkspaceTargetContent
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.LabelConfigKey
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
@@ -30,8 +29,7 @@ internal class DefaultWorkspaceTypeContributor : WorkspaceTypeContributor {
     // blob and MVStore envelope types
     type<PersistentWorkspaceSnapshot>()
     type<PartialWorkspaceTarget>()
-    type<WorkspaceTargetDeps>()
-    type<HeavyWorkspaceTarget>()
+    type<WorkspaceTargetContent>()
 
     // configuration
     type<WorkspaceConfigurationId>()

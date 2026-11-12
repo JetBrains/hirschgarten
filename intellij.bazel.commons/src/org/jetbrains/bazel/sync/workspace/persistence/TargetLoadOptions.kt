@@ -3,6 +3,8 @@ package org.jetbrains.bazel.sync.workspace.persistence
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.BuildTargetData
 
+// TODO: Remove completely in 2027.1
+
 /**
  * Independently loadable section of a target
  */
@@ -32,6 +34,7 @@ sealed interface BuildTargetLoadHint {
  * @property sections Eagerly loaded sections, everything not listed here is loaded lazily
  * @property targetData Select what [BuildTargetData] types to load eagerly
  */
+@Deprecated("Use dedicated BuildTarget/BuildTargetInfo loading")
 @ApiStatus.Internal
 data class TargetLoadOptions(
   val sections: Set<TargetSection>,

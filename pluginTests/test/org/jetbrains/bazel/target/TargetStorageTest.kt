@@ -9,25 +9,23 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.kotest.matchers.types.shouldNotBeSameInstanceAs
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
-import org.jetbrains.bazel.sync.JavaLanguageClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
-import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.javaBinary
 import org.jetbrains.bazel.test.framework.testproject.javaLibrary
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
-import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.data
@@ -42,19 +40,17 @@ class TargetStorageTest {
 
   private suspend fun WorkspaceSnapshotService.save() = (this as SettingsSavingComponent).save()
 
-  private fun BuildTarget.summaryView(): List<Any?> = listOf(key, kind, tags)
-
   @Test
   fun `empty snapshot answers empty everywhere`(): Unit = runBlocking {
     val targetUtils = project.targetStorage
     targetUtils.getTotalTargetCount() shouldBe 0
-    targetUtils.allTargetSummaries() shouldBe emptyList()
-    targetUtils.getTargetSummary(Label.parse("//nothing:nothing")) shouldBe null
+    targetUtils.allTargetInfos() shouldBe emptyList()
+    targetUtils.getTargetInfo(Label.parse("//nothing:nothing")) shouldBe null
     targetUtils.getTargetsForPath(testBazel.workspaceRoot.resolve("Nothing.java")) shouldBe emptyList()
   }
 
   @Test
-  fun `summaries expose the depth-filtered import set only`(): Unit = runBlocking {
+  fun `target infos expose the depth-filtered import set only`(): Unit = runBlocking {
     val bin = javaBinary("//app:bin") {
       deps("//lib:lib")
       tags(BuildTargetTag.MANUAL)
@@ -67,11 +63,9 @@ class TargetStorageTest {
       importDepth(1)
     }
 
-    val summaries = project.targetStorage.allTargetSummaries().associateBy { it.id }
-    summaries.keys shouldBe setOf(bin.key.label, lib.key.label)
-
-    // an in-memory snapshot hands back the very targets it was given, so compare them whole
-    summaries.getValue(bin.key.label) shouldBe bin
+    val infos = project.targetStorage.allTargetInfos().associateBy { it.id }
+    infos.keys shouldBe setOf(bin.key.label, lib.key.label)
+    infos.getValue(bin.key.label) shouldBe bin.info
   }
 
   @Test
@@ -114,7 +108,7 @@ class TargetStorageTest {
     val plain = javaLibrary("//lib:lib")
     testBazel.sync { targets(configured, plain) }
 
-    val summary = project.targetStorage.getTargetSummary(label)
+    val summary = project.targetStorage.getTargetInfo(label)
     summary?.key shouldBe plain.key
   }
 
@@ -166,21 +160,21 @@ class TargetStorageTest {
 
     val targetUtils = project.targetStorage
 
-    val summariesBefore = targetUtils.allTargetSummaries().map { it.summaryView() }
+    val infosBefore = targetUtils.allTargetInfos()
     val targetsForPathBefore = targetUtils.getTargetsForPath(file)
     val executableBefore = targetUtils.getExecutableTargetsForTarget(lib.key.label)
     val dataBefore = targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java)
 
     project.service<WorkspaceSnapshotService>().save()
 
-    targetUtils.allTargetSummaries().map { it.summaryView() } shouldBe summariesBefore
+    targetUtils.allTargetInfos() shouldBe infosBefore
     targetUtils.getTargetsForPath(file) shouldBe targetsForPathBefore
     targetUtils.getExecutableTargetsForTarget(lib.key.label) shouldBe executableBefore
     targetUtils.getTargetDataForLabel(lib.key.label, JvmBuildTarget::class.java) shouldBe dataBefore
   }
 
   @Test
-  fun `a persisted summary carries INFO and materializes the sections it did not load`(): Unit = runBlocking {
+  fun `a persisted target gives its info from memory and its complete target on request`(): Unit = runBlocking {
     val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
     val bin = javaBinary("//app:bin") {
       deps("//lib:lib")
@@ -190,18 +184,16 @@ class TargetStorageTest {
     testBazel.sync { targets(bin, lib) }
     project.service<WorkspaceSnapshotService>().save()
 
-    val summary = project.targetStorage.getTargetSummary(bin.key.label)
-    summary.shouldNotBeNull()
-    summary.loaded.sections shouldBe setOf(TargetSection.INFO)
+    project.targetStorage.getTargetInfo(bin.key.label) shouldBe bin.info
 
-    summary.kind shouldBe bin.kind
-    summary.tags shouldBe bin.tags
-
-    summary.sources.getOutputLocations().toList() shouldBe bin.sources.getOutputLocations().toList()
-    summary.dependencies shouldBe bin.dependencies
-    summary.data(JvmBuildTarget::class.java) shouldBe jvmData
+    val target = project.targetStorage.getBuildTarget(bin.key.label).shouldNotBeNull()
+    target.info shouldBe bin.info
+    target.sources.getOutputLocations().toList() shouldBe bin.sources.getOutputLocations().toList()
+    target.dependencies shouldBe bin.dependencies
+    target.data(JvmBuildTarget::class.java) shouldBe jvmData
 
     project.targetStorage.getTargetDataForLabel(bin.key.label, JvmBuildTarget::class.java) shouldBe jvmData
+    project.targetStorage.getBuildTarget(Label.parse("//app:missing")) shouldBe null
   }
 
   @Test
@@ -216,32 +208,36 @@ class TargetStorageTest {
   }
 
   @Test
-  fun `a minimally loaded target names itself and its sections when a missing one is read`() {
-    val label = Label.parse("//app:bin")
-    val guessed = NonImportedBuildTarget(
-      label = label,
-      kind = TargetKind(kind = "java_binary", ruleType = RuleType.BINARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
-    )
+  fun `a target info finds its full target in a persisted snapshot`(): Unit = runBlocking {
+    val jvmData = JvmBuildTarget(javacOpts = StringsCollection.of(listOf("-parameters")), mainClass = "com.example.Main")
+    val bin = javaBinary("//app:bin") { data(jvmData) }
+    testBazel.sync { targets(bin) }
+    project.service<WorkspaceSnapshotService>().save()
 
-    guessed.id shouldBe label
-    guessed.loaded shouldBe TargetLoadOptions.MINIMAL
+    val info = project.targetStorage.getTargetInfo(bin.key.label).shouldNotBeNull()
+    info shouldBe bin.info
 
-    guessed.data shouldBe emptyList()
+    val snapshot = project.workspaceSnapshotOrNull.shouldNotBeNull()
+    val full = info.toFullTarget(snapshot).shouldNotBeNull()
+    full.info shouldBe info
+    full.data(JvmBuildTarget::class.java) shouldBe jvmData
+
+    BuildTargetInfo(Label.parse("//app:missing"), bin.kind).toFullTarget(snapshot) shouldBe null
   }
 
   @Test
-  fun `allTargetSummaries returns the same cached List instance for the same snapshot`(): Unit = runBlocking {
+  fun `allTargetInfos returns the same cached List instance for the same snapshot`(): Unit = runBlocking {
     val bin = javaBinary("//app:bin")
     testBazel.sync { targets(bin) }
 
     val targetUtils = project.targetStorage
-    val first = targetUtils.allTargetSummaries()
-    val second = targetUtils.allTargetSummaries()
+    val first = targetUtils.allTargetInfos()
+    val second = targetUtils.allTargetInfos()
     second shouldBeSameInstanceAs first
 
     testBazel.sync { targets(bin) }
 
-    val afterNewSnapshot = targetUtils.allTargetSummaries()
+    val afterNewSnapshot = targetUtils.allTargetInfos()
     afterNewSnapshot shouldNotBeSameInstanceAs first
   }
 
@@ -262,4 +258,7 @@ class TargetStorageTest {
     val targetUtils = project.targetStorage
     targetUtils.getTargetsForPath(file) shouldBe listOf(label)
   }
+
+  fun BuildTargetInfo.toFullTarget(snapshot: WorkspaceSnapshot): BuildTarget? =
+    snapshot.targets.findTargetByKey(key)
 }

@@ -4,28 +4,27 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTargetTemplateGenerator {
   private val DEFAULT_TARGET_NAME = "synthetic_binary"
 
-  override fun isSupported(target: BuildTarget): Boolean = true
+  override fun isSupported(target: BuildTargetInfo): Boolean = true
 
-  override fun getSyntheticTargetLabel(original: BuildTarget, element: PsiElement): Label {
+  override fun getSyntheticTargetLabel(original: BuildTargetInfo, element: PsiElement): Label {
     val mainClass = element.getMainClassInternal() ?: error("failed to get main class")
     val pkg = getTargetPath(original, mainClass)
     return SyntheticRunTargetUtils.getSyntheticTargetLabel(packageParts = pkg, targetName = DEFAULT_TARGET_NAME)
   }
 
-  override fun getSyntheticParams(target: BuildTarget, element: PsiElement): SyntheticRunTargetTemplateGenerator.Params {
+  override fun getSyntheticParams(target: BuildTargetInfo, element: PsiElement): SyntheticRunTargetTemplateGenerator.Params {
     val mainClass = element.getMainClassInternal() ?: error("failed to get main class")
     return SyntheticRunTargetTemplateGenerator.Params(mainClass)
   }
 
   override fun createSyntheticTemplate(
-    target: BuildTarget,
+    target: BuildTargetInfo,
     params: SyntheticRunTargetTemplateGenerator.Params,
   ): SyntheticRunTargetTemplate {
     val mainClass = params.data ?: error("failed to get main class")
@@ -34,7 +33,7 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
     return SyntheticRunTargetTemplate(buildFileContent = build, buildFilePath = pkg.joinToString("/"))
   }
 
-  fun getTargetPath(original: BuildTarget, mainClass: String): Array<String> {
+  fun getTargetPath(original: BuildTargetInfo, mainClass: String): Array<String> {
     return arrayOf(
       SyntheticRunTargetUtils.escapeTargetLabel(original.id.toString()),
       SyntheticRunTargetUtils.escapeTargetLabel(mainClass),
@@ -46,5 +45,5 @@ abstract class MainClassSyntheticRunTargetTemplateGenerator : SyntheticRunTarget
   }
 
   protected abstract fun getMainClass(element: PsiElement): String?
-  protected abstract fun getBuildContent(target: BuildTarget, syntheticTarget: String, mainClass: String): String
+  protected abstract fun getBuildContent(target: BuildTargetInfo, syntheticTarget: String, mainClass: String): String
 }

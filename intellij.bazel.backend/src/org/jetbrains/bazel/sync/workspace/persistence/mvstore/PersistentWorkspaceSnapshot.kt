@@ -44,12 +44,8 @@ class PartialWorkspaceTarget(
 )
 
 @ApiStatus.Internal
-class WorkspaceTargetDeps(
+class WorkspaceTargetContent(
   val dependencies: List<DependencyLabel>,
-)
-
-@ApiStatus.Internal
-class HeavyWorkspaceTarget(
   val sources: OutputLocationCollection,
   val resources: OutputLocationCollection,
 )

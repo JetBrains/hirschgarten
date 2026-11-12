@@ -10,12 +10,12 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazel
 import org.jetbrains.bazel.test.framework.testproject.buildTarget
 import org.jetbrains.bazel.test.framework.testproject.javaLibrary
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 
@@ -85,11 +85,11 @@ class BazelContainingTargetsLocationsProviderTest {
     gutterTargets(containing, otherContaining) shouldContainExactlyInAnyOrder listOf(containing.id, otherContaining.id)
   }
 
-  private fun dependentTest(label: String): TestBuildTarget = buildTarget(label, JAVA_TEST_KIND) { deps("//lib:lib") }
+  private fun dependentTest(label: String): BuildTarget = buildTarget(label, JAVA_TEST_KIND) { deps("//lib:lib") }
 
   private fun matcher(vararg matches: Pair<Label, ThreeState>): BazelEntryPointMatcher =
     object : BazelEntryPointMatcher {
-      override fun match(element: PsiElement, targets: List<BuildTarget>): Map<Label, ThreeState> = matches.toMap()
+      override fun match(element: PsiElement, targets: List<BuildTargetInfo>): Map<Label, ThreeState> = matches.toMap()
     }
 
   private fun useMatchers(vararg matchers: BazelEntryPointMatcher) {
@@ -97,12 +97,12 @@ class BazelContainingTargetsLocationsProviderTest {
   }
 
   /** Returns the targets that the run gutter offers for an element in `Shared.java`. */
-  private fun gutterTargets(vararg targets: TestBuildTarget): List<Label> {
+  private fun gutterTargets(vararg targets: BuildTarget): List<Label> {
     val file = myFixture.addFileToProject("Shared.java", "public class Shared {}")
     myFixture.testBazel.sync { targets(*targets) }
     val locations = runReadActionBlocking {
       BazelContainingTargetsLocationsProvider().getAlternativeLocations(PsiLocation(file))
     }
-    return locations.filterIsInstance<BazelRunLocation>().map { it.target.id }
+    return locations.filterIsInstance<BazelRunLocation>().map { it.target.key.label }
   }
 }

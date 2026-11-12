@@ -9,7 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 internal class GenericRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
   override val id: String
@@ -20,7 +20,7 @@ internal class GenericRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
 
   override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GenericBazelRunHandler()
 
-  override fun canRun(project: Project, targets: List<BuildTarget>): Boolean = targets.singleOrNull()?.kind?.ruleType == RuleType.BINARY
+  override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean = targets.singleOrNull()?.kind?.ruleType == RuleType.BINARY
 
   override fun canRunNonImported(project: Project, targets: List<Label>): Boolean =
     targets.size == 1 && targets.single().target !is AllRuleTargets

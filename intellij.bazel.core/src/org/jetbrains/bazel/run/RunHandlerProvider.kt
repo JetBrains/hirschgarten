@@ -6,8 +6,9 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 interface RunHandlerProvider {
@@ -24,9 +25,9 @@ interface RunHandlerProvider {
 
   /**
    * Returns true if this provider can create a {@link BspRunHandler} for running the given targets.
-   * Implementations should generally handle [org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget] as well.
+   * Implementations should generally handle targets that are not imported as well.
    */
-  fun canRun(project: Project, targets: List<BuildTarget>): Boolean
+  fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean
 
   fun canRunNonImported(project: Project, targets: List<Label>): Boolean = false
 
@@ -43,14 +44,14 @@ interface RunHandlerProvider {
       ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
-    fun getRunHandlerProvider(project: Project, targets: List<BuildTarget>): RunHandlerProvider? =
+    fun getRunHandlerProvider(project: Project, targets: List<BuildTargetInfo>): RunHandlerProvider? =
       ep.extensionList.firstOrNull {
         it.canRun(project, targets)
       }
 
     fun getRunHandlerProviderOrNull(project: Project, targets: List<Label>): RunHandlerProvider? {
       val targetUtils = project.targetStorage
-      val targetInfos = targets.mapNotNull { targetUtils.getTargetSummary(it) }
+      val targetInfos = targets.mapNotNull { targetUtils.getTargetInfo(it) }
       return if (targetInfos.isNotEmpty()) {
         getRunHandlerProvider(project, targetInfos)
       }

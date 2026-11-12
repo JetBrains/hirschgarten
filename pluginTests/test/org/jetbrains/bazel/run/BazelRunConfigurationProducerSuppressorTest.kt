@@ -22,7 +22,6 @@ import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.testBazel
 import org.jetbrains.bazel.test.framework.testproject.pythonTarget
 import org.jetbrains.bazel.test.framework.testproject.sync
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -161,10 +160,10 @@ internal class BazelRunConfigurationProducerSuppressorTest {
     testBazel.sync { targets(pyTestTarget(label, source)) }
   }
 
-  private fun pyBinaryTarget(label: Label, mainFile: PsiFile): TestBuildTarget =
+  private fun pyBinaryTarget(label: Label, mainFile: PsiFile): BuildTarget =
     pythonSourceTarget(label, "py_binary", RuleType.BINARY, source = mainFile, mainFile = mainFile)
 
-  private fun pyTestTarget(label: Label, source: PsiFile): TestBuildTarget =
+  private fun pyTestTarget(label: Label, source: PsiFile): BuildTarget =
     pythonSourceTarget(label, "py_test", RuleType.TEST, source = source, mainFile = null)
 
   private fun pythonSourceTarget(
@@ -173,7 +172,7 @@ internal class BazelRunConfigurationProducerSuppressorTest {
     ruleType: RuleType,
     source: PsiFile,
     mainFile: PsiFile?,
-  ): TestBuildTarget =
+  ): BuildTarget =
     pythonTarget(
       label,
       ruleKind,

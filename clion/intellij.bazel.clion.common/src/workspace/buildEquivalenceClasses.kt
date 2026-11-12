@@ -10,7 +10,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.BazelCLionCommonBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.commons.getLocalRepositories
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -97,7 +96,7 @@ private fun createResolveConfiguration(
 context(ctx: CcImportContext)
 private fun collectSources(targets: Collection<WorkspaceTargetKey>): List<VirtualFileUrl> {
   return targets.asSequence()
-    .mapNotNull { ctx.snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }
+    .mapNotNull { ctx.snapshot.targets.findTargetByKey(it) }
     .flatMap { target -> target.sources.getOutputLocations() }
     .mapNotNull { ctx.outputResolver.resolve(it, localOverride = ctx.snapshot.repoMapping.getLocalRepositories()) }
     .filter { OCFileTypeHelpers.isSourceFile(it.fileName.toString()) }

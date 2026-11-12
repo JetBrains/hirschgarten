@@ -35,6 +35,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
 import org.jetbrains.bazel.sync.workspace.snapshot.isExecConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
@@ -204,7 +205,7 @@ class BepServer(
       val testXml =
         testResult.testActionOutputList.find { it.name == BazelTestFileNames.XML.filename }?.let { bazelPathsResolver.resolve(it) }
       val label = Label.parse(event.id.testResult.label)
-      val targetKind = project.targetStorage.getTargetSummary(label)?.kind
+      val targetKind = project.targetStorage.getTargetInfo(label)?.kind
       // Test cases identified and sent to the client by TestXmlParser.
       val reportedSuites = testXml?.let { TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, it, targetKind) } ?: 0
       if (reportedSuites == 0) {

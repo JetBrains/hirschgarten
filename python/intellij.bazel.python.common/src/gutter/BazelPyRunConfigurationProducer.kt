@@ -5,11 +5,11 @@ import com.jetbrains.python.psi.PyFile
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.python.run.PythonBazelRunUtils
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 class BazelPyRunConfigurationProducer : BazelRunConfigurationProducer() {
-  override fun getGutterAction(element: PsiElement, target: BuildTarget): GutterAction? {
+  override fun getGutterAction(element: PsiElement, target: BuildTargetInfo): GutterAction? {
     if (element.containingFile !is PyFile || !PythonBazelRunUtils.isRunLineMarkerElement(element)) return null
     return GutterAction(
       programArguments = PythonBazelRunUtils.getTestRunnerArguments(element),

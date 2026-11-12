@@ -6,13 +6,13 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.OutputLocation
-import org.jetbrains.bsp.protocol.id
 import java.nio.file.Path
 import kotlin.collections.contains
 
 @get:ApiStatus.Internal
-val BuildTarget.baseDirectoryLocation: OutputLocation
+val BuildTargetInfo.baseDirectoryLocation: OutputLocation
   get() {
     val label = id
     val packagePath = label.packagePath.toString()
@@ -25,14 +25,24 @@ val BuildTarget.baseDirectoryLocation: OutputLocation
   }
 
 @ApiStatus.Internal
-fun BuildTarget.baseDirectory(project: Project): Path? =
+fun BuildTargetInfo.baseDirectory(project: Project): Path? =
   project.targetStorage.resolveExecrootOutputLocation(baseDirectoryLocation)
 
 @ApiStatus.Internal
-fun BuildTarget.isWorkspace(repoMapping: RepoMapping): Boolean =
+fun BuildTargetInfo.isWorkspace(repoMapping: RepoMapping): Boolean =
   if (id !is ResolvedLabel || id.isMainWorkspace) {
     true
   }
   else {
     (id as ResolvedLabel).repoName in repoMapping.getLocalRepositories().localRepositories
   }
+
+@get:ApiStatus.Internal
+val BuildTarget.baseDirectoryLocation: OutputLocation
+  get() = info.baseDirectoryLocation
+
+@ApiStatus.Internal
+fun BuildTarget.baseDirectory(project: Project): Path? = info.baseDirectory(project)
+
+@ApiStatus.Internal
+fun BuildTarget.isWorkspace(repoMapping: RepoMapping): Boolean = info.isWorkspace(repoMapping)

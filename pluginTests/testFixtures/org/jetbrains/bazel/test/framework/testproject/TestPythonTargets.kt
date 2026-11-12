@@ -5,7 +5,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StringsCollection
 import java.nio.file.Path
@@ -21,7 +21,7 @@ fun pythonTarget(
   runnerScript: Path? = null,
   targetArgs: List<String> = emptyList(),
   declare: TestTargetBuilder.() -> Unit = {},
-): TestBuildTarget =
+): BuildTarget =
   buildTarget(label, TargetKind(kind = kind, ruleType = ruleType, languageClasses = setOf(PythonLanguageClass.PYTHON))) {
     data(
       PythonBuildTarget(
@@ -48,5 +48,5 @@ fun pythonTarget(
   runnerScript: Path? = null,
   targetArgs: List<String> = emptyList(),
   declare: TestTargetBuilder.() -> Unit = {},
-): TestBuildTarget =
+): BuildTarget =
   pythonTarget(Label.parse(label), kind, ruleType, interpreter, imports, mainFile, mainModule, runnerScript, targetArgs, declare)

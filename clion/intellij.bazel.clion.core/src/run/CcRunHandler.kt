@@ -21,7 +21,7 @@ import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 class CcRunHandler : BazelRunHandler {
@@ -50,7 +50,7 @@ class CcRunHandler : BazelRunHandler {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = CcRunHandler()
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean {
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean {
       if (!BazelCLionFeatureFlags.isCLionEnabled) return false
 
       val target = targets.singleOrNull() ?: return false
@@ -87,7 +87,7 @@ class CcTestHandler : BazelRunHandler {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = CcTestHandler()
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean {
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean {
       if (!BazelCLionFeatureFlags.isCLionEnabled) return false
       return targets.all { it.kind.includesCc() && it.kind.ruleType == RuleType.TEST }
     }
