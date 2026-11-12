@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.fixtures
 
 import com.intellij.clion.testFramework.nolang.junit5.core.LanguageEngine
+import com.intellij.clion.testFramework.nolang.junit5.core.publishThreadDump
 import com.intellij.clion.testFramework.nolang.junit5.core.withClionTimeout
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.fixture.TestFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
+import kotlinx.coroutines.TimeoutCancellationException
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelPathManager
 import org.jetbrains.bazel.test.framework.BazelRegistrySnapshot
@@ -75,7 +77,14 @@ internal fun clionBazelProjectFixture(
       assertLastSyncSucceeded(project)
 
       LOG.info("Waiting for symbols to load")
-      LanguageEngine.INSTANCE.waitForSymbols(project)
+      try {
+        LanguageEngine.INSTANCE.waitForSymbols(project)
+      }
+      catch (e: TimeoutCancellationException) {
+        // The index wait has its own timeout, which fires before the setup timeout and publishes no coroutine dump.
+        publishThreadDump("indexingStall")
+        throw e
+      }
     },
   )
 
