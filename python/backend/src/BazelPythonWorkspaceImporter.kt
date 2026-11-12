@@ -40,9 +40,11 @@ import com.jetbrains.python.errorProcessing.PyResult
 import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.python.lang.PythonLanguageClass
@@ -66,6 +68,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.commonSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.filterBuildTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
+import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bazel.utils.isUnder
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleExtensionEntity
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelTargetKey
@@ -76,6 +79,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.StrictDependencyCheckedType
 import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.id
 import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.utils.StringUtils
@@ -482,10 +486,27 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
     .map { resource -> resource.toContentRoot(PYTHON_RESOURCE_ROOT_TYPE, entitySource, virtualFileUrlManager) }
     .toList()
 
+  /**
+   * Returns the directories against which the `imports` of [target] resolve: the root of its repository and the
+   * directory of the outputs of that repository under `bazel-bin`. A repository that is neither the main nor a local
+   * repository gets no directories, so its `imports` make no source roots.
+   */
+  private fun importBasePaths(snapshot: WorkspaceSnapshot, target: BuildTarget): List<Path> {
+    val label = target.id as? ResolvedLabel
+    if (label == null || label.isMainWorkspace) {
+      return listOfNotNull(context.project.bazelProjectInfo.projectRootDir?.toNioPath(), context.bazelInfo.bazelBin).distinct()
+    }
+    if (!target.isWorkspace(snapshot.repoMapping)) return emptyList()
+    val pathsResolver = BazelPathsResolver(context.bazelInfo)
+    return listOf(
+      pathsResolver.toRepositoryPath(label.repo, snapshot.repoMapping),
+      pathsResolver.toBinRepositoryPath(label.repo, snapshot.repoMapping),
+    ).distinct()
+  }
+
   private fun computeSourceRootPaths(snapshot: WorkspaceSnapshot, target: BuildTarget): Set<Path> {
-    val projectInfo = context.project.bazelProjectInfo
     // imports for generated files should be resolved against bazel-bin
-    val basePaths = listOfNotNull(projectInfo.projectRootDir?.toNioPath(), context.bazelInfo.bazelBin).distinct()
+    val basePaths = importBasePaths(snapshot, target)
     val importRoots =
       PythonImportUtils.assembleExplicitImportsPaths(target)
         .mapNotNull { importPath ->

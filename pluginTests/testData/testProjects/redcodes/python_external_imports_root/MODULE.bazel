@@ -1,0 +1,10 @@
+bazel_dep(name = "rules_java", version = "9.3.0")
+bazel_dep(name = "rules_python", version = "2.0.3")
+bazel_dep(name = "cc_false_toolchain", version = "local")
+bazel_dep(name = "false_launcher", version = "local")
+
+bazel_dep(name = "py_repo")
+local_path_override(
+    module_name = "py_repo",
+    path = "py_repo",
+)
