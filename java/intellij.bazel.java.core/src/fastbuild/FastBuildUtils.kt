@@ -45,6 +45,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
 import org.jetbrains.concurrency.AsyncPromise
@@ -108,7 +109,7 @@ internal object FastBuildUtils {
       files
         .mapNotNull { file ->
           val targetForFile = targetUtils.getTargetsForFile(file).firstOrNull() ?: return@mapNotNull null
-          targetUtils.getTargetSummary(targetForFile)?.let { file to it }
+          targetUtils.getTargetInfo(targetForFile)?.let { file to it }
         }.toMap()
 
     if (buildInfos.isEmpty()) {

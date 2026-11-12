@@ -6,7 +6,6 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.JavaLanguageClass
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
@@ -140,7 +139,7 @@ class SourceRootBuilderTest {
     sources: List<Path> = emptyList(),
     generatedSources: List<OutputLocation> = emptyList(),
     isTestOnly: Boolean = false,
-  ): TestBuildTarget = createTestBuildTarget(
+  ): BuildTarget = createTestBuildTarget(
     id = Label.parse(label),
     kind = TargetKind(
       kind = "java_library",

@@ -81,7 +81,6 @@ import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
 import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.test.framework.testproject.writeFile
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -94,6 +93,7 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.copy
 import org.jetbrains.bsp.protocol.toExecrootPath
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -964,7 +964,7 @@ class PythonProjectSyncTest {
   private fun renderModuleLocationText(element: Any): String =
     ModuleRendererFactory.findInstance(element).getModuleTextWithIcon(element)!!.text
 
-  private fun mapGeneratedTarget(target: TestBuildTarget, server: BuildServerMock): TestBuildTarget = timeoutRunBlocking {
+  private fun mapGeneratedTarget(target: BuildTarget, server: BuildServerMock): BuildTarget = timeoutRunBlocking {
     val pythonTarget = target.data.filterIsInstance<PythonBuildTarget>().single()
     fun artifact(location: OutputLocation): ArtifactLocation = ArtifactLocation.newBuilder()
       .setRelativePath(location.toExecrootPath())
@@ -1054,7 +1054,7 @@ class PythonProjectSyncTest {
     generatedSources: List<OutputLocation> = emptyList(),
     externalSources: List<OutputLocation> = emptyList(),
     declare: TestTargetBuilder.() -> Unit = {},
-  ): TestBuildTarget =
+  ): BuildTarget =
     pythonTarget(label, kind = "python_binary") {
       data(
         PythonBuildTarget(

@@ -20,7 +20,7 @@ import org.jetbrains.bazel.test.framework.testproject.TestBazelProject
 import org.jetbrains.bazel.test.framework.testproject.pythonTarget
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.ui.gutters.BazelContainingTargetsLocationsProvider
-import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -340,6 +340,6 @@ internal class BazelPyRunConfigurationProducerTest {
   companion object {
     private val LABEL = Label.parse("//foo:bar")
     private val executableTarget =
-      NonImportedBuildTarget(LABEL, TargetKind("py_test", setOf(PythonLanguageClass.PYTHON), RuleType.TEST))
+      BuildTargetInfo(LABEL, TargetKind("py_test", setOf(PythonLanguageClass.PYTHON), RuleType.TEST))
   }
 }

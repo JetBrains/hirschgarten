@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuild
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -42,7 +43,7 @@ fun createTestBuildTarget(
   resources: List<Path> = emptyList(),
   data: List<BuildTargetData> = emptyList(),
   isTestOnly: Boolean = false,
-): TestBuildTarget =
+): BuildTarget =
   TestBuildTarget(
     key = WorkspaceTargetKey(label = id),
     dependencies = dependencies,

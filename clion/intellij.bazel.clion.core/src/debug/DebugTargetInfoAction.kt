@@ -5,13 +5,11 @@ import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.sync.CcBuildTarget
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.clion.workspace.presentable
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.target.baseDirectoryLocation
 import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.isFull
 
 /** Asks for a target, then reports every section of it. */
 internal class DebugTargetInfoAction : BazelDebugAction() {
@@ -22,21 +20,17 @@ internal class DebugTargetInfoAction : BazelDebugAction() {
   override suspend fun exec(project: Project): Any {
     val snapshot = snapshotOrFail(project)
 
-    val summaries = snapshot.targets.allTargets(TargetLoadOptions.SUMMARY).toList()
-    if (summaries.isEmpty()) {
+    val infos = snapshot.targets.allTargetInfos().toList()
+    if (infos.isEmpty()) {
       fail("no target found in the workspace snapshot")
     }
 
-    val chosen = chooseInPopup(project, BazelCLionCoreBundle.message("debug.popup.targets.title"), summaries) {
+    val chosen = chooseInPopup(project, BazelCLionCoreBundle.message("debug.popup.targets.title"), infos) {
       "${it.kind.kind} rule ${it.key.presentable()}"
     }
 
-    val target = snapshot.targets.findTargetByKey(chosen.key, TargetLoadOptions.ALL)
+    val target = snapshot.targets.findTargetByKey(chosen.key)
       ?: fail("target ${chosen.key} is absent from the workspace snapshot")
-
-    if (!target.isFull) {
-      fail("target ${chosen.key} did not load every section")
-    }
 
     return target.toJsonMap(snapshot.repoMapping)
   }

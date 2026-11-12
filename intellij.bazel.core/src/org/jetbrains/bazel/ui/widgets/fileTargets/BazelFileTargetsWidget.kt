@@ -23,12 +23,12 @@ import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.gutters.getExecutorActions
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import javax.swing.Icon
 
 /**
@@ -94,12 +94,12 @@ internal class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPo
     }
   }
 
-  private fun List<Label>.getTargetInfos(): List<BuildTarget> {
+  private fun List<Label>.getTargetInfos(): List<BuildTargetInfo> {
     val targetUtils = project.targetStorage
-    return this.mapNotNull { targetUtils.getTargetSummary(it) }
+    return this.mapNotNull { targetUtils.getTargetInfo(it) }
   }
 
-  private fun BuildTarget.calculatePopupGroup(): ActionGroup =
+  private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
     createActionGroup(id.toShortString(project)).also {
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()

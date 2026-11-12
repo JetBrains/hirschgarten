@@ -10,13 +10,13 @@ import com.goide.psi.GoFunctionOrMethodDeclaration
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 /**
  * this impl is inspired by the OG impl [here](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/producers/GoTestContextProvider.java)
  */
 internal class BazelGoRunConfigurationProducer : BazelRunConfigurationProducer() {
-  override fun getGutterAction(element: PsiElement, target: BuildTarget): GutterAction? {
+  override fun getGutterAction(element: PsiElement, target: BuildTargetInfo): GutterAction? {
     if (element.isMainFunction()) return GutterAction()
     if (!GoTestFinder.isTestFile(element.containingFile)) return null
     if (GoRunConfigurationProducerBase.isPackageContext(element)) return GutterAction()

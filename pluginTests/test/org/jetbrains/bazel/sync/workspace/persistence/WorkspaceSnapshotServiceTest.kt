@@ -47,6 +47,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StringsCollection
+import org.jetbrains.bsp.protocol.copy
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.CountDownLatch
@@ -97,7 +98,7 @@ class WorkspaceSnapshotServiceTest {
   private fun sources(vararg relativePaths: String): OutputLocationCollection =
     OutputLocationCollectionBuilder.ofLocations(relativePaths.map { OutputLocation.Workspace(it) })
 
-  private fun rawTarget(key: WorkspaceTargetKey, index: Int): TestBuildTarget =
+  private fun rawTarget(key: WorkspaceTargetKey, index: Int): BuildTarget =
     TestBuildTarget(
       key = key,
       dependencies = listOf(DependencyLabel(targetKey = key("@//deps:dep$index"))),
@@ -246,7 +247,7 @@ class WorkspaceSnapshotServiceTest {
     }
 
     val changedKey = key("@//pkg1:target")
-    val changed = rawTarget(changedKey, 1).copy(isTestOnly = true)
+    val changed = rawTarget(changedKey, 1).let { it.copy(info = it.info.copy(isTestOnly = true)) }
     val removedKey = key("@//pkg2:target")
     val addedKey = key("@//pkg3:target")
     val added = rawTarget(addedKey, 3)
@@ -334,10 +335,10 @@ class WorkspaceSnapshotServiceTest {
     val expected = buildSnapshot()
     // store() reads all targets under the store lock, block it there
     val blockingTargets = object : WorkspaceTargetMap by expected.targets {
-      override fun allTargets(options: TargetLoadOptions): Sequence<BuildTarget> {
+      override fun allTargets(): Sequence<BuildTarget> {
         storeStarted.countDown()
         storeRelease.await(60, TimeUnit.SECONDS)
-        return expected.targets.allTargets(options)
+        return expected.targets.allTargets()
       }
     }
 
@@ -445,7 +446,7 @@ class WorkspaceSnapshotServiceTest {
     key: WorkspaceTargetKey,
     deps: List<WorkspaceTargetKey> = emptyList(),
     executable: Boolean = false,
-  ): TestBuildTarget =
+  ): BuildTarget =
     TestBuildTarget(
       key = key,
       dependencies = deps.map { DependencyLabel(targetKey = it) },

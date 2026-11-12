@@ -9,10 +9,10 @@ import com.intellij.openapi.actionSystem.Toggleable
 import com.intellij.openapi.project.DumbAware
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 internal enum class TargetFilter(
-  @JvmField val predicate: (BuildTarget) -> Boolean,
+  @JvmField val predicate: (BuildTargetInfo) -> Boolean,
 ) {
   OFF({ true }),
   CAN_RUN({ it.kind.ruleType == RuleType.BINARY }),

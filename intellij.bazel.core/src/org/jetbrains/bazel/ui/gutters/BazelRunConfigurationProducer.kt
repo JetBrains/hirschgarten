@@ -3,6 +3,7 @@ package org.jetbrains.bazel.ui.gutters
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.ApiStatus
@@ -15,8 +16,9 @@ import org.jetbrains.bazel.run.config.bazelRunConfigurationFactory
 import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.run.state.HasTestFilter
+import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<BazelRunConfiguration>() {
   override fun isDumbAware(): Boolean = true
@@ -31,7 +33,7 @@ abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<Baze
   ): Boolean {
     val location = context.location as? BazelRunLocation ?: return false
     val target = location.target
-    if (!acceptsTarget(target)) return false
+    if (!acceptsTarget(context.project, target)) return false
     val element = location.originalLocation.psiElement
     val gutterAction = getGutterAction(element, target) ?: return false
     configuration.updateTargets(listOf(target.id), RunHandlerProvider.getRunHandlerProvider(context.project, listOf(target)))
@@ -52,18 +54,33 @@ abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<Baze
   override fun isConfigurationFromContext(configuration: BazelRunConfiguration, context: ConfigurationContext): Boolean {
     val location = context.location as? BazelRunLocation ?: return false
     val target = location.target
-    if (!acceptsTarget(target)) return false
+    if (!acceptsTarget(context.project, target)) return false
     if (configuration.targets != listOf(target.id)) return false
     val element = location.originalLocation.psiElement
     val gutterAction = getGutterAction(element, target) ?: return false
     return configuration.handler?.state?.let { gutterAction.isFromContext(it) } ?: false
   }
 
-  abstract fun getGutterAction(
+  @Deprecated("Use getGutterAction(PsiElement, BuildTargetInfo)", ReplaceWith("getGutterAction"))
+  open fun getGutterAction(
     element: PsiElement,
     target: BuildTarget,
-  ): GutterAction?
+  ): GutterAction? = null
 
+  open fun getGutterAction(
+    element: PsiElement,
+    target: BuildTargetInfo,
+  ): GutterAction? {
+    // the deprecated overload takes a complete target, so this fallback pays a full load
+    val fullTarget = element.project.workspaceSnapshotOrNull?.targets?.findTargetByKey(target.key) ?: return null
+    @Suppress("DEPRECATION")
+    return getGutterAction(element, fullTarget)
+  }
+
+  protected fun acceptsTarget(project: Project, target: BuildTargetInfo): Boolean =
+    target.kind.isExecutable
+
+  @Deprecated("Use acceptsTarget(BuildTargetInfo)", ReplaceWith("acceptsTarget"))
   protected fun acceptsTarget(target: BuildTarget): Boolean =
     target.kind.isExecutable
 

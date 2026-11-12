@@ -38,6 +38,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoPackageEntity
 import org.jetbrains.bazel.workspacemodel.entities.BazelGoTargetEntity
@@ -269,7 +270,7 @@ class BazelGoPackage(
     // A package may have a library target, and a test target that tests that library.
     // Don't resolve to a test target if we can.
     // TODO: migrate to full compound key
-    labels.firstOrNull { targetUtils.getTargetSummary(it)?.kind?.ruleType == RuleType.LIBRARY }?.let { return it }
+    labels.firstOrNull { targetUtils.getTargetInfo(it)?.kind?.ruleType == RuleType.LIBRARY }?.let { return it }
     return labels.firstOrNull()
   }
 

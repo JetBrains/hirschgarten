@@ -8,6 +8,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuild
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -174,7 +175,7 @@ class DerivedEntryPointClassTest {
   }
 }
 
-private fun target(label: String, kind: TargetKind, vararg srcs: OutputLocation): TestBuildTarget =
+private fun target(label: String, kind: TargetKind, vararg srcs: OutputLocation): BuildTarget =
   TestBuildTarget(
     key = WorkspaceTargetKey(label = Label.parse(label)),
     kind = kind,

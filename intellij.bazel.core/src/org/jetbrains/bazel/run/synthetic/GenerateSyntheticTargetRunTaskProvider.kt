@@ -15,6 +15,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import java.nio.file.Files
 import java.nio.file.Path
@@ -47,7 +48,7 @@ class GenerateSyntheticTargetRunTaskProvider(
     val project = environment.project
     val taskState = task.taskState
     val targetLabel = Label.parse(taskState.target)
-    val target = project.targetStorage.getTargetSummary(targetLabel)
+    val target = project.targetStorage.getTargetInfo(targetLabel)
       ?: return false
     val language = Language.findLanguageByID(taskState.language) ?: return false
     val generator = SyntheticRunTargetTemplateGenerator.ep.allForLanguage(language)

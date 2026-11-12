@@ -7,9 +7,9 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DataSink
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
-internal fun getExecutorActions(project: Project, target: BuildTarget): List<AnAction> =
+internal fun getExecutorActions(project: Project, target: BuildTargetInfo): List<AnAction> =
   getExecutorActions(BazelRunLocation(project, target))
 
 @ApiStatus.Internal

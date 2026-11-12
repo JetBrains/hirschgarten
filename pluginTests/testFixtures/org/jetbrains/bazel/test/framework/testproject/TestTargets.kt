@@ -8,6 +8,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -52,7 +53,7 @@ class TestTargetBuilder internal constructor(private val label: Label, private v
     }
   }
 
-  internal fun build(): TestBuildTarget =
+  internal fun build(): BuildTarget =
     TestBuildTarget(
       key = WorkspaceTargetKey(label = label, configuration = configuration),
       dependencies = dependencies.toList(),
@@ -67,10 +68,10 @@ class TestTargetBuilder internal constructor(private val label: Label, private v
 private fun locations(paths: Array<out String>, generated: Boolean): List<OutputLocation> =
   paths.map { if (generated) OutputLocation.Output(TEST_OUTPUT_ROOT, it) else OutputLocation.Workspace(it) }
 
-fun buildTarget(label: Label, kind: TargetKind, declare: TestTargetBuilder.() -> Unit = {}): TestBuildTarget =
+fun buildTarget(label: Label, kind: TargetKind, declare: TestTargetBuilder.() -> Unit = {}): BuildTarget =
   TestTargetBuilder(label, kind).apply(declare).build()
 
-fun buildTarget(label: String, kind: TargetKind, declare: TestTargetBuilder.() -> Unit = {}): TestBuildTarget =
+fun buildTarget(label: String, kind: TargetKind, declare: TestTargetBuilder.() -> Unit = {}): BuildTarget =
   buildTarget(Label.parse(label), kind, declare)
 
 fun workspaceLocations(vararg relativePaths: String): OutputLocationCollection =

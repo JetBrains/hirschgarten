@@ -3,6 +3,7 @@ package org.jetbrains.bazel.performanceImpl
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.target.allTargetInfos
 import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
@@ -18,7 +19,7 @@ internal class AssertSyncedTargetsCommand(text: String, line: Int) : PlaybackCom
     val expectedLabels: Set<Label> = args.split(" ").filter { it.isNotBlank() }.map { Label.parse(it) }.toSet()
     val targetStorage = project.targetStorage
     val repoMapping = targetStorage.repoMapping()
-    val actualTargets: Set<Label> = targetStorage.allTargetSummaries().asSequence().filter { it.isWorkspace(repoMapping) }.map { it.id }.toSet()
+    val actualTargets: Set<Label> = targetStorage.allTargetInfos().asSequence().filter { it.isWorkspace(repoMapping) }.map { it.id }.toSet()
 
     check(actualTargets == expectedLabels) {
       "Target mismatch.\nExpected: $expectedLabels\nActual:   $actualTargets"

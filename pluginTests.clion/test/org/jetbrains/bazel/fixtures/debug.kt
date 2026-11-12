@@ -113,7 +113,7 @@ internal fun ccDebuggerFixture(projectFixture: TestFixture<Project>, debugger: C
 /** Starts a debug session for the [label] with the [CcDebugRunner]. */
 internal suspend fun Project.startCcDebugSession(label: String): CidrDebugSessionContext {
   val labels = listOf(Label.parse(label))
-  val targets = listOf(findTarget(label))
+  val targets = listOf(findTarget(label).info)
 
   val settings = RunManager.getInstanceAsync(this).createConfiguration(label, bazelRunConfigurationFactory)
   val executor = DefaultDebugExecutor.getDebugExecutorInstance()

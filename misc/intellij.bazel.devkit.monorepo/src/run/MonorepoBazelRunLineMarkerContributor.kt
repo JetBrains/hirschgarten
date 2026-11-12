@@ -33,10 +33,9 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.ui.gutters.BazelRunLocation
-import org.jetbrains.bazel.ui.gutters.NonImportedBuildTarget
 import org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor
 import org.jetbrains.bazel.ui.projectTree.action.BazelAllTestsInDirectoryRunConfigurationProducer
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.kotlin.idea.KotlinLanguage
 
 private val LOG = fileLogger()
@@ -160,7 +159,7 @@ internal object MonorepoRunLineMarkerContributorUtil {
   fun isProjectApplicable(project: Project): Boolean =
     useBazelCompile(project) && !project.isBazelProject
 
-  fun getTargets(element: PsiElement, mainClassFqn: String?): List<BuildTarget> {
+  fun getTargets(element: PsiElement, mainClassFqn: String?): List<BuildTargetInfo> {
     val project = element.project
     val containingFile = element.containingFile?.virtualFile ?: return emptyList()
     val projectFileIndex = ProjectFileIndex.getInstance(project)
@@ -190,7 +189,7 @@ internal object MonorepoRunLineMarkerContributorUtil {
       val binaryLabel = getBinaryLabel(module, mainClassFqn) ?: return emptyList()
       val kind = TargetKindService.getInstance().guessFromRuleName("java_binary")
       return listOf(
-        NonImportedBuildTarget(
+        BuildTargetInfo(
           label = binaryLabel,
           kind = kind,
         ),
@@ -200,7 +199,7 @@ internal object MonorepoRunLineMarkerContributorUtil {
     val kind = TargetKindService.getInstance().guessFromRuleName("jps_test")
     return listOfNotNull(
       bazelInfo.testTargets.firstOrNull()?.let { target ->
-        NonImportedBuildTarget(
+        BuildTargetInfo(
           label = Label.parse(target.removeSuffix(JAR_SUFFIX)),
           kind = kind,
         )

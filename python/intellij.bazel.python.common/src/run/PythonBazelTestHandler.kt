@@ -15,7 +15,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericTestState
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.TestParams
 
 @ApiStatus.Internal
@@ -40,7 +40,7 @@ class PythonBazelTestHandler : PythonBazelHandler<GenericTestState>() {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelTestHandler()
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
       targets.all {
         it.kind.languageClasses.contains(PythonLanguageClass.PYTHON) && it.kind.ruleType == RuleType.TEST
       }

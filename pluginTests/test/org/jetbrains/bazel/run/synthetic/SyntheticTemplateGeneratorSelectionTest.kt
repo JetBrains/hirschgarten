@@ -11,7 +11,6 @@ import org.jetbrains.bazel.kotlin.run.KotlinSyntheticRunTargetTemplateGenerator
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.javaLibrary
 import org.jetbrains.bazel.test.framework.testproject.kotlinLibrary
-import org.jetbrains.bsp.protocol.id
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.junit.jupiter.api.Test
 
@@ -19,7 +18,7 @@ import org.junit.jupiter.api.Test
 class SyntheticTemplateGeneratorSelectionTest {
   @Test
   fun `test java template generator selection`() {
-    val target = javaLibrary("target")
+    val target = javaLibrary("target").info
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, JavaLanguage.INSTANCE)
 
     generator.shouldNotBeNull()
@@ -28,7 +27,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test kotlin template generator selection`() {
-    val target = kotlinLibrary("target")
+    val target = kotlinLibrary("target").info
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, KotlinLanguage.INSTANCE)
 
     generator.shouldNotBeNull()
@@ -37,7 +36,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test java main in kotlin target template generator selection`() {
-    val target = kotlinLibrary("target")
+    val target = kotlinLibrary("target").info
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, JavaLanguage.INSTANCE)
 
     generator.shouldNotBeNull()
@@ -46,7 +45,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test java generator supports jvm targets`() {
-    val target = javaLibrary("//test:target")
+    val target = javaLibrary("//test:target").info
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
 
     generator.isSupported(target).shouldBe(true)
@@ -54,7 +53,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test kotlin generator supports kotlin targets`() {
-    val target = kotlinLibrary("//test:target")
+    val target = kotlinLibrary("//test:target").info
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(KotlinLanguage.INSTANCE)
 
     generator.isSupported(target).shouldBe(true)
@@ -62,7 +61,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test java generator creates valid build content`() {
-    val target = javaLibrary("//test:target")
+    val target = javaLibrary("//test:target").info
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
     val mainClass = "com.example.Main"
 
@@ -76,7 +75,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test kotlin generator creates valid build content`() {
-    val target = kotlinLibrary("//test:target")
+    val target = kotlinLibrary("//test:target").info
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(KotlinLanguage.INSTANCE)
     val mainClass = "com.example.MainKt"
 
@@ -107,7 +106,7 @@ class SyntheticTemplateGeneratorSelectionTest {
 
   @Test
   fun `test synthetic template has correct build file path`() {
-    val target = javaLibrary("//test:lib")
+    val target = javaLibrary("//test:lib").info
     val generator = SyntheticRunTargetTemplateGenerator.ep.forLanguage(JavaLanguage.INSTANCE)
     val mainClass = "com.example.App"
 

@@ -21,7 +21,6 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterPhase
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterResult
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.languages.jvm.extractJvmBuildTarget
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
@@ -71,7 +70,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
     moduleTargets = snapshot.targetGraph.findAllTargetsAtDepth(
       maxDepth = commonSyncConfig.importDepth,
       useRelaxedDependencyExpansion = true,
-    ).mapNotNull { snapshot.targets.findTargetByKey(it, TargetLoadOptions.ALL) }.toList()
+    ).mapNotNull { snapshot.targets.findTargetByKey(it) }.toList()
     targets = moduleTargets
     val resolveLocation = locationResolver(context, snapshot)
     jvmResolved = JvmBuildTargetResolver(

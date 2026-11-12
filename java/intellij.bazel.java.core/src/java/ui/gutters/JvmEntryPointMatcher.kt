@@ -17,11 +17,12 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.languages.jvm.KT_JVM_TEST_KIND
 import org.jetbrains.bazel.sync.workspace.languages.jvm.rulesJavaPrimaryClass
 import org.jetbrains.bazel.sync.workspace.languages.jvm.rulesKotlinTestClass
+import org.jetbrains.bazel.target.getBuildTarget
 import org.jetbrains.bazel.target.getTargetDataForLabel
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.gutters.BazelEntryPointMatcher
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 /**
  * Matches the test class of a JVM test, or the main class of a JVM binary, with the classes that hold a PSI element.
@@ -29,7 +30,7 @@ import org.jetbrains.bsp.protocol.id
  */
 internal class JvmEntryPointMatcher : BazelEntryPointMatcher {
 
-  override fun match(element: PsiElement, targets: List<BuildTarget>): Map<Label, ThreeState> {
+  override fun match(element: PsiElement, targets: List<BuildTargetInfo>): Map<Label, ThreeState> {
     val file = element.containingFile as? PsiClassOwner
     if (file == null || DumbService.isDumb(file.project)) return targets.associate { it.id to ThreeState.UNSURE }
     val classNames by lazy { collectClassNames(file.classes, element) }
@@ -64,21 +65,23 @@ internal class JvmEntryPointMatcher : BazelEntryPointMatcher {
   private fun PsiClass.withInnerClasses(): Sequence<PsiClass> =
     sequenceOf(this) + innerClasses.asSequence().flatMap { it.withInnerClasses() }
 
-  private fun entryPointClass(project: Project, target: BuildTarget): String? {
+  private fun entryPointClass(project: Project, target: BuildTargetInfo): String? {
     val jvmTarget = project.targetStorage.getTargetDataForLabel<JvmBuildTarget>(target.id) ?: return null
     return when (target.kind.ruleType) {
-      RuleType.TEST -> jvmTarget.testClass ?: derivedClass(target, jvmTarget)
-      RuleType.BINARY -> jvmTarget.mainClass ?: derivedClass(target, jvmTarget)
+      RuleType.TEST -> jvmTarget.testClass ?: derivedClass(project, target, jvmTarget)
+      RuleType.BINARY -> jvmTarget.mainClass ?: derivedClass(project, target, jvmTarget)
       else -> null
     }
   }
 
-  private fun derivedClass(target: BuildTarget, jvmTarget: JvmBuildTarget): String? = when (target.kind.kind) {
+  private fun derivedClass(project: Project, target: BuildTargetInfo, jvmTarget: JvmBuildTarget): String? = when (target.kind.kind) {
     // For a `java_test` with a custom runner in `main_class` and no `test_class`, the matcher does not guess the test class.
     // `rules_kotlin` sets a default `main_class` on each `kt_jvm_test`, so the check is only for `java_test`.
-    JAVA_TEST_KIND.kind if jvmTarget.mainClass == null -> rulesJavaPrimaryClass(target)
-    JAVA_BINARY_KIND.kind -> rulesJavaPrimaryClass(target)
-    KT_JVM_TEST_KIND.kind -> rulesKotlinTestClass(target)
+    JAVA_TEST_KIND.kind if jvmTarget.mainClass == null -> loadTarget(project, target)?.let { rulesJavaPrimaryClass(it) }
+    JAVA_BINARY_KIND.kind -> loadTarget(project, target)?.let { rulesJavaPrimaryClass(it) }
+    KT_JVM_TEST_KIND.kind -> loadTarget(project, target)?.let { rulesKotlinTestClass(it) }
     else -> null
   }
+
+  private fun loadTarget(project: Project, target: BuildTargetInfo): BuildTarget? = project.targetStorage.getBuildTarget(target.id)
 }

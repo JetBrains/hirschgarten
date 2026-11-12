@@ -20,8 +20,8 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bsp.protocol.BuildTarget
 import java.util.concurrent.atomic.AtomicReference
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
@@ -73,7 +73,7 @@ internal class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRu
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = BazelGoRunHandler(configuration)
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
       targets.all { it.kind.includesGo() && it.kind.ruleType == RuleType.BINARY }
 
     override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"

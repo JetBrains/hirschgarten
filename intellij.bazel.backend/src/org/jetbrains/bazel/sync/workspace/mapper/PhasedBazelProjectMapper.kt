@@ -20,10 +20,10 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.languages.projectview.allowManualTargetsSync
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.OutputLocation
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
@@ -51,17 +51,19 @@ class PhasedBazelProjectMapper(
 
   private fun Build.Target.toBspBuildTarget(targets: Map<Label, Build.Target>): BuildTarget {
     val label = Label.parse(name).assumeResolved()
-    return WorkspaceTarget(
-      key = WorkspaceTargetKey(label = label),
+    return BuildTarget(
+      info = BuildTargetInfo(
+        key = WorkspaceTargetKey(label = label),
+        kind = inferKind(),
+        generatorName = generatorName,
+        isTestOnly = false,
+        tags = tags,
+        workspaceName = "_main",
+      ),
       dependencies = interestingDeps.map { DependencyLabel.parse(it) },
-      kind = inferKind(),
       sources = OutputLocationCollectionBuilder.ofLocations(calculateSources(targets)),
       resources = OutputLocationCollectionBuilder.ofLocations(calculateResources(targets)),
       data = emptyList(),
-      generatorName = generatorName,
-      isTestOnly = false,
-      tags = tags,
-      workspaceName = "_main",
     )
   }
 

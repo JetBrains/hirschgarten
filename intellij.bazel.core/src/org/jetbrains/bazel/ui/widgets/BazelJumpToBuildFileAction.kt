@@ -21,8 +21,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.id
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import javax.swing.JComponent
 
 internal sealed class BazelJumpToBuildFileAction :
@@ -51,7 +50,7 @@ internal sealed class BazelJumpToBuildFileAction :
       } == true
   }
 
-  class NonXmlRegistered(private val getTarget: () -> BuildTarget?) : BazelJumpToBuildFileAction() {
+  class NonXmlRegistered(private val getTarget: () -> BuildTargetInfo?) : BazelJumpToBuildFileAction() {
     override suspend fun getTargetLabel(project: Project, e: AnActionEvent): Label? = getTarget()?.id
 
     fun registerShortcut(component: JComponent) {

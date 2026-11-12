@@ -19,7 +19,9 @@ import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
@@ -82,15 +84,15 @@ open class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     tags: List<String>?,
   ): List<AnAction> = buildList {
     val targetUtils = project.targetStorage
-    val targetInfo = targetUtils.getTargetSummary(targetLabel)
-    val targetKind = targetInfo?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
-    val tags = targetInfo?.tags ?: tags ?: emptyList()
+    val targetSummary = targetUtils.getTargetInfo(targetLabel)
+    val targetKind = targetSummary?.kind ?: TargetKindService.getInstance().guessFromRuleName(ruleName)
+    val tags = targetSummary?.tags ?: tags ?: emptyList()
 
     add(BuildTargetAction(targetLabel))
 
     if (targetKind.isExecutable) {
       val executableTarget =
-        targetInfo ?: NonImportedBuildTarget(targetLabel, targetKind, tags)
+        targetSummary ?: BuildTargetInfo(targetLabel, targetKind, tags)
       addAll(getExecutorActions(project, executableTarget))
     }
   }

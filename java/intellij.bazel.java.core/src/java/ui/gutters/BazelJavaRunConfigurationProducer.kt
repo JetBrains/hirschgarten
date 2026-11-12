@@ -11,13 +11,13 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal  // External plugins (e.g., Scala) should extend BazelRunConfigurationProducer instead
 open class BazelJavaRunConfigurationProducer : BazelRunConfigurationProducer() {
   override fun isDumbAware(): Boolean = true
 
-  override fun getGutterAction(element: PsiElement, target: BuildTarget): GutterAction? {
+  override fun getGutterAction(element: PsiElement, target: BuildTargetInfo): GutterAction? {
     if (element.containingFile?.virtualFile?.fileSystem is JarFileSystem) return null
     val psiIdentifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true) ?: return null
     if (psiIdentifier.nameIdentifier != element) return null

@@ -37,12 +37,13 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.BazelTestApplication
+import org.jetbrains.bazel.test.framework.target.withKey
+import org.jetbrains.bazel.test.framework.target.withTags
 import org.jetbrains.bazel.test.framework.testproject.bazelInfo
 import org.jetbrains.bazel.test.framework.testproject.outputResolver
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
-import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.workspace.ProjectViewGlobSet
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bazel.workspace.model.test.framework.testLocations
@@ -225,9 +226,9 @@ internal class JvmTargetEntitiesBuilderTest {
     val label = Label.parse("//foo")
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val normal = createTestBuildTarget(id = label, kind = kind)
-      .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
+      .withKey(WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
     val exec = createTestBuildTarget(id = label, kind = kind)
-      .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f2")))
+      .withKey(WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f2")))
 
     runImport(targets = listOf(normal, exec))
 
@@ -240,7 +241,7 @@ internal class JvmTargetEntitiesBuilderTest {
   fun `a label with a single configuration keeps its plain module name`() = timeoutRunBlocking {
     val label = Label.parse("//foo")
     val target = createTestBuildTarget(id = label)
-      .copy(key = WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
+      .withKey(WorkspaceTargetKey(label = label, configuration = WorkspaceConfigurationId.of("00000f1")))
 
     runImport(targets = listOf(target))
 
@@ -253,9 +254,9 @@ internal class JvmTargetEntitiesBuilderTest {
     val foo = Label.parse("//foo")
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     val fooNormal = createTestBuildTarget(id = foo, kind = kind)
-      .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f1")))
+      .withKey(WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f1")))
     val fooExec = createTestBuildTarget(id = foo, kind = kind)
-      .copy(key = WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f2")))
+      .withKey(WorkspaceTargetKey(label = foo, configuration = WorkspaceConfigurationId.of("00000f2")))
     val app = createTestBuildTarget(
       id = Label.parse("//app"),
       kind = kind,
@@ -287,7 +288,7 @@ internal class JvmTargetEntitiesBuilderTest {
       id = label,
       kind = kind,
       data = listOf(JvmBuildTarget()),
-    ).copy(key = WorkspaceTargetKey(label = label, aspectIds = WorkspaceAspectIds.of(listOf("//proto:proto_aspect"))))
+    ).withKey(WorkspaceTargetKey(label = label, aspectIds = WorkspaceAspectIds.of(listOf("//proto:proto_aspect"))))
 
     val protoKey = WorkspaceTargetKey(label = label)
     runImport(
@@ -313,13 +314,13 @@ internal class JvmTargetEntitiesBuilderTest {
       kind = kind,
       dependencies = listOf(DependencyLabel(WorkspaceTargetKey(label = a))),
       data = listOf(JvmBuildTarget()),
-    ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_a"))))
+    ).withKey(WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_a"))))
     val variantB = createTestBuildTarget(
       id = foo,
       kind = kind,
       dependencies = listOf(DependencyLabel(WorkspaceTargetKey(label = b))),
       data = listOf(JvmBuildTarget()),
-    ).copy(key = WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_b"))))
+    ).withKey(WorkspaceTargetKey(label = foo, aspectIds = WorkspaceAspectIds.of(listOf("//foo:aspect_b"))))
 
     runImport(targets = listOf(depA, depB, variantA, variantB))
 
@@ -335,7 +336,7 @@ internal class JvmTargetEntitiesBuilderTest {
     val kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA))
     // a custom aspect carries the JavaInfo, so only the aspect variant holds the jars. See `custom_aspect_codegen`
     val aspectKey = WorkspaceTargetKey(label = label, aspectIds = WorkspaceAspectIds.of(listOf("//gen:defs.bzl%gen_aspect")))
-    val target = createTestBuildTarget(id = label, kind = kind, data = listOf(JvmBuildTarget())).copy(key = aspectKey)
+    val target = createTestBuildTarget(id = label, kind = kind, data = listOf(JvmBuildTarget())).withKey(aspectKey)
     val libraryItem = LibraryItem(
       key = aspectKey,
       ijars = listOf(Path("/gen/gen-hjar.jar")),
@@ -444,7 +445,7 @@ internal class JvmTargetEntitiesBuilderTest {
   @Test
   fun `the ide-module-name tag wins over a rules_kotlin module name`(): Unit = timeoutRunBlocking {
     val target = kotlinTarget(FOO_BAR, moduleName = "explicit.module.name")
-      .copy(tags = listOf("ide-module-name=tagged.module.name"))
+      .withTags(listOf("ide-module-name=tagged.module.name"))
 
     runImport(targets = listOf(target))
 
@@ -471,7 +472,7 @@ internal class JvmTargetEntitiesBuilderTest {
     moduleName: String,
     isTestOnly: Boolean = false,
     associates: List<Label> = emptyList(),
-  ): TestBuildTarget =
+  ): BuildTarget =
     createTestBuildTarget(
       id = label,
       kind = TargetKind(kind = "kt_jvm_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.KOTLIN)),

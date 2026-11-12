@@ -26,6 +26,7 @@ import org.jetbrains.bazel.test.framework.testproject.buildTarget
 import org.jetbrains.bazel.test.framework.testproject.javaLibrary
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.ui.gutters.BazelEntryPointMatcher
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.id
 import org.jetbrains.kotlin.psi.KtClass
@@ -322,21 +323,21 @@ class JvmEntryPointMatcherTest {
     myFixture.testBazel.sync { targets(addTest) }
 
     val matches = DumbModeTestUtils.computeInDumbModeSynchronously(myFixture.project) {
-      runReadActionBlocking { BazelEntryPointMatcher.matchAll(element, listOf(addTest)) }
+      runReadActionBlocking { BazelEntryPointMatcher.matchAll(element, listOf(addTest.info)) }
     }
 
     matches shouldBe mapOf(addTest.id to ThreeState.UNSURE)
   }
 
-  private fun javaTest(label: String, testClass: String?): TestBuildTarget =
+  private fun javaTest(label: String, testClass: String?): BuildTarget =
     target(label, JAVA_TEST_KIND, JvmBuildTarget(testClass = testClass))
 
-  private fun target(label: String, kind: TargetKind, data: JvmBuildTarget): TestBuildTarget =
+  private fun target(label: String, kind: TargetKind, data: JvmBuildTarget): BuildTarget =
     buildTarget(label, kind) { data(data) }
 
-  private fun matchAll(element: PsiElement, vararg targets: TestBuildTarget): Map<Label, ThreeState> {
+  private fun matchAll(element: PsiElement, vararg targets: BuildTarget): Map<Label, ThreeState> {
     myFixture.testBazel.sync { targets(*targets) }
-    return runReadActionBlocking { BazelEntryPointMatcher.matchAll(element, targets.toList()) }
+    return runReadActionBlocking { BazelEntryPointMatcher.matchAll(element, targets.map { it.info }) }
   }
 
   private fun psiClass(file: PsiFile, name: String): PsiClass =

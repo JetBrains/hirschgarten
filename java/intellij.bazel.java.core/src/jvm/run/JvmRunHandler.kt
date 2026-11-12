@@ -27,7 +27,7 @@ import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 
 @ApiStatus.Internal
 val COROUTINE_JVM_FLAGS_KEY: Key<Ref<List<String>>> = Key.create("bazel.coroutine.jvm.flags")
@@ -75,7 +75,7 @@ class JvmRunHandler(private val configuration: BazelRunConfiguration) : BazelRun
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
 
-    override fun canRun(project: Project, targets: List<BuildTarget>): Boolean =
+    override fun canRun(project: Project, targets: List<BuildTargetInfo>): Boolean =
       targets.all {
         it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST
       }

@@ -22,9 +22,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
-import org.jetbrains.bazel.sync.workspace.persistence.BuildTargetLoadHint
-import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
-import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
@@ -36,7 +33,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StringsCollection
-import org.jetbrains.bsp.protocol.isFull
 import org.junit.jupiter.api.Test
 import java.lang.ref.Reference
 import java.nio.file.Path
@@ -68,7 +64,7 @@ class SnapshotStorageTest {
     key: WorkspaceTargetKey,
     index: Int,
     buildSources: (List<OutputLocation>) -> OutputLocationCollection = OutputLocationCollectionBuilder::ofLocations,
-  ): TestBuildTarget =
+  ): BuildTarget =
     TestBuildTarget(
       key = key,
       dependencies = listOf(DependencyLabel(targetKey = key("@//deps:dep$index"))),
@@ -193,7 +189,7 @@ class SnapshotStorageTest {
     try {
       val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
       for ((targetKey, raw) in state.targets) {
-        assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL), raw)
+        assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey), raw)
       }
       reopened.findTargetsByFile(state.partial, Path.of("/workspace/shared/Shared.java")).toSet() shouldBe state.targets.keys
     }
@@ -223,7 +219,7 @@ class SnapshotStorageTest {
       val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
       // one more ref for the `javacOpts` that all targets share
       reopened.refCount() shouldBe distinctLocations.size + 1
-      val loaded = state.targets.keys.map { reopened.findOrLoadTarget(state.partial, it, TargetLoadOptions.ALL).shouldNotBeNull() }
+      val loaded = state.targets.keys.map { reopened.findOrLoadTarget(state.partial, it).shouldNotBeNull() }
       for (target in loaded) {
         target.sources.getOutputLocations().toList() shouldBe state.targets.getValue(target.key).sources.getOutputLocations().toList()
       }
@@ -253,7 +249,7 @@ class SnapshotStorageTest {
       // sources are empty, so the shared `javacOpts` is the only ref
       reopened.refCount() shouldBe 1
       val javacOpts = state.targets.keys.map { targetKey ->
-        val target = reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL).shouldNotBeNull()
+        val target = reopened.findOrLoadTarget(state.partial, targetKey).shouldNotBeNull()
         target.data.filterIsInstance<JvmBuildTarget>().single().javacOpts
       }
       javacOpts.first().asList() shouldBe listOf("-parameters")
@@ -280,7 +276,7 @@ class SnapshotStorageTest {
     val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       for ((targetKey, raw) in state.targets) {
-        assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL), raw)
+        assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey), raw)
       }
       reopened.findTargetsByFile(state.partial, Path.of("/workspace/shared/Shared.java")).toSet() shouldBe state.targets.keys
       reopened.findTargetsByFile(state.partial, Path.of("/workspace/pkg1/Main.java")).toList() shouldBe listOf(key("@//pkg1:target"))
@@ -291,7 +287,7 @@ class SnapshotStorageTest {
   }
 
   @Test
-  fun `partial load options are honored after reopen`() {
+  fun `an info load returns the info of the saved target`() {
     val dbFile = tempDir.resolve("snapshot_db.data")
 
     val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
@@ -305,39 +301,10 @@ class SnapshotStorageTest {
     val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
     val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
-      val skipFiles = reopened.findOrLoadTarget(
-        state.partial,
-        key("@//pkg0:target"),
-        TargetLoadOptions(TargetSection.INFO, TargetSection.DEPS, targetData = BuildTargetLoadHint.All),
-      )
-      skipFiles.shouldNotBeNull()
-      skipFiles.loaded.sections shouldBe setOf(TargetSection.INFO, TargetSection.DEPS)
-      skipFiles.isFull shouldBe false
-      skipFiles.dependencies shouldBe state.targets.getValue(key("@//pkg0:target")).dependencies
-      skipFiles.sources shouldBe state.targets.getValue(key("@//pkg0:target")).sources
-      skipFiles.loaded.sections shouldBe setOf(TargetSection.INFO, TargetSection.DEPS)
-
-      val skipDeps = reopened.findOrLoadTarget(
-        state.partial,
-        key("@//pkg1:target"),
-        TargetLoadOptions(TargetSection.INFO, TargetSection.FILE_SETS, targetData = BuildTargetLoadHint.All),
-      )
-      skipDeps.shouldNotBeNull()
-      skipDeps.dependencies shouldBe state.targets.getValue(key("@//pkg1:target")).dependencies
-
-      val onlyToolchain = reopened.findOrLoadTarget(
-        state.partial,
-        key("@//pkg2:target"),
-        TargetLoadOptions(
-          TargetSection.INFO,
-          TargetSection.DEPS,
-          TargetSection.FILE_SETS,
-          targetData = BuildTargetLoadHint.Subset(setOf(JavaToolchainData::class.java)),
-        ),
-      )
-      onlyToolchain.shouldNotBeNull()
-      onlyToolchain.data shouldBe listOf(JavaToolchainData(sourceVersion = "17", targetVersion = "17"))
-      onlyToolchain.data shouldBe listOf(JavaToolchainData(sourceVersion = "17", targetVersion = "17"))
+      for ((targetKey, raw) in state.targets) {
+        reopened.findTargetInfo(state.partial, targetKey) shouldBe raw.info
+      }
+      reopened.findTargetInfo(state.partial, key("@//absent:target")) shouldBe null
     }
     finally {
       reopenedStorage.close()
@@ -345,7 +312,79 @@ class SnapshotStorageTest {
   }
 
   @Test
-  fun `target data left out of the load options is materialized on first read`() {
+  fun `a typed data load returns only the data of that type`() {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+
+    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      val generation = storage.createGeneration(1)
+      val state = saveAll(generation, count = 2)
+      storage.commit()
+      storage.close()
+      state
+    }
+
+    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
+    try {
+      val targetKey = key("@//pkg1:target")
+      reopened.findTargetData(state.partial, targetKey, JavaToolchainData::class.java) shouldBe
+        JavaToolchainData(sourceVersion = "17", targetVersion = "17")
+      reopened.findTargetData(state.partial, targetKey, JvmBuildTarget::class.java)?.mainClass shouldBe "com.example.Main1"
+      reopened.findTargetData(state.partial, key("@//absent:target"), JvmBuildTarget::class.java) shouldBe null
+    }
+    finally {
+      reopenedStorage.close()
+    }
+  }
+
+  @Test
+  fun `a retired generation gives no target`() {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+
+    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      val generation = storage.createGeneration(1)
+      val state = saveAll(generation, count = 1)
+      storage.commit()
+      storage.close()
+      state
+    }
+
+    val targetKey = key("@//pkg0:target")
+    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
+    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
+    reopenedStorage.close()
+
+    reopened.findTargetInfo(state.partial, targetKey) shouldBe null
+    reopened.findOrLoadTarget(state.partial, targetKey) shouldBe null
+    reopened.findTargetData(state.partial, targetKey, JvmBuildTarget::class.java) shouldBe null
+    reopened.scanAllTargetInfos(state.partial).toList() shouldBe emptyList()
+    reopened.scanAllTargets(state.partial).toList() shouldBe emptyList()
+  }
+
+  @Test
+  fun `a loaded target stays complete after its generation is retired`() {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+
+    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
+      val generation = storage.createGeneration(1)
+      val state = saveAll(generation, count = 1)
+      storage.commit()
+      storage.close()
+      state
+    }
+
+    val targetKey = key("@//pkg0:target")
+    val expected = state.targets.getValue(targetKey)
+    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
+    val target = reopenedStorage.openGeneration(1).shouldNotBeNull().findOrLoadTarget(state.partial, targetKey)
+    reopenedStorage.close()
+
+    target.shouldNotBeNull().info shouldBe expected.info
+    assertComposedEquals(target, expected)
+  }
+
+  @Test
+  fun `a full load is cached and also answers the info and the typed data`() {
     val dbFile = tempDir.resolve("snapshot_db.data")
 
     val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
@@ -360,124 +399,13 @@ class SnapshotStorageTest {
     val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
     try {
       val targetKey = key("@//pkg0:target")
-      val summary = reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.SUMMARY)
-      summary.shouldNotBeNull()
-      summary.loaded.targetData shouldBe BuildTargetLoadHint.None
+      val first = reopened.findOrLoadTarget(state.partial, targetKey).shouldNotBeNull()
+      val second = reopened.findOrLoadTarget(state.partial, targetKey)
 
-      summary.data.toSet() shouldBe state.targets.getValue(targetKey).data.toSet()
-      summary.loaded shouldBe TargetLoadOptions.SUMMARY
-    }
-    finally {
-      reopenedStorage.close()
-    }
-  }
-
-  @Test
-  fun `sections of a retired generation resolve to empty instead of failing`() {
-    val dbFile = tempDir.resolve("snapshot_db.data")
-
-    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
-      val generation = storage.createGeneration(1)
-      val state = saveAll(generation, count = 1)
-      storage.commit()
-      storage.close()
-      state
-    }
-
-    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val summary = reopenedStorage.openGeneration(1).shouldNotBeNull()
-      .findOrLoadTarget(state.partial, key("@//pkg0:target"), TargetLoadOptions.SUMMARY)
-    summary.shouldNotBeNull()
-    reopenedStorage.close()
-
-    summary.dependencies shouldBe emptyList()
-    summary.data shouldBe emptyList()
-    summary.sources.isEmpty() shouldBe true
-  }
-
-  @Test
-  fun `a section stays readable once materialized, even after its generation is retired`() {
-    val dbFile = tempDir.resolve("snapshot_db.data")
-
-    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
-      val generation = storage.createGeneration(1)
-      val state = saveAll(generation, count = 1)
-      storage.commit()
-      storage.close()
-      state
-    }
-
-    val targetKey = key("@//pkg0:target")
-    val expected = state.targets.getValue(targetKey)
-    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val summary = reopenedStorage.openGeneration(1).shouldNotBeNull()
-      .findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.SUMMARY)
-    summary.shouldNotBeNull()
-
-    // materialize while the generation is still live
-    summary.sources shouldBe expected.sources
-    summary.dependencies shouldBe expected.dependencies
-    reopenedStorage.close()
-
-    // the section was cached, retiring the generation must not turn it back into an empty one
-    summary.sources shouldBe expected.sources
-    summary.dependencies shouldBe expected.dependencies
-  }
-
-  @Test
-  fun `sections deferred by a scan resolve per target once the scan is over`() {
-    val dbFile = tempDir.resolve("snapshot_db.data")
-
-    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
-      val generation = storage.createGeneration(1)
-      val state = saveAll(generation, count = 20)
-      storage.commit()
-      storage.close()
-      state
-    }
-
-    val storage = SnapshotStorage(dbFile, buildKryo())
-    try {
-      val depsOnly = storage.openGeneration(1).shouldNotBeNull()
-        .scanAllTargets(state.partial, TargetLoadOptions(TargetSection.INFO, TargetSection.DEPS))
-        .toList()
-      depsOnly.size shouldBe 20
-
-      for (target in depsOnly.reversed()) {
-        val expected = state.targets.getValue(target.key)
-        target.sources shouldBe expected.sources
-        target.data.toSet() shouldBe expected.data.toSet()
-      }
-    }
-    finally {
-      storage.close()
-    }
-  }
-
-  @Test
-  fun `full cached target is served for partial requests, partial loads are not cached`() {
-    val dbFile = tempDir.resolve("snapshot_db.data")
-    val state = SnapshotStorage(dbFile, buildKryo()).let { storage ->
-      val generation = storage.createGeneration(1)
-      val state = saveAll(generation, count = 1)
-      storage.commit()
-      storage.close()
-      state
-    }
-
-    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
-    val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
-    try {
-      val skipFileSets = TargetLoadOptions(TargetSection.INFO, TargetSection.DEPS, targetData = BuildTargetLoadHint.All)
-      val partial1 = reopened.findOrLoadTarget(state.partial, key("@//pkg0:target"), skipFileSets)
-      val full = reopened.findOrLoadTarget(state.partial, key("@//pkg0:target"), TargetLoadOptions.ALL)
-      val partial2 = reopened.findOrLoadTarget(state.partial, key("@//pkg0:target"), skipFileSets)
-
-      full.shouldNotBeNull()
-      full.isFull shouldBe true
-      partial2 shouldBe full
-      partial1.shouldNotBeNull()
-      partial1.isFull shouldBe false
+      (second === first) shouldBe true
+      (reopened.findTargetInfo(state.partial, targetKey) === first.info) shouldBe true
+      val cachedData = reopened.findTargetData(state.partial, targetKey, JavaToolchainData::class.java)
+      first.data.any { it === cachedData } shouldBe true
     }
     finally {
       reopenedStorage.close()
@@ -505,7 +433,7 @@ class SnapshotStorageTest {
         reopened.findTargetsByFile(state.partial, Path.of("/workspace/pkg$n/Main.java")).toList() shouldBe listOf(key("@//pkg$n:target"))
       }
       for ((targetKey, raw) in state.targets) {
-        assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey, TargetLoadOptions.ALL), raw)
+        assertComposedEquals(reopened.findOrLoadTarget(state.partial, targetKey), raw)
       }
     }
     finally {
@@ -527,24 +455,14 @@ class SnapshotStorageTest {
     val storage = SnapshotStorage(dbFile, buildKryo())
     try {
       val generation = storage.openGeneration(1).shouldNotBeNull()
-      val scanned = generation.scanAllTargets(state.partial, TargetLoadOptions.ALL).toList()
+      val scanned = generation.scanAllTargets(state.partial).toList()
       scanned.map { it.key }.toSet() shouldBe state.targets.keys
       for (target in scanned) {
-        target.isFull shouldBe true
         assertComposedEquals(target, state.targets.getValue(target.key))
       }
 
-      // partial scan decodes only the requested sections
-      val depsOnly = generation
-        .scanAllTargets(state.partial, TargetLoadOptions(TargetSection.INFO, TargetSection.DEPS))
-        .toList()
-      depsOnly.size shouldBe 50
-      for (target in depsOnly) {
-        target.isFull shouldBe false
-        target.dependencies.size shouldBe 1
-        target.sources shouldBe state.targets.getValue(target.key).sources
-        target.data.toSet() shouldBe state.targets.getValue(target.key).data.toSet()
-      }
+      // the info scan gives the same infos and reads no other part
+      generation.scanAllTargetInfos(state.partial).toList() shouldBe scanned.map { it.info }
     }
     finally {
       storage.close()
@@ -591,7 +509,7 @@ class SnapshotStorageTest {
       // removal was deferred, the held generation stays fully readable
       storage.hasGeneration(1) shouldBe true
       assertComposedEquals(
-        gen1.findOrLoadTarget(state.partial, key("@//pkg0:target"), TargetLoadOptions.ALL),
+        gen1.findOrLoadTarget(state.partial, key("@//pkg0:target")),
         state.targets.getValue(key("@//pkg0:target")),
       )
       gen1.findTargetsByFile(state.partial, Path.of("/workspace/shared/Shared.java")).toSet() shouldBe state.targets.keys
@@ -632,7 +550,7 @@ class SnapshotStorageTest {
       val state = saveAllBulk(retried, count = 20, firstIndex = 100)
       storage.commit()
 
-      val scanned = retried.scanAllTargets(state.partial, TargetLoadOptions.ALL).toList()
+      val scanned = retried.scanAllTargets(state.partial).toList()
       scanned.map { it.key } shouldBe state.targets.keys.toList()
       for (target in scanned) {
         assertComposedEquals(target, state.targets.getValue(target.key))

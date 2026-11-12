@@ -15,7 +15,6 @@ import org.jetbrains.bazel.sync.workspace.mapper.PhasedBazelProjectMapper
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
-import org.jetbrains.bazel.test.framework.target.asTestBuildTarget
 import org.jetbrains.bazel.test.framework.testproject.TestBazelProject
 import org.jetbrains.bazel.test.framework.testproject.bazelInfo
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
@@ -164,7 +163,7 @@ class FirstPhaseTargetToBspMapperTest {
       val resultTargets = mapper.mapTargets(targets.associateBy { Label.parse(it.rule.name) })
 
       // then: update expected build targets as per the new merged behavior
-      resultTargets.map { it.asTestBuildTarget() } shouldContainExactlyInAnyOrder
+      resultTargets shouldContainExactlyInAnyOrder
         listOf(
           // target1: unchanged
           TestBuildTarget(

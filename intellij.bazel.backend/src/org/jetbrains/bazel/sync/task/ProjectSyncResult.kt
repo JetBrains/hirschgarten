@@ -3,7 +3,6 @@ package org.jetbrains.bazel.sync.task
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.sync.ProjectSyncCompletionResult
 import org.jetbrains.bazel.sync.ProjectSyncOutcome
-import org.jetbrains.bsp.protocol.BuildTarget
 
 internal data class ProjectSyncResult(
   val completionResult: ProjectSyncCompletionResult,

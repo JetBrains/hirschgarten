@@ -27,6 +27,7 @@ import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bsp.protocol.id
 
@@ -62,7 +63,7 @@ class BazelRunConfiguration internal constructor(
   fun checkConfigurationUnsafe() {
     val utils = project.targetStorage
     val selectedTargets = targets.map {
-      val target = utils.getTargetSummary(it) ?: return // skip validations when any target is missing
+      val target = utils.getTargetInfo(it) ?: return // skip validations when any target is missing
       if (!target.kind.isExecutable) throw RuntimeConfigurationError(message("runconfig.bazel.errors.target.not.executable", it))
       target
     }

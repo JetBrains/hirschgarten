@@ -25,11 +25,11 @@ import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTarget
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
@@ -99,17 +99,19 @@ class AspectBazelProjectMapper(
       return OutputLocationCollectionBuilder.build(existing, server.outputParser)
     }
 
-    return WorkspaceTarget(
-      key = target.key.toWorkspaceTargetKey(),
+    return BuildTarget(
+      info = BuildTargetInfo(
+        key = target.key.toWorkspaceTargetKey(),
+        kind = targetKind,
+        generatorName = target.generatorName,
+        isTestOnly = target.testonly,
+        tags = target.tagsList.toList(),
+        workspaceName = target.workspaceName,
+      ),
       dependencies = target.depsList.map { it.toDependencyLabel() },
-      kind = targetKind,
       sources = resolveSourceSet(target.srcsList) { src -> if (src.isSource) MissingFileCategory.SOURCES else MissingFileCategory.GENERATED_SOURCES },
       resources = resolveSourceSet(target.jvmTargetInfo.resourcesList) { MissingFileCategory.RESOURCES },
       data = buildData,
-      generatorName = target.generatorName,
-      isTestOnly = target.testonly,
-      tags = target.tagsList.toList(),
-      workspaceName = target.workspaceName,
     ).also {
       missingFilesReporter.report()
     }

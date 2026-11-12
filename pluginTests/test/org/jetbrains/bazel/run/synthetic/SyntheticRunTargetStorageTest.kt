@@ -76,7 +76,7 @@ class SyntheticRunTargetStorageTest {
 
   @Test
   fun `test getTemplateGenerators for java target`() {
-    val target = javaLibrary("//test:java_lib")
+    val target = javaLibrary("//test:java_lib").info
 
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, JavaLanguage.INSTANCE)
     generator.shouldNotBeNull()
@@ -85,7 +85,7 @@ class SyntheticRunTargetStorageTest {
 
   @Test
   fun `test getTemplateGenerators for kotlin target`() {
-    val target = kotlinLibrary("//test:kotlin_lib")
+    val target = kotlinLibrary("//test:kotlin_lib").info
 
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, KotlinLanguage.INSTANCE)
 
@@ -104,14 +104,14 @@ class SyntheticRunTargetStorageTest {
 
   @Test
   fun `test getTemplateGenerators filters unsupported generators`() {
-    val javaTarget = javaLibrary("//test:java")
+    val javaTarget = javaLibrary("//test:java").info
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(javaTarget, KotlinLanguage.INSTANCE)
     generator.shouldBeNull()
   }
 
   @Test
   fun `test addSyntheticRunActions creates actions for kotlin library main`() {
-    val target = kotlinLibrary("//test:kotlin_lib")
+    val target = kotlinLibrary("//test:kotlin_lib").info
 
     myFixture.configureByText(
       "main.kt",

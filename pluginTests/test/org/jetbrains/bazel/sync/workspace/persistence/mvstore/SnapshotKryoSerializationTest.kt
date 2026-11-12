@@ -40,6 +40,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
 import org.jetbrains.bazel.workspace.model.test.framework.generatedTestLocation
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -94,7 +95,7 @@ class SnapshotKryoSerializationTest {
     key: WorkspaceTargetKey,
     dependencies: List<DependencyLabel> = emptyList(),
     data: List<BuildTargetData> = emptyList(),
-  ): TestBuildTarget =
+  ): BuildTarget =
     TestBuildTarget(
       key = key,
       dependencies = dependencies,
@@ -317,21 +318,18 @@ class SnapshotKryoSerializationTest {
     restoredPartial.tags shouldBe partialTarget.tags
     restoredPartial.workspaceName shouldBe partialTarget.workspaceName
 
-    val deps = WorkspaceTargetDeps(
+    val content = WorkspaceTargetContent(
       dependencies = listOf(
         DependencyLabel(targetKey = key("@//foo:dep"), kind = DependencyLabelKind.RUNTIME),
         DependencyLabel(targetKey = key("@//foo:single")),
       ),
-    )
-    serializeAndDeserialize(deps).dependencies shouldBe deps.dependencies
-
-    val heavy = HeavyWorkspaceTarget(
       sources = locations(OutputLocation.Workspace("a/A.kt"), OutputLocation.Workspace("a/b/B.kt")),
       resources = locations(OutputLocation.External("res", "res.txt")),
     )
-    val restoredHeavy = serializeAndDeserialize(heavy)
-    restoredHeavy.sources shouldBe heavy.sources
-    restoredHeavy.resources shouldBe heavy.resources
+    val restoredContent = serializeAndDeserialize(content)
+    restoredContent.dependencies shouldBe content.dependencies
+    restoredContent.sources shouldBe content.sources
+    restoredContent.resources shouldBe content.resources
   }
 
   @Test

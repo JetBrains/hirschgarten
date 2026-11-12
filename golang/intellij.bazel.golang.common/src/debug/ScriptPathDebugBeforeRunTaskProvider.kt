@@ -18,6 +18,7 @@ import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
+import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.ExecutableInfo
@@ -54,7 +55,7 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
     val executableKey = environment.getCopyableUserData(EXECUTABLE_KEY) ?: return true
     val project = environment.project
     val targetUtils = project.targetStorage
-    val targetInfos = runConfiguration.targets.mapNotNull { targetUtils.getTargetSummary(it) }
+    val targetInfos = runConfiguration.targets.mapNotNull { targetUtils.getTargetInfo(it) }
     if (targetInfos.any { !it.kind.includesGo() || (it.kind.ruleType != RuleType.TEST && it.kind.ruleType != RuleType.BINARY) }) {
       return false
     }

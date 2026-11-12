@@ -4,9 +4,11 @@ f:org.jetbrains.bazel.config.BazelProjectPropertiesKt
 a:org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer
 - com.intellij.execution.actions.LazyRunConfigurationProducer
 - <init>():V
+- pf:acceptsTarget(com.intellij.openapi.project.Project,org.jetbrains.bsp.protocol.BuildTargetInfo):Z
 - pf:acceptsTarget(org.jetbrains.bsp.protocol.BuildTarget):Z
 - getConfigurationFactory():com.intellij.execution.configurations.ConfigurationFactory
-- a:getGutterAction(com.intellij.psi.PsiElement,org.jetbrains.bsp.protocol.BuildTarget):org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer$GutterAction
+- getGutterAction(com.intellij.psi.PsiElement,org.jetbrains.bsp.protocol.BuildTarget):org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer$GutterAction
+- getGutterAction(com.intellij.psi.PsiElement,org.jetbrains.bsp.protocol.BuildTargetInfo):org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer$GutterAction
 - isDumbAware():Z
 f:org.jetbrains.bazel.ui.gutters.BazelRunConfigurationProducer$GutterAction
 - <init>():V

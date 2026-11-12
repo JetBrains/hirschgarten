@@ -11,7 +11,7 @@ import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
 import org.jetbrains.bazel.test.framework.testproject.javaLibrary
 import org.jetbrains.bazel.test.framework.testproject.kotlinLibrary
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetInfo
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.junit.jupiter.api.Test
@@ -22,7 +22,7 @@ class SyntheticRunTargetTemplateGeneratorTest {
 
   @Test
   fun `test getSyntheticTargetLabel generates valid label`() {
-    val target = javaLibrary("//test:lib")
+    val target = javaLibrary("//test:lib").info
 
     myFixture.configureByText(
       "App.java",
@@ -44,7 +44,7 @@ class SyntheticRunTargetTemplateGeneratorTest {
 
   @Test
   fun `test getSyntheticParams extracts main class name`() {
-    val target = javaLibrary("//test:target")
+    val target = javaLibrary("//test:target").info
 
     myFixture.configureByText(
       "TestClass.java",
@@ -65,7 +65,7 @@ class SyntheticRunTargetTemplateGeneratorTest {
 
   @Test
   fun `test kotlin getSyntheticParams extracts top level main class name`() {
-    val target = kotlinLibrary("//test:target")
+    val target = kotlinLibrary("//test:target").info
 
     myFixture.configureByText(
       "main.kt",
@@ -89,7 +89,7 @@ class SyntheticRunTargetTemplateGeneratorTest {
 
   @Test
   fun `test kotlin getSyntheticParams extracts object main class name`() {
-    val target = kotlinLibrary("//test:target")
+    val target = kotlinLibrary("//test:target").info
 
     myFixture.configureByText(
       "MyObject.kt",
@@ -110,7 +110,7 @@ class SyntheticRunTargetTemplateGeneratorTest {
     params.data.shouldBe("com.test.MyObject")
   }
 
-  private fun getDefaultTemplateGenerator(target: BuildTarget, language: Language): SyntheticRunTargetTemplateGenerator {
+  private fun getDefaultTemplateGenerator(target: BuildTargetInfo, language: Language): SyntheticRunTargetTemplateGenerator {
     val generator = SyntheticRunTargetTemplateGenerator.getTemplateGenerator(target, language)
     generator.shouldNotBeNull()
     return generator

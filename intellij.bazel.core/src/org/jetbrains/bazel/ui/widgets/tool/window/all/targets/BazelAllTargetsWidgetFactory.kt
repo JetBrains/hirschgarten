@@ -30,6 +30,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.TargetStorage
+import org.jetbrains.bazel.target.allTargetInfos
 import org.jetbrains.bazel.target.isWorkspace
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
@@ -137,7 +138,7 @@ private suspend fun updateVisibleTargets(
 ) {
   // First, apply the filter
   val repoMapping = targetStorage.repoMapping()
-  val filteredTargets = targetStorage.allTargetSummaries()
+  val filteredTargets = targetStorage.allTargetInfos()
     .asSequence()
     .distinctBy { it.id }
     .filter { target -> target.isWorkspace(repoMapping) && model.targetFilter.predicate(target) }

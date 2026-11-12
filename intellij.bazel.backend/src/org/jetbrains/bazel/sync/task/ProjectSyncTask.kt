@@ -59,7 +59,6 @@ import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
-import org.jetbrains.bsp.protocol.id
 import java.util.concurrent.CancellationException
 import kotlin.collections.map
 import kotlin.random.Random
@@ -374,7 +373,7 @@ class ProjectSyncTask(
           }
 
           val workspaceSnapshot = syncWorkspace.snapshot
-          val syncedTargets = workspaceSnapshot.targets.allTargets().toList()
+          val syncedTargets = workspaceSnapshot.targets.allTargetInfos().toList()
           if (phase == SyncPhase.FIRST) {
             allKnownTargets = syncedTargets.map { it.id }
             knownRepoMapping = workspaceSnapshot.repoMapping

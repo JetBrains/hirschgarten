@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
+import org.jetbrains.bazel.test.framework.target.withKey
 import org.jetbrains.bazel.workspace.model.test.framework.createTestBuildTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationCollection
@@ -356,7 +357,7 @@ class DependencyBuilderTest {
     jvmDependencies: List<JvmDependency> = emptyList(),
     checkStrictDependencies: StrictDependencyCheckedType = StrictDependencyCheckedType.OFF,
     configuration: WorkspaceConfigurationId = WorkspaceConfigurationId.EMPTY,
-  ): TestBuildTarget {
+  ): BuildTarget {
     val base = createTestBuildTarget(
       id = Label.parse(label),
       kind = TargetKind(
@@ -375,7 +376,7 @@ class DependencyBuilderTest {
         base
       }
       else {
-        base.copy(key = WorkspaceTargetKey(label = Label.parse(label), configuration = configuration))
+        base.withKey(WorkspaceTargetKey(label = Label.parse(label), configuration = configuration))
       }
     val strippedKey = target.key.copy(aspectIds = WorkspaceAspectIds.EMPTY)
     resolvedByKey[strippedKey] = JvmResolvedTarget(
