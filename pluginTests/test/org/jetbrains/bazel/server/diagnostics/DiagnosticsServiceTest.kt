@@ -49,6 +49,42 @@ class DiagnosticsServiceTest {
   }
 
   @Test
+  fun `should find visibility error in cquery in the presence of timestamps`() {
+    val stderr =
+      """
+      (13:01:31) INFO: Invocation ID: 636008be-6d0e-42d7-b710-6a5f7ab8c5c2
+      (13:01:31) INFO: Current date is 2026-11-12
+      (13:01:31) ERROR: /home/user/example/src/BUILD.bazel:3:12: in java_binary rule //src:use: Visibility error:
+      target '//src/lib:data' is not visible from
+      target '//src:use'
+      Recommendation: modify the visibility declaration if you think the dependency is legitimate. For more info see https://bazel.build/concepts/visibility
+      """.trimIndent()
+
+    // when
+    val diagnostics = extractDiagnostics(stderr, Label.parse("//src:use"), isCommandLineFormattedOutput = true)
+
+    //then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(Path("/home/user/example/src/BUILD.bazel")),
+          Label.parse("//src:use"),
+          errorDiagnostic(
+            Position.fromHumanReadable(3, 12),
+            """
+            in java_binary rule //src:use: Visibility error:
+            target '//src/lib:data' is not visible from
+            target '//src:use'
+            Recommendation: modify the visibility declaration if you think the dependency is legitimate. For more info see https://bazel.build/concepts/visibility
+            """.trimIndent()
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+
+  }
+
+  @Test
   fun `should extract diagnostics for error in one source file`() {
     val output =
       """
