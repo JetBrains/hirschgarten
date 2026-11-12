@@ -9,13 +9,14 @@ filegroup(
 
 cc_toolchain_config(
     name = "false_toolchain_config",
+    compiler_stub = "@cc_false_toolchain//:compiler",
 )
 
 cc_toolchain(
     name = "false_cc_toolchain",
-    all_files = ":empty",
+    all_files = "@cc_false_toolchain//:compiler",
     ar_files = ":empty",
-    compiler_files = ":empty",
+    compiler_files = "@cc_false_toolchain//:compiler",
     dwp_files = ":empty",
     linker_files = ":empty",
     objcopy_files = ":empty",

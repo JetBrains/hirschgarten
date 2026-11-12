@@ -22,7 +22,10 @@ import org.junit.jupiter.api.TestInstance
 class CcRunConfigurationProducerTest {
 
   // no need to run this test on different versions
-  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = BazelVersions.BAZEL_9)
+  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = BazelVersions.BAZEL_9) {
+    // the entry point detection needs the compiler info, which the sync cannot collect for the unbuilt local toolchain
+    addBuildFlags("--extra_toolchains=//toolchain:toolchain")
+  }
 
   @Test
   fun testEntryPointRunsItsTarget(): Unit = timeoutRunBlocking {

@@ -19,7 +19,7 @@ import java.nio.file.Files
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CcNewFileTest {
 
-  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = BazelVersions.BAZEL_9)
+  private val project by clionBazelProjectFixture("clion/simple", buildProject = true, bazelVersion = BazelVersions.BAZEL_9)
 
   @Test
   fun testFileInPackageDirectory() = assertConfiguration("lib/new.cc", expectedFrom = "lib/lib.cc")

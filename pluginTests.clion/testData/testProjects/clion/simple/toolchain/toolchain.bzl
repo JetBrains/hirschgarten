@@ -1,5 +1,5 @@
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
-load("@rules_cc//cc:cc_toolchain_config_lib.bzl", "env_entry", "env_set", "feature", "flag_group", "flag_set", "tool_path")
+load("@rules_cc//cc:cc_toolchain_config_lib.bzl", "action_config", "env_entry", "env_set", "feature", "flag_group", "flag_set", "tool", "tool_path")
 load("@rules_cc//cc:defs.bzl", "cc_common")
 load("@rules_cc//cc/toolchains:cc_toolchain_config_info.bzl", "CcToolchainConfigInfo")
 
@@ -38,6 +38,16 @@ def _impl(ctx):
         ],
     )
 
+    # compiler info collection needs to invoke the compiler during the sync
+    action_configs = [
+        action_config(
+            action_name = action_name,
+            enabled = True,
+            tools = [tool(tool = ctx.file.compiler_stub)],
+        )
+        for action_name in [ACTION_NAMES.c_compile, ACTION_NAMES.cpp_compile]
+    ]
+
     tool_paths = [
         tool_path(name = "gcc", path = "/usr/bin/false"),
         tool_path(name = "ld", path = "/usr/bin/false"),
@@ -60,11 +70,17 @@ def _impl(ctx):
         abi_version = "unknown",
         abi_libc_version = "unknown",
         features = [env_feature, flag_feature],
+        action_configs = action_configs,
         tool_paths = tool_paths,
     )
 
 cc_toolchain_config = rule(
     implementation = _impl,
-    attrs = {},
+    attrs = {
+        "compiler_stub": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+        ),
+    },
     provides = [CcToolchainConfigInfo],
 )
