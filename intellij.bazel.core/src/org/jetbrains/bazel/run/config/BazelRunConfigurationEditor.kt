@@ -62,6 +62,11 @@ class BazelRunConfigurationEditor(
     add(TargetsFragment(project))
   }
 
+  /** Updates the run handlers on offer for the targets of [configuration]. The other fragments keep their state. */
+  fun resetRunHandlerFragment(configuration: BazelRunConfiguration) {
+    fragments.filterIsInstance<RunHandlerFragment>().forEach { it.resetFrom(configuration) }
+  }
+
   fun findFocusedFragmentId(): String? {
     val focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner ?: return null
     return fragments.firstOrNull { SwingUtilities.isDescendingFrom(focusOwner, it.component()) }?.id

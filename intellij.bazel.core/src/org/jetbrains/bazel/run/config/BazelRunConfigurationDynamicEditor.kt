@@ -12,7 +12,8 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import javax.swing.JComponent
 
 /**
- * Delegates to [BazelRunConfigurationEditor] and recreates it when the targets or [BazelRunHandler] change.
+ * Delegates to [BazelRunConfigurationEditor] and recreates it when the [BazelRunHandler] changes.
+ * A change of the targets alone only updates the run handlers on offer.
  *
  * Code based on [com.intellij.execution.ui.RunnerAndConfigurationSettingsEditor] which also deals with [SettingsEditor] delegation.
  */
@@ -47,7 +48,8 @@ internal class BazelRunConfigurationDynamicEditor(
   }
 
   override fun resetEditorFrom(s: BazelRunConfiguration) {
-    if (s.handlerProvider == delegateHandlerProvider && s.targets == delegateTargets) {
+    if (s.handlerProvider == delegateHandlerProvider) {
+      delegateTargets = s.targets.toList()
       delegate.resetEditorFrom(s)
     } else {
       recreateDelegate(s, runnerAndConfigurationSettings)
@@ -56,12 +58,17 @@ internal class BazelRunConfigurationDynamicEditor(
 
   override fun applyEditorTo(s: BazelRunConfiguration) {
     delegate.applyEditorTo(s)
-    if (s.handlerProvider == delegateHandlerProvider && s.targets == delegateTargets) return
-    val focusedFragmentId = delegate.findFocusedFragmentId()
-    val settingsCopy = runnerAndConfigurationSettings?.clone()
-    settingsCopy?.let { delegate.applyEditorTo(it) }
-    recreateDelegate(s.clone() as BazelRunConfiguration, settingsCopy)
-    focusedFragmentId?.let { delegate.focusFragment(it) }
+    if (s.handlerProvider != delegateHandlerProvider) {
+      val focusedFragmentId = delegate.findFocusedFragmentId()
+      val settingsCopy = runnerAndConfigurationSettings?.clone()
+      settingsCopy?.let { delegate.applyEditorTo(it) }
+      recreateDelegate(s.clone() as BazelRunConfiguration, settingsCopy)
+      focusedFragmentId?.let { delegate.focusFragment(it) }
+    } else if (s.targets != delegateTargets) {
+      // The user is in the middle of an edit of the targets, so the targets field must stay.
+      delegateTargets = s.targets.toList()
+      delegate.resetRunHandlerFragment(s)
+    }
   }
 
   override fun createEditor(): JComponent {
