@@ -129,7 +129,7 @@ data class ResolvedLabel(
   override val packagePath: PackageType,
   override val target: TargetType,
 ) : Label {
-  val repoName get() = repo.repoName
+  val repoName: String get() = repo.repoName
 
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
 }
