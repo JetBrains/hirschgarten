@@ -25,7 +25,7 @@ internal class DiagnosticsParserImpl : DiagnosticsParser {
   }
 
   private fun prepareOutput(lines: List<String>, target: Label): Output {
-    val relevantLines = lines.filterNot { line -> IgnoredLines.any { it.matches(line) } }
+    val relevantLines = lines.filterNot { it.isEmpty() }
     return Output(relevantLines, target)
   }
 
@@ -72,11 +72,6 @@ internal class DiagnosticsParserImpl : DiagnosticsParser {
     private val CommandLineOutputParser =
       listOf(
         BazelOutputMessageParser,
-      )
-    private val IgnoredLines =
-      listOf(
-        "^$".toRegex(),
-        "Use --sandbox_debug to see verbose messages from the sandbox".toRegex(),
       )
   }
 }
