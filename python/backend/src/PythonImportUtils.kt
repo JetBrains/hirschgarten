@@ -10,7 +10,8 @@ import kotlin.io.path.Path
 
 internal object PythonImportUtils {
   /**
-   * Converts the [org.jetbrains.bazel.python.lang.PythonBuildTarget.imports] attribute to workspace-root-relative paths
+   * Converts the [org.jetbrains.bazel.python.lang.PythonBuildTarget.imports] attribute to paths relative to the root of
+   * the repository of [buildTarget]. For a target in the main repository, this root is the workspace root.
    */
   fun assembleExplicitImportsPaths(buildTarget: BuildTarget): List<Path> {
     val label = buildTarget.id as? ResolvedLabel ?: return listOf()

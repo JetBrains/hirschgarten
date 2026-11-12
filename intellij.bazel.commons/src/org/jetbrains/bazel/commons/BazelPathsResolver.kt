@@ -5,6 +5,7 @@ import com.google.devtools.intellij.aspect.Common.ArtifactLocation
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Main
+import org.jetbrains.bazel.label.RepoType
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.toPath
 import java.net.URI
@@ -116,25 +117,43 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       else -> bazelInfo.workspaceRoot.resolve(path)
     }
 
-  fun toDirectoryPath(label: ResolvedLabel, repoMapping: RepoMapping): Path {
-    val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { label.toRepoPath(repoMapping) } ?: label.toRepoPathForBazel7()
-    return repoPath.resolve(label.packagePath.toPath())
+  fun toDirectoryPath(label: ResolvedLabel, repoMapping: RepoMapping): Path =
+    toRepositoryPath(label.repo, repoMapping).resolve(label.packagePath.toPath())
+
+  /**
+   * Returns the root directory of the repository of [repo].
+   * This is the workspace root for the main repository and the source directory for a local repository.
+   * For another external repository, this is its directory under the output base.
+   * The path is normalized, because a `local_path_override` path can contain `.` and `..` segments.
+   */
+  fun toRepositoryPath(repo: RepoType, repoMapping: RepoMapping): Path =
+    ((repoMapping as? BzlmodRepoMapping)?.let { repo.toRepoPath(it) } ?: repo.toRepoPathForBazel7()).normalize()
+
+  /**
+   * Returns the directory under `bazel-bin` that holds the outputs of the repository of [repo].
+   */
+  fun toBinRepositoryPath(repo: RepoType, repoMapping: RepoMapping): Path {
+    if (repo is Main) return bazelInfo.bazelBin
+    val canonicalName = (repoMapping as? BzlmodRepoMapping)?.let { repo.canonicalRepoName(it) } ?: repo.repoName
+    return bazelInfo.bazelBin.resolve("external").resolve(canonicalName)
   }
 
-  private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
-    val canonicalName =
-      if (repo is Canonical || repo is Main) {
-        repo.repoName
-      } else {
-        repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
-      }
-    return repoMapping.canonicalRepoNameToPath[canonicalName]
-  }
+  private fun RepoType.toRepoPath(repoMapping: BzlmodRepoMapping): Path? =
+    canonicalRepoName(repoMapping)?.let { repoMapping.canonicalRepoNameToPath[it] }
 
-  private fun ResolvedLabel.toRepoPathForBazel7(): Path =
-    if (repo is Main) {
+  private fun RepoType.canonicalRepoName(repoMapping: BzlmodRepoMapping): String? =
+    if (this is Canonical || this is Main) {
+      repoName
+    }
+    else {
+      repoMapping.apparentRepoNameToCanonicalName[repoName]
+    }
+
+  private fun RepoType.toRepoPathForBazel7(): Path =
+    if (this is Main) {
       bazelInfo.workspaceRoot
-    } else {
-      relativePathToExecRootAbsolute(Path("external", repo.repoName))
+    }
+    else {
+      relativePathToExecRootAbsolute(Path("external", repoName))
     }
 }

@@ -74,4 +74,43 @@ class BazelPathsResolverTest {
       resolver.toDirectoryPath(Label.parse("@community//fleet/kernel/...").assumeResolved(), repoMapping),
     )
   }
+
+  @Test
+  fun repositoryPathUsesRepoMapping() {
+    val resolver = newResolver()
+    val repoMapping = testRepoMapping(bazelInfo) {
+      local("local_repo+", "libs/local_repo", apparentName = "local_repo")
+      external("remote_repo+", apparentName = "remote_repo")
+    }
+
+    fun repositoryPath(label: String) = resolver.toRepositoryPath(Label.parse(label).assumeResolved().repo, repoMapping)
+    repositoryPath("//pkg:target") shouldBe Path("workspace")
+    repositoryPath("@local_repo//:target") shouldBe Path("workspace/libs/local_repo")
+    repositoryPath("@@local_repo+//sub:target") shouldBe Path("workspace/libs/local_repo")
+    repositoryPath("@remote_repo//sub:target") shouldBe Path("bazel-out/external/remote_repo+")
+  }
+
+  @Test
+  fun repositoryPathIsNormalized() {
+    val resolver = newResolver()
+    val repoMapping = testRepoMapping(bazelInfo) {
+      local("dot_repo+", "./libs/dot_repo", apparentName = "dot_repo")
+      local("parent_repo+", "libs/../libs/parent_repo", apparentName = "parent_repo")
+    }
+
+    fun repositoryPath(label: String) = resolver.toRepositoryPath(Label.parse(label).assumeResolved().repo, repoMapping)
+    repositoryPath("@dot_repo//:target") shouldBe Path("workspace/libs/dot_repo")
+    repositoryPath("@parent_repo//:target") shouldBe Path("workspace/libs/parent_repo")
+  }
+
+  @Test
+  fun binRepositoryPathUsesCanonicalName() {
+    val resolver = newResolver()
+    val repoMapping = testRepoMapping(bazelInfo) { local("local_repo+", "libs/local_repo", apparentName = "local_repo") }
+
+    fun binRepositoryPath(label: String) = resolver.toBinRepositoryPath(Label.parse(label).assumeResolved().repo, repoMapping)
+    binRepositoryPath("//pkg:target") shouldBe bazelInfo.bazelBin
+    binRepositoryPath("@local_repo//:target") shouldBe bazelInfo.bazelBin.resolve("external/local_repo+")
+    binRepositoryPath("@@local_repo+//sub:target") shouldBe bazelInfo.bazelBin.resolve("external/local_repo+")
+  }
 }

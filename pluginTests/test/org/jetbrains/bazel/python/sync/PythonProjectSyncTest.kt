@@ -48,6 +48,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.languages.projectview.IMPORT_DEPTH_KEY
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -70,11 +71,13 @@ import org.jetbrains.bazel.test.framework.testproject.TestTargetBuilder
 import org.jetbrains.bazel.test.framework.testproject.bazelInfo
 import org.jetbrains.bazel.test.framework.testproject.buildServer
 import org.jetbrains.bazel.test.framework.testproject.clearSnapshot
+import org.jetbrains.bazel.test.framework.testproject.externalRepositoryPath
 import org.jetbrains.bazel.test.framework.testproject.outputBase
 import org.jetbrains.bazel.test.framework.testproject.pythonTarget
 import org.jetbrains.bazel.test.framework.testproject.sync
 import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
+import org.jetbrains.bazel.test.framework.testproject.testRepoMapping
 import org.jetbrains.bazel.test.framework.testproject.virtualFileUrlManager
 import org.jetbrains.bazel.test.framework.testproject.workspaceRoot
 import org.jetbrains.bazel.test.framework.testproject.writeFile
@@ -369,7 +372,7 @@ class PythonProjectSyncTest {
       override val outFileHardLinks = hardLinks
     }
     val target = testPythonTarget(
-      "@@server//:generated",
+      "//:generated",
       imports = if (explicitImports) listOf("generated") else emptyList(),
       generatedSources = when (sourceCollection) {
         "common" -> emptyList()
@@ -441,7 +444,7 @@ class PythonProjectSyncTest {
       override val outFileHardLinks = initialLinks
     }
     val target = testPythonTarget(
-      "@@server//:generated",
+      "//:generated",
       imports = listOf("generated"),
       generatedSources = listOf(generatedTestLocation("generated/aaa.py")),
     )
@@ -579,7 +582,7 @@ class PythonProjectSyncTest {
       override val bazelInfo = info
       override val outFileHardLinks = links
     }
-    val target = testPythonTarget("@@server//:generated", imports = listOf(importPath)) { srcs("$importPath/alias.py", generated = true) }
+    val target = testPythonTarget("//:generated", imports = listOf(importPath)) { srcs("$importPath/alias.py", generated = true) }
     val diff = MutableEntityStorage.create()
 
     runPythonImporter(generateWorkspaceSnapshot(listOf(mapGeneratedTarget(target, server))), diff, buildServerMock = server)
@@ -606,7 +609,7 @@ class PythonProjectSyncTest {
       override val bazelInfo = info
       override val outFileHardLinks = links
     }
-    val target = testPythonTarget("@@server//:generated", imports = listOf("generated")) {
+    val target = testPythonTarget("//:generated", imports = listOf("generated")) {
       srcs("generated/pkg/aaa.py", generated = true)
     }
     val diff = MutableEntityStorage.create()
@@ -621,6 +624,57 @@ class PythonProjectSyncTest {
 
     diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
       setOf(links.resolveCachedPath(generatedDir).toVirtualFileUrl(testBazel.virtualFileUrlManager))
+  }
+
+  @Test
+  fun `imports of a local repository target resolve against the repository root and its bazel-bin directory`() {
+    val info = bazelInfo()
+    val repoMapping = testRepoMapping(info) { local("local_repo+", "libs/local_repo", apparentName = "local_repo") }
+    val sourceDir = testBazel.workspaceRoot.resolve("libs/local_repo/src").createDirectories()
+    val generatedDir = info.bazelBin.resolve("external/local_repo+/gen").createDirectories()
+    // the old resolution against the project root and bazel-bin would find these directories
+    testBazel.workspaceRoot.resolve("src").createDirectories()
+    info.bazelBin.resolve("gen").createDirectories()
+    val target = testPythonTarget("@@local_repo+//:lib", imports = listOf("src", "gen"))
+    val diff = MutableEntityStorage.create()
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target), repoMapping = repoMapping), diff)
+
+    diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
+      setOf(sourceDir, generatedDir).map { it.toVirtualFileUrl(testBazel.virtualFileUrlManager) }.toSet()
+  }
+
+  @Test
+  fun `imports of a non-local repository target make no source roots`() {
+    val info = bazelInfo()
+    val repoMapping = testRepoMapping(info) { external("remote_repo+", apparentName = "remote_repo") }
+    // the old resolution against the project root and bazel-bin would find these directories
+    testBazel.workspaceRoot.resolve("src").createDirectories()
+    info.bazelBin.resolve("src").createDirectories()
+    // the repository directories exist too, so only the skip of a non-local repository keeps the roots out
+    info.externalRepositoryPath("remote_repo+").resolve("src").createDirectories()
+    info.bazelBin.resolve("external/remote_repo+/src").createDirectories()
+    val target = testPythonTarget("@@remote_repo+//:lib", imports = listOf("src"))
+    val diff = MutableEntityStorage.create()
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target), repoMapping = repoMapping), diff)
+
+    diff.entities(SourceRootEntity::class.java).toList() shouldBe emptyList()
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = ["libs/local_repo", "./libs/local_repo", "libs/../libs/local_repo"])
+  fun `imports of a local repository target resolve against a repository path with dot segments`(repositoryPath: String) {
+    val info = bazelInfo()
+    val repoMapping = testRepoMapping(info) { local("local_repo+", repositoryPath, apparentName = "local_repo") }
+    val sourceDir = testBazel.workspaceRoot.resolve("libs/local_repo/src").createDirectories()
+    val target = testPythonTarget("@@local_repo+//:lib", imports = listOf("src"))
+    val diff = MutableEntityStorage.create()
+
+    runPythonImporter(generateWorkspaceSnapshot(listOf(target), repoMapping = repoMapping), diff)
+
+    diff.entities(SourceRootEntity::class.java).map { it.url }.toSet() shouldBe
+      setOf(sourceDir.toVirtualFileUrl(testBazel.virtualFileUrlManager))
   }
 
   @Test
@@ -1018,15 +1072,16 @@ class PythonProjectSyncTest {
     targets: List<BuildTarget>,
     rootTargets: Set<WorkspaceTargetKey> = targets.map { it.key }.toSet(),
     projectView: ProjectView = ProjectView.EMPTY,
+    repoMapping: RepoMapping = RepoMappingDisabled,
   ): WorkspaceSnapshot = runBlocking {
     WorkspaceSnapshotBuilder.build(
       project = testBazel.project,
       projectView = projectView,
-      repoMapping = RepoMappingDisabled,
+      repoMapping = repoMapping,
       bazelInfo = bazelInfo(),
       resolved = BazelResolvedWorkspace(
         workspaceName = null,
-        repoMapping = RepoMappingDisabled,
+        repoMapping = repoMapping,
         rootTargets = rootTargets,
         targets = targets,
         configurations = emptyMap(),
