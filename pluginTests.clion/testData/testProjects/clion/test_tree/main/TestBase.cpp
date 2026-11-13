@@ -33,3 +33,17 @@ TEST_CASE( "checkedIf, failing", "[failing][comma]" )
 {
     REQUIRE( false );
 }
+
+TEST_CASE( "files" )
+{
+   SUCCEED( "files" );
+}
+
+// The name holds a slash, but it is not a section of "files"
+TEST_CASE( "files/read" )
+{
+   SECTION( "partial" )
+   {
+      CHECK( 1 == 2 );
+   }
+}

@@ -54,6 +54,7 @@ internal class BazelGoTestLocationHintProviderTest {
       null,
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAdd",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven",
+      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/mixed",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/negative",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/positive",

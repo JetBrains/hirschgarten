@@ -27,7 +27,7 @@ import com.jetbrains.cidr.execution.testing.tcatch.CidrCatchTestLinker
 import com.jetbrains.cidr.execution.testing.tcatch.CidrCatchTestLocationProvider
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.run.BazelCcTestFrameworkSupport
-import org.jetbrains.bazel.clion.run.TEST_NAME_PARTS_SPLITTER
+import org.jetbrains.bazel.clion.run.splitCcTestLocationPath
 
 @ApiStatus.Internal
 class CatchTestSupport : BazelCcTestFrameworkSupport {
@@ -35,18 +35,28 @@ class CatchTestSupport : BazelCcTestFrameworkSupport {
     get() = CatchTestLanguageSupport.getInstance()
 
   override fun locate(path: String, project: Project, scope: GlobalSearchScope): List<Location<*>> {
-    // Catch2 joins the sections of a test case with slashes
-    val names = path.split(TEST_NAME_PARTS_SPLITTER)[1].split('/')
+    val names = splitCcTestLocationPath(path)[1].split('/')
+    // Catch2 joins the sections of a test case with slashes, but a test case name can also contain a slash.
+    // So the longest prefix that is a test case wins.
+    return (names.size downTo 1).asSequence()
+      .map { caseSize -> locateCatchPath(listOf(names.take(caseSize).joinToString("/")) + names.drop(caseSize), project, scope) }
+      .firstOrNull { it.isNotEmpty() }
+      .orEmpty()
+  }
+
+  private fun locateCatchPath(names: List<String>, project: Project, scope: GlobalSearchScope): List<Location<*>> {
     val catchPath = names.joinToString("") { "[" + CidrCatchTestLinker.prepareTestPathForPattern(it) + "]" }
     return CidrCatchTestLocationProvider.INSTANCE.getLocation(
       CidrCatchTestLocationProvider.PROTOCOL, catchPath, project, scope,
     )
   }
 
-  /** Catch2 accepts a comma-separated list of test case names. */
-  override fun createTestFilter(tests: List<CidrTestScopeElement>): String? {
-    return tests.map { it.pattern }.ifEmpty { null }?.joinToString(",")
-  }
+  /**
+   * Catch2 accepts a comma-separated list of test case names.
+   * A test filter can't select sections, so a section runs as its whole test case.
+   */
+  override fun createTestFilter(tests: List<CidrTestScopeElement>): String? =
+    tests.map { CidrCatchTestLinker.splitPattern(it.pattern).first() }.distinct().ifEmpty { null }?.joinToString(",")
 
   override fun getLocationCacheModificationTracker(project: Project): ModificationTracker =
     CidrCatchTestLocationProvider.INSTANCE.getLocationCacheModificationTracker(project)

@@ -136,7 +136,9 @@ class CcTestTreeTest {
     assertTestTree("//main:catch") {
       test(catchSuite, null) {
         test("Scenario: tree test", "TestBase.cpp:3") {
+          test("Scenario: tree test", "TestBase.cpp:3")
           test("Common", "TestBase.cpp:3") {
+            test("Common", "TestBase.cpp:3")
             test("1, comma", "TestBase.cpp:3")
             test("2", "TestBase.cpp:3")
           }
@@ -147,6 +149,13 @@ class CcTestTreeTest {
           test("two", "TestBase.cpp:19")
         }
         test("checkedIf, failing", "TestBase.cpp:32")
+        test("files", "TestBase.cpp:37") {
+          test("files", "TestBase.cpp:37")
+          test("read", "TestBase.cpp:43") {
+            test("read", "TestBase.cpp:43")
+            test("partial", "TestBase.cpp:43")
+          }
+        }
       }
     }
   }
@@ -171,6 +180,12 @@ class CcTestTreeTest {
     assertThat(sectionConfiguration.testFilter).isEqualTo("Output from all sections is reported")
     val sectionRun = project.executeBazelConfiguration(sectionConfiguration, DefaultRunExecutor.getRunExecutorInstance())
     assertThat(sectionRun.testNames).containsExactly("Output from all sections is reported.one", "Output from all sections is reported.two")
+
+    // A test case name can contain a slash too
+    val slashConfiguration = run.rerunConfiguration(catchSuite, "files", "read", "partial")
+    assertThat(slashConfiguration.testFilter).isEqualTo("files/read")
+    val slashRun = project.executeBazelConfiguration(slashConfiguration, DefaultRunExecutor.getRunExecutorInstance())
+    assertThat(slashRun.testNames).containsExactly("files/read.files/read", "files/read.partial")
   }
 
   private class TestRun(val configuration: BazelRunConfiguration, val testsRoot: SMTestProxy)

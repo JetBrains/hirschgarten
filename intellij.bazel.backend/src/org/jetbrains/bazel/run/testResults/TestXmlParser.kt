@@ -56,17 +56,24 @@ class TestXmlParser(private val taskEventsHandler: BazelTaskEventsHandler) {
 
   // Adds suite to the test tree. Names are split at separators, so suites and test cases can share parent nodes.
   // Suites are split with "/" and ".", test names are split only with "/" just to be extra cautious.
+  // The split is best-effort, the tree does not always look like the original source file.
+  // GoogleTest puts the instantiation before the fixture (https://google.github.io/googletest/advanced.html#how-to-write-value-parameterized-tests)
+  // Catch2 can report nested sections in the wrong order (https://github.com/catchorg/Catch2/issues/417, https://github.com/catchorg/Catch2/pull/3219)
   private fun MutableMap<String, TestTreeNode>.addSuite(suite: TestSuite) {
     if (suite.testcase.isEmpty()) return
     val suitePath = splitTreePath(suite.name, '/', '.')
     val suiteNode = getOrCreateTreePath(suitePath)
     suiteNode.suites.add(suite)
+    // A parameter that all test cases share is shown once on the suite
+    val suiteParam = suite.testcase.map { it.param }.distinct().singleOrNull()
+    suiteParam?.let { suiteNode.displayName = "${suiteNode.name} - $it" }
     // If the test name is duplicated in the suite name, drop it
     val testIsSuite = suite.testcase.all { it.name == suiteNode.name || it.name.startsWith("${suiteNode.name}/") }
     suite.testcase.forEach { testCase ->
       val testPath = splitTreePath(testCase.name, '/').let { if (testIsSuite) it.drop(1) else it }
       val node = getOrCreateTreePath(suitePath + testPath)
       node.testCases.add(TreeTestCase(suite.name, testCase))
+      testCase.param?.takeIf { it != suiteParam }?.let { node.displayName = "${node.name} - $it" }
     }
   }
 
@@ -233,6 +240,8 @@ class TestXmlParser(private val taskEventsHandler: BazelTaskEventsHandler) {
     taskEventsHandler.onTestConsoleOutput(taskId, message.toString(), isError = false)
   }
 
+  private val TestCase.param: String? get() = valueParam ?: typeParam
+
   private data class TreePathPart(val separator: String, val name: String)
 
   private data class TreeTestCase(val suiteName: String, val testCase: TestCase)
@@ -308,6 +317,10 @@ internal data class TestCase(
   val file: String?,
   @JacksonXmlProperty(isAttribute = true)
   val line: Int?,
+  @JacksonXmlProperty(isAttribute = true, localName = "value_param")
+  val valueParam: String? = null,
+  @JacksonXmlProperty(isAttribute = true, localName = "type_param")
+  val typeParam: String? = null,
   // One of the following will be included if test did not pass.
   @JacksonXmlProperty(localName = "error")
   val error: TestResultDetail? = null,
@@ -389,6 +402,8 @@ private fun createTestDetails(suiteName: String, testCase: TestCase): BazelTestD
     file = testCase.file,
     oneBasedLine = testCase.line?.plus(1),
     parentSuiteNames = listOf(suiteName),
+    valueParam = testCase.valueParam,
+    typeParam = testCase.typeParam,
   )
 
 /** The SM runner takes milliseconds, and test.xml gives seconds. */

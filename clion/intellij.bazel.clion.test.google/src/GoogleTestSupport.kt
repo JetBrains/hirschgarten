@@ -27,7 +27,7 @@ import com.jetbrains.cidr.execution.testing.google.CidrGoogleTestLocationProvide
 import com.jetbrains.cidr.execution.testing.google.GoogleTestLanguageSupport
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.run.BazelCcTestFrameworkSupport
-import org.jetbrains.bazel.clion.run.TEST_NAME_PARTS_SPLITTER
+import org.jetbrains.bazel.clion.run.splitCcTestLocationPath
 
 @ApiStatus.Internal
 class GoogleTestSupport : BazelCcTestFrameworkSupport {
@@ -35,9 +35,9 @@ class GoogleTestSupport : BazelCcTestFrameworkSupport {
     get() = GoogleTestLanguageSupport.getInstance()
 
   override fun locate(path: String, project: Project, scope: GlobalSearchScope): List<Location<*>> {
-    val suite = path.substringBefore(TEST_NAME_PARTS_SPLITTER).ifEmpty { null }
-    val test = path.substringAfter(TEST_NAME_PARTS_SPLITTER)
-    val linker = CidrGoogleTestLinker.parseTestOut("$suite.$test") ?: return emptyList()
+    val (suite, test, param) = splitCcTestLocationPath(path) + null
+    val linker = CidrGoogleTestLinker.parseTestOut("${suite?.ifEmpty { null }}.$test") ?: return emptyList()
+    linker.typeNameOrParamValue = param
     return CidrGoogleTestLocationProvider.INSTANCE.getLocation(
       CidrGoogleTestLocationProvider.PROTOCOL, linker.path, project, scope,
     )

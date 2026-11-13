@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.gutters
 
+import com.intellij.execution.PsiLocation
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -34,8 +35,7 @@ abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<Baze
     val location = context.location as? BazelRunLocation ?: return false
     val target = location.target
     if (!acceptsTarget(context.project, target)) return false
-    val element = location.originalLocation.psiElement
-    val gutterAction = getGutterAction(element, target) ?: return false
+    val gutterAction = getGutterAction(location.originalLocation, target) ?: return false
     configuration.updateTargets(listOf(target.id), RunHandlerProvider.getRunHandlerProvider(context.project, listOf(target)))
     configuration.handler?.state?.let { gutterAction.applyTo(it) } ?: return false
     configuration.handler?.extensionsManager?.extendCreatedConfiguration(configuration, location)
@@ -56,10 +56,15 @@ abstract class BazelRunConfigurationProducer : LazyRunConfigurationProducer<Baze
     val target = location.target
     if (!acceptsTarget(context.project, target)) return false
     if (configuration.targets != listOf(target.id)) return false
-    val element = location.originalLocation.psiElement
-    val gutterAction = getGutterAction(element, target) ?: return false
+    val gutterAction = getGutterAction(location.originalLocation, target) ?: return false
     return configuration.handler?.state?.let { gutterAction.isFromContext(it) } ?: false
   }
+
+  @ApiStatus.Internal
+  open fun getGutterAction(
+    location: PsiLocation<*>,
+    target: BuildTargetInfo,
+  ): GutterAction? = getGutterAction(location.psiElement, target)
 
   @Deprecated("Use getGutterAction(PsiElement, BuildTargetInfo)", ReplaceWith("getGutterAction"))
   open fun getGutterAction(

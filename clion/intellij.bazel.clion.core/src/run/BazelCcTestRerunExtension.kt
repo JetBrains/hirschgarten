@@ -18,6 +18,7 @@ package org.jetbrains.bazel.clion.run
 
 import com.intellij.execution.testframework.AbstractTestProxy
 import com.intellij.psi.search.GlobalSearchScope
+import com.jetbrains.cidr.execution.testing.CidrTestLocation
 import org.jetbrains.bazel.run.BazelTestFilterRerunExtension
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
@@ -28,7 +29,11 @@ internal class BazelCcTestRerunExtension : BazelTestFilterRerunExtension() {
   override fun getTestFilter(configuration: BazelRunConfiguration, tests: List<AbstractTestProxy>): String? {
     val project = configuration.project
     val testLocations = tests.mapNotNull { it.getLocation(project, GlobalSearchScope.allScope(project)) }
-    val testsAndFrameworks = testLocations.mapNotNull { BazelCcTestFrameworkSupport.findTestAndFramework(it.psiElement) }
+    // The location knows the instantiation and the parameter of a test, but its PSI element does not
+    val testsAndFrameworks = testLocations.filterIsInstance<CidrTestLocation<*>>().mapNotNull { location ->
+      val frameworkSupport = BazelCcTestFrameworkSupport.findTestAndFramework(location.psiElement)?.second ?: return@mapNotNull null
+      location.testScopeElement to frameworkSupport
+    }
     // a single Bazel invocation carries one --test_filter, which is framework-specific
     val frameworkSupport = testsAndFrameworks.map { it.second }.distinct().singleOrNull() ?: return null
     return frameworkSupport.createTestFilter(testsAndFrameworks.map { it.first })
