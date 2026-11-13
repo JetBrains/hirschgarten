@@ -22,6 +22,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.jdom.Element
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
@@ -125,8 +126,8 @@ internal class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Sett
 
       val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
       try {
-        buildDeferred.await()
-        futureProxy.complete(0)
+        val result = buildDeferred.await()
+        futureProxy.complete(if (result.statusCode == BazelStatus.SUCCESS) 0 else 1)
       } catch (e: Exception) {
         buildDeferred.cancel()
         futureProxy.completeExceptionally(e)
