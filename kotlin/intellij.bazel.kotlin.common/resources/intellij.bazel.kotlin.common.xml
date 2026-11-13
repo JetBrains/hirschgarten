@@ -21,6 +21,7 @@
     <module name="intellij.kotlin.base.projectStructure"/>
     <module name="intellij.kotlin.base.psi"/>
     <module name="intellij.kotlin.base.util"/>
+    <module name="intellij.kotlin.ide"/>
     <module name="intellij.kotlin.jvm.debugger.coroutines"/>
     <module name="intellij.kotlin.preferences"/>
     <module name="intellij.kotlin.projectConfiguration"/>
@@ -55,6 +56,8 @@
       implementation="org.jetbrains.bazel.kotlin.configuration.BazelKotlinProjectConfigurator"
       order="first"
     />
+    <newKotlinFileActionAvailabilityOverride
+      implementation="org.jetbrains.bazel.kotlin.ui.actions.BazelNewKotlinFileActionAvailabilityOverride"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">

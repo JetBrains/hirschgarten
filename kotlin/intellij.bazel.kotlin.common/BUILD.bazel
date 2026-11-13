@@ -25,7 +25,6 @@ jvm_library(
     runtime_deps = [
         # do not sort,
         "@community//platform/lang-core",
-        "@community//platform/core-ui",
         "@community//java/debugger/impl",
         "@community//java/idea-ui:ui",
         "@community//plugins/kotlin/base/facet",
@@ -73,6 +72,8 @@ jvm_library(
         "@community//platform/smRunner",
         "@community//plugins/kotlin/base/code-insight",
         "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
+        "@community//plugins/kotlin/kotlin.ide",
+        "@community//platform/core-ui",
     ],
 )
 ### auto-generated section `build intellij.bazel.kotlin.common` end

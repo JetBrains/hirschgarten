@@ -21,7 +21,6 @@
     <orderEntry type="module" module-name="intellij.platform.ide" />
     <orderEntry type="module" module-name="intellij.platform.ide.core" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
-    <orderEntry type="module" module-name="intellij.platform.core.ui" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.platform.execution" />
     <orderEntry type="module" module-name="intellij.java.execution" />
     <orderEntry type="module" module-name="intellij.java.execution.impl" />
@@ -54,5 +53,7 @@
     <orderEntry type="module" module-name="kotlin.fir.frontend-independent" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.kotlin.base.codeInsight" />
     <orderEntry type="module" module-name="intellij.bazel.java.common" />
+    <orderEntry type="module" module-name="intellij.kotlin.ide" />
+    <orderEntry type="module" module-name="intellij.platform.core.ui" />
   </component>
 </module>
