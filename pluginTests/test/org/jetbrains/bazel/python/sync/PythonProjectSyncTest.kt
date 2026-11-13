@@ -836,6 +836,61 @@ class PythonProjectSyncTest {
   }
 
   @Test
+  fun `should index a local repository source relative to its imports root`() {
+    val source = testBazel.workspaceRoot.resolve("libs/local_repo/src/pkg/mod.py")
+    createPythonFile("libs/local_repo/src/pkg/mod.py", "VALUE = 1\n")
+    val target = testPythonTarget("@@local_repo+//:lib", imports = listOf("src"))
+      .copy(sources = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.External("local_repo+", "src/pkg/mod.py"))))
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(target), repoMapping = localRepoMapping()),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.findBazelPythonShortestQualifiedName(source) shouldBe "pkg.mod"
+  }
+
+  @Test
+  fun `should index a local repository source relative to the repository root`() {
+    val source = testBazel.workspaceRoot.resolve("libs/local_repo/src/pkg/mod.py")
+    createPythonFile("libs/local_repo/src/pkg/mod.py", "VALUE = 1\n")
+    val target = testPythonTarget("@@local_repo+//:lib")
+      .copy(sources = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.External("local_repo+", "src/pkg/mod.py"))))
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(target), repoMapping = localRepoMapping()),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.findBazelPythonShortestQualifiedName(source) shouldBe "src.pkg.mod"
+  }
+
+  @Test
+  fun `should not share the imports root of a local repository with main repository sources`() {
+    val mainSource = testBazel.workspaceRoot.resolve("src/other/x.py")
+    createPythonFile("src/other/x.py", "VALUE = 1\n")
+    createPythonFile("libs/local_repo/src/pkg/mod.py", "VALUE = 1\n")
+    val mainTarget = testPythonTarget("@@//:app") { srcs("src/other/x.py") }
+    val localTarget = testPythonTarget("@@local_repo+//:lib", imports = listOf("src"))
+      .copy(sources = OutputLocationCollectionBuilder.ofLocations(listOf(OutputLocation.External("local_repo+", "src/pkg/mod.py"))))
+
+    runPythonImporter(
+      generateWorkspaceSnapshot(listOf(mainTarget, localTarget), repoMapping = localRepoMapping()),
+      MutableEntityStorage.create(),
+      runPostProcessing = true,
+    )
+
+    testBazel.project.findBazelPythonShortestQualifiedName(mainSource) shouldBe "src.other.x"
+    testBazel.project.hasBazelPythonQualifiedName("other.x").shouldBeFalse()
+  }
+
+  /** Declares `local_repo+` as a local repository at `libs/local_repo`, as `local_path_override` does. */
+  private fun localRepoMapping(): RepoMapping =
+    testRepoMapping(bazelInfo()) { local("local_repo+", "libs/local_repo", apparentName = "local_repo") }
+
+  @Test
   fun `should create a library for external pip dependency`() {
     // Mimics `//project:lib` depending on `@pypi//aaa`: the pip target is a non-root dependency whose sources
     // live under an external `site-packages` directory (reported via PythonBuildTarget.externalSources).

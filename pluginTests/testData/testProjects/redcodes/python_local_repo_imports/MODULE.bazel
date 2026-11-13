@@ -1,0 +1,9 @@
+bazel_dep(name = "rules_python", version = "2.0.3")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+bazel_dep(name = "local_lib")
+local_path_override(
+    module_name = "local_lib",
+    path = "libs/local_lib",
+)

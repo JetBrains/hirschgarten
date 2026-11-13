@@ -26,7 +26,7 @@ import org.jetbrains.bazel.python.lang.extractPythonBuildTarget
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
-import org.jetbrains.bazel.target.isWorkspace
+import org.jetbrains.bazel.target.isMainRepository
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.isGenerated
@@ -141,7 +141,7 @@ internal class PythonResolveIndexService(private val project: Project) {
 
     val importsByTarget = pythonTargets.map { PythonImportUtils.assembleExplicitImportsPaths(it) }
     val workspaceImports = importsByTarget.indices
-      .filter { pythonTargets[it].isWorkspace(snapshot.repoMapping) && importsByTarget[it].isNotEmpty() }
+      .filter { pythonTargets[it].isMainRepository() && importsByTarget[it].isNotEmpty() }
       .map { importsByTarget[it] }
       .distinct()
     val importRoots = workspaceImports.flatten().toSet()
@@ -180,7 +180,7 @@ internal class PythonResolveIndexService(private val project: Project) {
           target.sources.getOutputLocations().filter { it.isGenerated } +
           (extractPythonBuildTarget(target)?.generatedSources?.getOutputLocations() ?: emptySequence())
         val generatedPythonSources = generatedSourceFiles.distinct().filter { it.isPythonLanguage() }.toList()
-        val sharedIndex = if (generatedPythonSources.isEmpty() && target.isWorkspace(snapshot.repoMapping)) {
+        val sharedIndex = if (generatedPythonSources.isEmpty() && target.isMainRepository()) {
           sharedIndexesByImports[explicitImportsPaths]
         }
         else null
@@ -189,7 +189,7 @@ internal class PythonResolveIndexService(private val project: Project) {
         }
         else {
           val sourcesRelativePathToAbsolutePath: Map<Path, Path> =
-            if (target.isWorkspace(snapshot.repoMapping)) {
+            if (target.isMainRepository()) {
               sharedSourcesByImports[explicitImportsPaths].orEmpty()
                 .ifEmpty { workspaceRelativePythonSources(target) }
                 .associateWith { path -> rootDir.resolve(path) }
