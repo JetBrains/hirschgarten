@@ -119,7 +119,7 @@ internal class ScriptPathTestCommandLineState(
   ): Int {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
     val (env, testFilter) = testRunner.transformScriptPathEnvAndTestFilter(settings.env.envs, settings.testFilter)
-    runWithScriptPath(
+    return runWithScriptPath(
       taskGroupId.task("jvm-test"),
       scriptPath = scriptPath,
       project = environment.project,
@@ -133,7 +133,6 @@ internal class ScriptPathTestCommandLineState(
     ) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)
     }
-    return 0
   }
 }
 
