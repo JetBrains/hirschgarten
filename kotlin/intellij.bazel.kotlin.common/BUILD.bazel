@@ -71,6 +71,7 @@ jvm_library(
         "@community//plugins/kotlin/frontend-independent",
         "@community//plugins/kotlin/base/code-insight",
         "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common",
+        "@community//plugins/kotlin/kotlin.ide",
     ],
 )
 
@@ -132,6 +133,7 @@ jvm_library(
         "@community//plugins/kotlin/frontend-independent:frontend-independent_test_lib",
         "@community//plugins/kotlin/base/code-insight:code-insight_test_lib",
         "//plugins/bazel/java/intellij.bazel.java.common:bazel-java-common_test_lib",
+        "@community//plugins/kotlin/kotlin.ide:kotlin.ide_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.kotlin.common` end
