@@ -99,7 +99,7 @@ internal class RunScriptPathCommandLineState(
       handler: BazelProcessHandler,
   ): Int {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
-    runWithScriptPath(
+    return runWithScriptPath(
       taskGroupId.task("jvm-run"),
       scriptPath,
       environment.project,
@@ -114,7 +114,6 @@ internal class RunScriptPathCommandLineState(
         attachJvmRunExtensions(environment, processHandler)
       },
     )
-    return 0
   }
 }
 

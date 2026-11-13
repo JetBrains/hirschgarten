@@ -165,10 +165,9 @@ private class IntellijDevLaunchCommandLineState(
           ),
         )
     // The native launcher runs the JVM in its own process, so the pid of the launcher is the pid of the JVM.
-    runJvmCommandLine(commandLine, pidDeferred, handler) { processHandler ->
+    return runJvmCommandLine(commandLine, pidDeferred, handler) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)
     }
-    return 0
   }
 }
 

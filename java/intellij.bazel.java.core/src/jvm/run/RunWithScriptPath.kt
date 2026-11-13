@@ -9,6 +9,7 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -45,20 +46,21 @@ internal suspend fun runWithScriptPath(
   isPassParentEnvs: Boolean,
   testFilter: String?,
   processHandlerCreated: suspend (OSProcessHandler) -> Unit,
-) {
+): Int {
   val commandLine = scriptPathCommandLine(scriptPath, env, isTest, isPassParentEnvs, testFilter, additionalScriptParameters)
 
-  runJvmCommandLine(commandLine, pidDeferred, handler, processHandlerCreated)
+  val exitCode = runJvmCommandLine(commandLine, pidDeferred, handler, processHandlerCreated)
   runInterruptible(Dispatchers.IO) {
     findXmlOutputAndReport(taskId, scriptPath, project)
   }
+  return exitCode
 }
 
 /**
  * Starts [commandLine] and copies its output to [handler].
  * When [handler] is destroyed, the process is destroyed too.
  * [pidDeferred] gets the pid when the JVM can take an attach, or after 5 seconds.
- * The function returns when the process ends.
+ * The function returns the exit code of the process when the process ends.
  */
 @ApiStatus.Internal
 suspend fun runJvmCommandLine(
@@ -66,7 +68,7 @@ suspend fun runJvmCommandLine(
   pidDeferred: CompletableDeferred<Long?>,
   handler: BazelProcessHandler,
   processHandlerCreated: suspend (OSProcessHandler) -> Unit,
-) {
+): Int {
   val scriptHandler = OSProcessHandler(commandLine)
   scriptHandler.addProcessListener(
     object : ProcessListener {
@@ -105,9 +107,10 @@ suspend fun runJvmCommandLine(
     }
   }
 
-  runInterruptible(Dispatchers.IO) {
+  return runInterruptible(Dispatchers.IO) {
     pidDeferred.complete(pid)
     scriptHandler.waitFor()
+    scriptHandler.exitCode ?: throw CancellationException()
   }
 }
 
