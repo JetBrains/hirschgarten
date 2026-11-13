@@ -145,17 +145,16 @@ class ExecuteService(
     }
 
   suspend fun analysisDebug(params: AnalysisDebugParams): AnalysisDebugResult {
-    val statusCode =
+    val exitCode =
       if (params.targets.isNotEmpty()) {
         val debugFlags =
           listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
-        val result = build(params.targets, params.taskId, debugFlags)
-        result.bazelStatus
+        build(params.targets, params.taskId, debugFlags).exitCode
       }
       else {
-        BazelStatus.FATAL_ERROR
+        2 // Bazel exit code for bad command-line arguments
       }
-    return AnalysisDebugResult(statusCode)
+    return AnalysisDebugResult(exitCode)
   }
 
   suspend fun run(params: RunParams): RunResult = runImpl(params)
