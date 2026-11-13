@@ -1,13 +1,13 @@
 package org.jetbrains.bazel.golang.run
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.server.bep.MockBuildTaskEventsHandler
-import org.jetbrains.bazel.server.bep.TestXmlParser
+import io.kotest.matchers.string.shouldContain
+import org.jetbrains.bazel.run.testResults.MockBuildTaskEventsHandler
+import org.jetbrains.bazel.run.testResults.TestXmlParser
+import org.jetbrains.bazel.run.testResults.output
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.TaskGroupId
-import org.jetbrains.bsp.protocol.TestStart
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -21,6 +21,7 @@ internal class BazelGoTestLocationHintProviderTest {
       <testsuites>
       	<testsuite errors="0" failures="0" skipped="0" tests="1" time="0.000" name="github.com/buildbuddy-io/buildbuddy/cli/arg.TestAdd" timestamp="2026-08-27T12:59:15.019Z">
       		<testcase classname="arg" name="TestAdd" time="0.000"></testcase>
+      		<system-out>TestAdd suite output</system-out>
       	</testsuite>
       	<testsuite errors="0" failures="0" skipped="0" tests="5" time="0.000" name="github.com/buildbuddy-io/buildbuddy/cli/arg.TestAddTableDriven" timestamp="2026-08-27T12:59:15.019Z">
       		<testcase classname="arg" name="TestAddTableDriven" time="0.000"></testcase>
@@ -45,30 +46,25 @@ internal class BazelGoTestLocationHintProviderTest {
     """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     val goTargetKind = TargetKindService.getInstance().findPredefinedRule("go_test")
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, testXml), goTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, testXml), goTargetKind)
 
     val expectedTestHints = listOf(
+      null,
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAdd",
-      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAdd",
-      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/mixed",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/negative",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/positive",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestAddTableDriven/zeros",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestIsPrime",
-      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestIsPrime",
-      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestReverse",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestReverse",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestReverseTwiceIsIdentity",
-      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestReverseTwiceIsIdentity",
-      "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestUpperSkippedExample",
       "gotest://github.com/buildbuddy-io/buildbuddy/cli/arg#TestUpperSkippedExample",
     )
-    client.taskStartCalls.map { (it.data as TestStart).locationHint } shouldBe expectedTestHints
+    client.testNodes.map { it.locationUrl } shouldBe expectedTestHints
+    client.testNodes.first().output() shouldContain "TestAdd suite output"
   }
 
   private fun writeTempFile(tempDir: Path, contents: String): Path {

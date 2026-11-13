@@ -88,7 +88,7 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
           popup().waitOneText("Run '//lib:lib_test'").click()
           verifyTestStatus(
             expectedStatus = listOf("2 tests passed"),
-            expectedTree = listOf("goruntest/lib.TestAdd", "TestAdd", "goruntest/lib.TestSubtract", "TestSubtract")
+            expectedTree = listOf("goruntest/lib", "TestAdd", "TestSubtract")
           )
           takeScreenshot("goRunPackageGutterResults")
           // Check that the run configuration is reused instead of creating "Run '//lib:lib_test' (1)"
@@ -107,13 +107,13 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
             ),
           )
           popup().waitOneText("Run '//lib:lib_test (TestAdd)'").click()
-          verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestAdd", "TestAdd"))
+          verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestAdd"))
           takeScreenshot("goRunTestAddGutterResults")
         }
 
         step("Run TestSubtract via its run gutter and check results") {
           clickTestGutterOnLine(10)
-          verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestSubtract", "TestSubtract"))
+          verifyTestStatus(expectedStatus = listOf("1 test passed"), expectedTree = listOf("goruntest/lib.TestSubtract"))
           takeScreenshot("goRunTestSubtractGutterResults")
         }
       }
@@ -164,16 +164,12 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
         clickTestGutterOnLine(0)
         verifyTestStatus(
           listOf("2 tests failed,", " 1 passed"),
-          setOf(
-            "goruntest/failing.TestPasses", "TestPasses",
-            "goruntest/failing.TestFails", "TestFails",
-            "goruntest/failing.TestAnotherFails", "TestAnotherFails",
-          ),
+          setOf("goruntest/failing", "TestPasses", "TestFails", "TestAnotherFails"),
         )
         x { byAccessibleName("Rerun Failed Tests") }.click()
         verifyTestStatus(
           listOf("2 tests failed"),
-          setOf("goruntest/failing.TestFails", "TestFails", "goruntest/failing.TestAnotherFails", "TestAnotherFails"),
+          setOf("goruntest/failing", "TestFails", "TestAnotherFails"),
         )
       }
     }

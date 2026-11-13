@@ -15,10 +15,4 @@ data class TaskStartParams(
 sealed interface TaskStartData
 
 @ApiStatus.Internal
-data class TestStart(val displayName: String, val isSuit: Boolean, val locationHint: String? = null) : TaskStartData
-
-@ApiStatus.Internal
-data class TestTask(val target: Label) : TaskStartData
-
-@ApiStatus.Internal
 data class CompileTask(val target: Label) : TaskStartData

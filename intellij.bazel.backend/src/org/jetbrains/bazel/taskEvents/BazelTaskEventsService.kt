@@ -3,8 +3,8 @@ package org.jetbrains.bazel.taskEvents
 import com.intellij.build.events.MessageEvent.Kind
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.fus.BazelBuildMetricsCollector
 import org.jetbrains.bsp.protocol.BazelInvocationMetrics
@@ -13,9 +13,9 @@ import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.LogMessageParams
-import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import java.util.concurrent.ConcurrentHashMap
@@ -116,6 +116,12 @@ class BazelTaskEventsService(private val project: Project) : BazelTaskEventsHand
   override fun onCachedTestLog(testLog: CachedTestLog) {
     withListener(testLog.taskId) {
       onCachedTestLog(testLog.testLog)
+    }
+  }
+
+  override fun onTestConsoleOutput(taskId: TaskId, text: String, isError: Boolean) {
+    withListener(taskId) {
+      onTestConsoleOutput(text, isError)
     }
   }
 

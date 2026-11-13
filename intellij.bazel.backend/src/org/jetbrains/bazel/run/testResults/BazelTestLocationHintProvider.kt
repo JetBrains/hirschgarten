@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.util
+package org.jetbrains.bazel.run.testResults
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
@@ -16,11 +16,11 @@ interface BazelTestLocationHintProvider {
       ExtensionPointName.create<BazelTestLocationHintProvider>("org.jetbrains.bazel.testLocationHintProvider")
 
     fun getLocationHint(testDetails: BazelTestDetails, targetKind: TargetKind?): String? {
-      getTestLocationHintByFileLocation(testDetails)?.let { return it }
-      if (targetKind == null) return null
-      return ep.computeSafeIfAny { provider ->
-        provider.takeIf { it.isApplicable(targetKind) }?.getLocationHint(testDetails)
-      }
+      val providerHint =
+        targetKind?.let { kind ->
+          ep.computeSafeIfAny { provider -> provider.takeIf { it.isApplicable(kind) }?.getLocationHint(testDetails) }
+        }
+      return providerHint ?: getTestLocationHintByFileLocation(testDetails)
     }
 
     private fun getTestLocationHintByFileLocation(testDetails: BazelTestDetails): String? =

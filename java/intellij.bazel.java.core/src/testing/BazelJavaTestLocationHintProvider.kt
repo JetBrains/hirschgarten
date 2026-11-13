@@ -2,8 +2,8 @@ package org.jetbrains.bazel.testing
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.run.testResults.BazelTestLocationHintProvider
 import org.jetbrains.bazel.sync.includesJava
-import org.jetbrains.bazel.util.BazelTestLocationHintProvider
 
 @ApiStatus.Internal
 class BazelJavaTestLocationHintProvider : BazelTestLocationHintProvider {

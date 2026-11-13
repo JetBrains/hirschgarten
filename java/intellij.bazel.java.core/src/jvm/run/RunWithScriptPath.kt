@@ -18,10 +18,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
-import org.jetbrains.bazel.server.bep.TestXmlParser
+import org.jetbrains.bazel.run.testResults.TestXmlParser
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bazel.utils.ExecutableInfo
 import org.jetbrains.bazel.utils.UnexpectedScriptContentException
 import org.jetbrains.bsp.protocol.TaskId
@@ -125,9 +124,8 @@ private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Pr
   }
   val testXml = executableInfo.testXml ?: return
   val taskHandler = BazelTaskEventsService.getInstance(project)
-  val testNotifier = BspClientTestNotifier(taskHandler)
 
-  TestXmlParser(testNotifier).parseAndReport(
+  TestXmlParser(taskHandler).parseAndReport(
     taskId, /* ??? */
     testXml,
     JAVA_TEST_KIND,

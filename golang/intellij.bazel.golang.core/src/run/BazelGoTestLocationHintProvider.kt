@@ -6,8 +6,8 @@ import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.golang.targetKinds.includesGo
 import org.jetbrains.bazel.run.test.BazelTestLocatorProvider
+import org.jetbrains.bazel.run.testResults.BazelTestLocationHintProvider
 import org.jetbrains.bazel.testing.BazelTestDetails
-import org.jetbrains.bazel.util.BazelTestLocationHintProvider
 
 internal class BazelGoTestLocationHintProvider : BazelTestLocationHintProvider {
   override fun isApplicable(targetKind: TargetKind): Boolean = targetKind.includesGo()
@@ -19,17 +19,14 @@ internal class BazelGoTestLocationHintProvider : BazelTestLocationHintProvider {
     else {
       testDetails.parentSuiteNames.firstOrNull() ?: return null
     }
-    val importPathDotSeparator = suiteName.lastIndexOf('.')
-    if (importPathDotSeparator == -1) return null
-    val importPath = suiteName.substring(0..<importPathDotSeparator)
-    val outerTestName = suiteName.substring(importPathDotSeparator + 1)
-    val subtestName = if (!testDetails.isSuite) testDetails.displayName else null
-    val testName = if (outerTestName == subtestName || subtestName == null) {
-      outerTestName
-    }
-    else {
-      "$outerTestName/$subtestName"
-    }
+    val importPath = suiteName.substringBeforeLast('.', "")
+    val outerTestName = suiteName.substringAfterLast('.')
+    val testName =
+      when {
+        testDetails.isSuite || testDetails.displayName == outerTestName -> outerTestName
+        testDetails.displayName.startsWith("$outerTestName/") -> testDetails.displayName
+        else -> "$outerTestName/${testDetails.displayName}"
+      }
     return GoSharedConstants.TEST_PROTOCOL + "://" + importPath + "#" + testName
   }
 }
