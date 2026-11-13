@@ -10,4 +10,6 @@ data class BazelTestDetails(
   val file: String? = null,
   val oneBasedLine: Int? = null,
   val parentSuiteNames: List<String> = emptyList(),
+  val valueParam: String? = null,
+  val typeParam: String? = null,
 )
