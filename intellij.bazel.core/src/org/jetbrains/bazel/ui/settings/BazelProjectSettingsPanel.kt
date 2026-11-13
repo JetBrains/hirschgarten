@@ -9,11 +9,9 @@ import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.UnnamedConfigurable
-import com.intellij.openapi.options.newEditor.SettingsDialog
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.emptyText
@@ -27,13 +25,10 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.DslComponentProperty
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.action.registered.openProjectView
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.projectview.ProjectViewService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import java.awt.Component
 import java.io.IOException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -80,7 +75,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     panel {
       ProjectViewService.getInstance(project).projectViewPath?.let { projectViewPath ->
         row(BazelPluginBundle.message("project.settings.project.view.label")) {
-          link(projectViewPath.toString()) { event -> openProjectViewAndCloseSettings(event.source as Component) }
+          label(projectViewPath.toString())
         }.rowComment(
           BazelPluginBundle.message(
             "project.settings.project.view.comment",
@@ -98,11 +93,6 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
         .sortedBy { c -> (c as? Configurable)?.displayName ?: "" }
         .forEach { appendDslConfigurable(it) }
     }
-
-  private fun openProjectViewAndCloseSettings(source: Component) {
-    (DialogWrapper.findInstance(source) as? SettingsDialog)?.doOKAction()
-    BazelCoroutineService.getInstance(project).start { openProjectView(project) }
-  }
 
   private fun initBuildifierExecutablePathField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
