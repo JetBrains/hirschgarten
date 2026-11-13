@@ -7,10 +7,12 @@ import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.sha256Hex
 import com.intellij.util.system.OS
 import java.io.IOException
+import java.nio.channels.FileChannel
 import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
@@ -42,8 +44,18 @@ object BazelRegistrySnapshot {
     if (registry.resolve("bazel_registry.json").exists()) return registry
 
     val parent = registry.parent.createDirectories()
-    // Another test process can unpack the same snapshot. The snapshot appears with one atomic move, so no process
-    // reads a partial registry.
+    // Another test process can unpack the same snapshot, so only the process that has the file lock unpacks it.
+    FileChannel.open(parent.resolve("$COMMIT.lock"), StandardOpenOption.CREATE, StandardOpenOption.WRITE).use { lockFile ->
+      lockFile.lock().use {
+        if (!registry.resolve("bazel_registry.json").exists()) unpackSnapshot(parent, registry)
+      }
+    }
+    return registry
+  }
+
+  private fun unpackSnapshot(parent: Path, registry: Path) {
+    // The check in `registry` reads the directory with no lock. The snapshot appears with one atomic move, so no
+    // process reads a partial registry.
     val staging = Files.createTempDirectory(parent, "$COMMIT.")
     try {
       val archive = staging.resolve("bcr.zip")
@@ -57,7 +69,6 @@ object BazelRegistrySnapshot {
     finally {
       NioFiles.deleteRecursively(staging)
     }
-    return registry
   }
 
   private fun moveSnapshot(unpacked: Path, registry: Path) {
@@ -67,9 +78,6 @@ object BazelRegistrySnapshot {
         return
       }
       catch (e: FileSystemException) {
-        // another process moved its snapshot first
-        if (registry.resolve("bazel_registry.json").exists()) return
-
         if (OS.CURRENT != OS.Windows || attempt == MOVE_ATTEMPTS - 1) throw e
 
         // Windows denies the move of a directory while a process has a file of that directory open. On the build
