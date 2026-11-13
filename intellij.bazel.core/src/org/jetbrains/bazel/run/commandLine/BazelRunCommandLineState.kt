@@ -25,7 +25,7 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
-  ) {
+  ): Int {
     if (configuration.targets.singleOrNull() == null) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
@@ -40,6 +40,6 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
         additionalBazelParams = parseAsProgramArguments(runState.additionalBazelParams),
         pidDeferred = pidDeferred,
       )
-    server.buildTargetRun(runParams)
+    return server.buildTargetRun(runParams).exitCode
   }
 }

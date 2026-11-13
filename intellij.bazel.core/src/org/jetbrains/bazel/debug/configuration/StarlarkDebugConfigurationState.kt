@@ -5,7 +5,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.run.BazelProcessHandler
-import org.jetbrains.bsp.protocol.AnalysisDebugResult
 
 internal class StarlarkDebugConfigurationState(
   val project: Project,
@@ -13,7 +12,7 @@ internal class StarlarkDebugConfigurationState(
   environment: ExecutionEnvironment,
 ) : CommandLineState(environment) {
   // allows passing execution results (both successful and exceptional) to BspProcessHandler from outside
-  val futureProxy = CompletableDeferred<AnalysisDebugResult>()
+  val futureProxy = CompletableDeferred<Int>()
 
   override fun startProcess(): BazelProcessHandler =
     BazelProcessHandler(project, futureProxy).apply {

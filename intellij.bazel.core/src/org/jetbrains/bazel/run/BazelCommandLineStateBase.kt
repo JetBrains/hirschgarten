@@ -30,12 +30,12 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
 
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
-  /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
+  /** Run the actual BSP command and return its exit code, or throw an exception if the server does not support running the configuration */
   protected abstract suspend fun startBsp(
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
-  )
+  ): Int
 
   final override fun startProcess(): BazelProcessHandler = doStartProcess(false)
 

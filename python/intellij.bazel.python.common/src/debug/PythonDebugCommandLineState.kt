@@ -44,7 +44,7 @@ class PythonDebugCommandLineState(
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
-  ) {
+  ): Int {
     val configuration = BazelRunConfiguration.get(environment)
     val targetId = configuration.targets.single()
     val allFlags = server.projectView.debugFlags + server.projectView.pythonDebugFlags
@@ -55,6 +55,7 @@ class PythonDebugCommandLineState(
         arguments = PythonDebugUtils.buildPythonDebugBazelArguments(allFlags, additionalBazelParams),
       )
     server.buildTargetCompile(buildParams)
+    return 0
   }
 
   suspend fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)

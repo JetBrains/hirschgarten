@@ -116,7 +116,7 @@ internal class ScriptPathTestCommandLineState(
       server: BazelServerFacade,
       pidDeferred: CompletableDeferred<Long?>,
       handler: BazelProcessHandler,
-  ) {
+  ): Int {
     val scriptPath = checkNotNull(environment.getCopyableUserData(SCRIPT_PATH_KEY)?.get()) { "Missing --script_path" }
     val (env, testFilter) = testRunner.transformScriptPathEnvAndTestFilter(settings.env.envs, settings.testFilter)
     runWithScriptPath(
@@ -133,6 +133,7 @@ internal class ScriptPathTestCommandLineState(
     ) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)
     }
+    return 0
   }
 }
 

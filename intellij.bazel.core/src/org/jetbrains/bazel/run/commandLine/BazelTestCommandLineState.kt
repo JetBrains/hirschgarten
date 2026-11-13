@@ -37,7 +37,7 @@ open class BazelTestCommandLineState(
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
-  ) {
+  ): Int {
     if (configuration.targets.isEmpty()) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
@@ -55,7 +55,7 @@ open class BazelTestCommandLineState(
         additionalBazelParams = parseAsProgramArguments(state.additionalBazelParams),
         streamTestOutput = false,
       )
-    server.buildTargetTest(transformTestParams(params))
+    return server.buildTargetTest(transformTestParams(params)).exitCode
   }
 
   companion object {

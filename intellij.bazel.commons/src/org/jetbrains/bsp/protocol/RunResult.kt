@@ -7,8 +7,11 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class RunResult(
   val taskId: TaskId,
-  val statusCode: BazelStatus,
+  val exitCode: Int,
   val stdout: String?,
   /** the text proto files of the `intellij-info` output group */
   val infoFiles: Set<Path> = emptySet(),
-)
+) {
+  val statusCode: BazelStatus
+    get() = BazelStatus.fromExitCode(exitCode)
+}

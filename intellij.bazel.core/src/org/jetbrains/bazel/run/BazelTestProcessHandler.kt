@@ -7,7 +7,7 @@ import kotlinx.coroutines.Deferred
 
 internal class BazelTestProcessHandler(
   project: Project,
-  runDeferred: Deferred<*>,
+  runDeferred: Deferred<Int>,
   pidDeferred: Deferred<Long?>? = null,
   private val isIdBasedTestTree: Boolean = false,
 ) : BazelProcessHandler(project, runDeferred, pidDeferred) {
