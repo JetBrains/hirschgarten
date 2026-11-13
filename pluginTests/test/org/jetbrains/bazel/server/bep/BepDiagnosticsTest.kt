@@ -9,6 +9,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.run.testResults.TestConsoleTree
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.testproject.bazelInfo
@@ -23,9 +24,8 @@ import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
-import org.jetbrains.bsp.protocol.TestFinish
-import org.jetbrains.bsp.protocol.TestStatus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -40,6 +40,7 @@ class BepDiagnosticsTest {
   private class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
     val taskFinishCalls: MutableList<TaskFinishParams> = mutableListOf()
+    val testConsole = TestConsoleTree()
 
     override fun onBuildLogMessage(p0: LogMessageParams) {}
 
@@ -56,6 +57,10 @@ class BepDiagnosticsTest {
     override fun onPublishCoverageReport(report: CoverageReport) {}
 
     override fun onCachedTestLog(testLog: CachedTestLog) {}
+
+    override fun onTestConsoleOutput(taskId: TaskId, text: String, isError: Boolean) {
+      testConsole.process(text, isError)
+    }
   }
 
   fun newBepServer(taskHandler: BazelTaskEventsHandler, context : BazelInvocationContext = BazelInvocationContext.BUILD): BepServer =
@@ -293,11 +298,10 @@ src/build/NotCompiling.java:4: error: cannot find symbol
     server.handleBuildEventStreamProtosEvent(testResultEvent)
 
     val finish =
-      client.taskFinishCalls
-        .mapNotNull { it.data as? TestFinish }
-        .find { it.displayName == label }
+      client.testConsole.nodes
+        .find { it.name == label }
     finish.shouldNotBeNull()
-    finish.status shouldBe if (passed) TestStatus.PASSED else TestStatus.FAILED
+    finish.isDefect shouldBe !passed
   }
 
   @ParameterizedTest

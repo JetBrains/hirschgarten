@@ -24,31 +24,3 @@ data class CompileReport(
   val time: Long? = null,
   val noOp: Boolean? = null,
 ) : TaskFinishData
-
-@ApiStatus.Internal
-data class TestFinish(
-  val displayName: String,
-  val status: TestStatus,
-  val message: String? = null,
-  val location: Location? = null,
-  val data: TestFinishData? = null,
-) : TaskFinishData
-
-@ApiStatus.Internal
-sealed interface TestFinishData
-
-@ApiStatus.Internal
-data class JUnitStyleTestCaseData(
-  val time: Double?,
-  val className: String?,
-  val errorMessage: String?,
-  val output: String?,
-  val errorType: String?,
-) : TestFinishData
-
-@ApiStatus.Internal
-data class JUnitStyleTestSuiteData(
-  val time: Double?,
-  val systemOut: String?,
-  val systemErr: String?,
-) : TestFinishData

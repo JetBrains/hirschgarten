@@ -41,6 +41,7 @@
     <module name="intellij.platform.lang.impl"/>
     <module name="intellij.platform.projectModel"/>
     <module name="intellij.platform.projectModel.impl"/>
+    <module name="intellij.platform.smRunner"/>
     <module name="intellij.platform.statistics"/>
     <module name="intellij.platform.util.coroutines"/>
     <module name="intellij.platform.util.ex"/>
@@ -60,7 +61,7 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.testLocationHintProvider"
-                    interface="org.jetbrains.bazel.util.BazelTestLocationHintProvider"
+                    interface="org.jetbrains.bazel.run.testResults.BazelTestLocationHintProvider"
                     dynamic="true"
     />
     <extensionPoint
@@ -107,7 +108,7 @@
                     dynamic="true"
     />
     <extensionPoint qualifiedName="org.jetbrains.bazel.incompleteTestSuiteParser"
-                    interface="org.jetbrains.bazel.server.bep.IncompleteTestSuiteParser"
+                    interface="org.jetbrains.bazel.run.testResults.IncompleteTestSuiteParser"
                     dynamic="true"
     />
   </extensionPoints>

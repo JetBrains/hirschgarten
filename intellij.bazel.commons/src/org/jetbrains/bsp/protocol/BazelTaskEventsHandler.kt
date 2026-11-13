@@ -16,6 +16,9 @@ interface BazelTaskEventsHandler {
   @ApiStatus.Internal
   fun onCachedTestLog(testLog: CachedTestLog)
 
+  @ApiStatus.Internal
+  fun onTestConsoleOutput(taskId: TaskId, text: String, isError: Boolean) {}
+
   /**
    * Reports metrics derived from a finished Bazel invocation (analysis-cache discards, action cache hits).
    * Called once per invocation. Default no-op so handlers that don't care about telemetry need not implement it.

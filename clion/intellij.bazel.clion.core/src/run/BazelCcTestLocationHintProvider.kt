@@ -4,8 +4,8 @@ import com.intellij.util.io.URLUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.includesCc
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.run.testResults.BazelTestLocationHintProvider
 import org.jetbrains.bazel.testing.BazelTestDetails
-import org.jetbrains.bazel.util.BazelTestLocationHintProvider
 
 @ApiStatus.Internal
 const val BAZEL_CC_PROTOCOL: String = "bazel:test:cc"

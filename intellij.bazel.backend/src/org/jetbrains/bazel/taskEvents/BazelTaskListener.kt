@@ -43,4 +43,5 @@ interface BazelTaskListener {
   fun onLogMessage(taskId: TaskId, message: String) {}
   fun onPublishCoverageReport(coverageReport: Path) {}
   fun onCachedTestLog(testLog: Path) {}
+  fun onTestConsoleOutput(text: String, isError: Boolean) {}
 }

@@ -1,49 +1,88 @@
-package org.jetbrains.bazel.server.bep
+package org.jetbrains.bazel.run.testResults
 
+import com.intellij.execution.filters.HyperlinkInfo
+import com.intellij.execution.process.ProcessOutputType
+import com.intellij.execution.testframework.Printable
+import com.intellij.execution.testframework.Printer
+import com.intellij.execution.testframework.sm.runner.GeneralToSMTRunnerEventsConvertor
+import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter
+import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.openapi.project.ProjectManager
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
 import org.jetbrains.bazel.test.framework.BazelTestApplication
-import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CachedTestLog
 import org.jetbrains.bsp.protocol.CoverageReport
-import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskGroupId
+import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
-import org.jetbrains.bsp.protocol.TestFinish
-import org.jetbrains.bsp.protocol.TestStart
-import org.jetbrains.bsp.protocol.TestStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.io.path.writeText
 
+/** The test tree that the service messages of the test console build. */
+class TestConsoleTree {
+  val root = SMTestProxy.SMRootTestProxy()
+  private val converter =
+    OutputToGeneralTestEventsConverter("Bazel", false, false, true).apply {
+      setProcessor(GeneralToSMTRunnerEventsConvertor(ProjectManager.getInstance().defaultProject, root, "Bazel"))
+    }
+
+  /** All nodes except the root, in the order they were started. */
+  val nodes: List<SMTestProxy> get() = root.allTests.drop(1)
+
+  fun process(text: String, isError: Boolean) {
+    converter.process(if (text.endsWith("\n")) text else "$text\n", if (isError) ProcessOutputType.STDERR else ProcessOutputType.STDOUT)
+  }
+}
+
+fun SMTestProxy.output(): String =
+  buildString {
+    printOn(object : Printer {
+      override fun print(text: String, contentType: ConsoleViewContentType) {
+        append(text)
+      }
+
+      override fun onNewAvailable(printable: Printable) {
+        printable.printOn(this)
+      }
+
+      override fun printHyperlink(text: String, info: HyperlinkInfo?) {
+        append(text)
+      }
+
+      override fun mark() {}
+    })
+  }
+
 class MockBuildTaskEventsHandler : BazelTaskEventsHandler {
-  val taskStartCalls = mutableListOf<TaskStartParams>()
-  val taskFinishCalls = mutableListOf<TaskFinishParams>()
+  private val tree = TestConsoleTree()
+  val testNodes: List<SMTestProxy> get() = tree.nodes
 
   override fun onBuildLogMessage(p0: LogMessageParams) {}
 
   override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {}
 
-  override fun onBuildTaskStart(p0: TaskStartParams) {
-    p0.let { taskStartCalls.add(it) }
-  }
+  override fun onBuildTaskStart(p0: TaskStartParams) {}
 
-  override fun onBuildTaskFinish(p0: TaskFinishParams) {
-    p0.let { taskFinishCalls.add(it) }
-  }
+  override fun onBuildTaskFinish(p0: TaskFinishParams) {}
 
   override fun onPublishCoverageReport(report: CoverageReport) {}
 
   override fun onCachedTestLog(testLog: CachedTestLog) {}
+
+  override fun onTestConsoleOutput(taskId: TaskId, text: String, isError: Boolean) {
+    tree.process(text, isError)
+  }
 }
 
 @BazelTestApplication
@@ -71,13 +110,12 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), pythonTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), pythonTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 5
+    client.testNodes.size shouldBe 5
 
     val expectedNames =
       listOf(
@@ -88,8 +126,8 @@ class TestXmlParserTest {
         "test_method_4",
       )
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
+    client.testNodes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
+    client.testNodes.filterNot { it.isSuite }.map { it.isPassed shouldBe true }
   }
 
   @Test
@@ -167,13 +205,12 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), pythonTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), pythonTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 14
+    client.testNodes.size shouldBe 14
 
     val expectedNames =
       listOf(
@@ -193,22 +230,22 @@ class TestXmlParserTest {
         "mysuite",
       )
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskFinishCalls.map {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
+    client.testNodes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
+    client.testNodes.map {
+      val data = it
+      when (data.name) {
         "mysuite" -> {
-          data.status shouldBe TestStatus.FAILED
+          data.isSuite shouldBe true
         }
         "test_other_value", "test_config_incorrect_format" -> {
-          data.status shouldBe TestStatus.FAILED
-          (data.data as JUnitStyleTestCaseData).errorMessage shouldContain "AssertionError"
+          data.isDefect shouldBe true
+          data.errorMessage shouldContain "AssertionError"
         }
         "test_config_6" -> {
-          data.status shouldBe TestStatus.SKIPPED
+          data.isIgnored shouldBe true
         }
         else -> {
-          data.status shouldBe TestStatus.PASSED
+          data.isPassed shouldBe true
         }
       }
     }
@@ -269,37 +306,37 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, samplePassingContents), javaTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 17 // one of the test suites in the XML is empty, so we hide it
+    client.testNodes.size shouldBe 18 // one of the test suites in the XML is empty, so we hide it
 
     val expectedNames =
       listOf(
-        "com.example.optimization.TestSuite1",
+        "com.example.optimization",
+        "TestSuite1",
         "test1",
         "test2",
         "test3",
         "test4",
-        "com.example.optimization.TestSuite2",
+        "TestSuite2",
         "test1",
         "test2",
         "test3",
         "test4",
         "test5",
-        "com.example.optimization.TestSuite3",
+        "TestSuite3",
         "test1",
-        "com.example.optimization.TestSuite4",
+        "TestSuite4",
         "test1",
-        "com.example.optimization.TestSuite5",
+        "TestSuite5",
         "test1",
       )
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
+    client.testNodes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
+    client.testNodes.filterNot { it.isSuite }.map { it.isPassed shouldBe true }
   }
 
   @Test
@@ -375,14 +412,14 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
     val taskId = TaskGroupId.EMPTY.task("")
-    TestXmlParser(notifier).parseAndReport(taskId, writeTempFile(tempDir, samplePassingContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(taskId, writeTempFile(tempDir, samplePassingContents), javaTargetKind)
 
     // then
     val expectedTestHints = listOf(
+      null,
       "java:suite://com.example.optimization.TestSuite1",
       "java:test://com.example.optimization.TestSuite1/test1",
       "java:test://com.example.optimization.TestSuite1/sampleFailedTest",
@@ -400,55 +437,52 @@ class TestXmlParserTest {
       "java:suite://com.example.optimization.TestSuite4",
       "java:test://com.example.optimization.TestSuite4/test1",
     )
-    client.taskStartCalls.size shouldBe 16 // one of the test suites in the XML is empty, so we hide it
-    client.taskStartCalls.map { (it.data as TestStart).locationHint } shouldBe expectedTestHints
+    client.testNodes.size shouldBe 17 // one of the test suites in the XML is empty, so we hide it
+    client.testNodes.map { it.locationUrl } shouldBe expectedTestHints
 
     val expectedNames =
       listOf(
-        "com.example.optimization.TestSuite1",
+        "com.example.optimization",
+        "TestSuite1",
         "test1",
         "test2",
         "test3",
         "test4",
         "test5",
-        "com.example.optimization.TestSuite2",
+        "TestSuite2",
         "test1",
         "sampleFailedTest",
         "test3",
         "test4",
         "sampleSkippedTest",
-        "com.example.optimization.TestSuite3",
+        "TestSuite3",
         "test1",
-        "com.example.optimization.TestSuite4",
+        "TestSuite4",
         "test1",
       )
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    client.testNodes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
 
-    client.taskFinishCalls.map {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
-        "com.example.optimization.TestSuite1",
-        "com.example.testing.base.Tests" -> {
-          it.taskId.parent shouldBe taskId
-          data.status shouldBe TestStatus.FAILED
+    client.testNodes.map {
+      val data = it
+      when (data.name) {
+        "com.example.optimization",
+        "TestSuite1" -> {
+          data.isSuite shouldBe true
         }
 
         "sampleFailedTest" -> {
-          it.taskId.parent shouldNotBe null
-          data.status shouldBe TestStatus.FAILED
-          val details = (data.data as JUnitStyleTestCaseData)
-          details.errorMessage shouldContain "expected:"
-          details.errorType shouldNotBe null
-          details.output shouldNotBe null
+          data.isDefect shouldBe true
+          data.errorMessage shouldContain "expected:"
+          data.output() shouldNotBe ""
         }
 
         "sampleSkippedTest" -> {
-          data.status shouldBe TestStatus.SKIPPED
+          data.isIgnored shouldBe true
         }
 
         else -> {
-          data.status shouldBe TestStatus.PASSED
+          if (!data.isSuite) data.isPassed shouldBe true
         }
       }
     }
@@ -513,13 +547,12 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 5
+    client.testNodes.size shouldBe 4
 
     val expectedNames =
       listOf(
@@ -529,29 +562,25 @@ class TestXmlParserTest {
         "testSuccess()",
       )
 
-    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    val testFinishes = client.testNodes
 
-    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    testFinishes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
 
     testFinishes.forEach {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
+      val data = it
+      when (data.name) {
         "TripleTest" -> {
         }
         "testFailure()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.FAILED
-          val details = (data.data as JUnitStyleTestCaseData)
-          details.errorMessage shouldNotBe null
-          data.message!!.split("\n".toRegex()).size shouldBe 7
+          data.isDefect shouldBe true
+          data.errorMessage shouldNotBe null
+          data.errorMessage!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.SKIPPED
+          data.isIgnored shouldBe true
         }
         "testSuccess()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.PASSED
+          data.isPassed shouldBe true
         }
       }
     }
@@ -616,13 +645,12 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 5
+    client.testNodes.size shouldBe 4
 
     val expectedNames =
       listOf(
@@ -632,28 +660,24 @@ class TestXmlParserTest {
         "testSuccess()",
       )
 
-    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    val testFinishes = client.testNodes
 
-    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    testFinishes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
     testFinishes.forEach {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
+      val data = it
+      when (data.name) {
         "TripleTest" -> {
         }
         "testFailure()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.FAILED
-          val details = (data.data as JUnitStyleTestCaseData)
-          details.errorMessage shouldNotBe null
-          data.message!!.split("\n".toRegex()).size shouldBe 7
+          data.isDefect shouldBe true
+          data.errorMessage shouldNotBe null
+          data.errorMessage!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.SKIPPED
+          data.isIgnored shouldBe true
         }
         "testSuccess()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.PASSED
+          data.isPassed shouldBe true
         }
       }
     }
@@ -718,13 +742,12 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 3 // two malformed rows should simply be ignored
+    client.testNodes.size shouldBe 2 // two malformed rows should simply be ignored
 
     val expectedNames = // two malformed rows should simply be ignored
       listOf(
@@ -732,21 +755,19 @@ class TestXmlParserTest {
         "testSuccess()",
       )
 
-    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    val testFinishes = client.testNodes
     testFinishes.size shouldBe 2 // two malformed rows should simply be ignored
 
-    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    testFinishes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
 
     testFinishes.forEach {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
+      val data = it
+      when (data.name) {
         "testIgnored()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.SKIPPED
+          data.isIgnored shouldBe true
         }
         "testSuccess()" -> {
-          it.taskId.parent.shouldNotBeNull()
-          data.status shouldBe TestStatus.PASSED
+          data.isPassed shouldBe true
         }
       }
     }
@@ -797,17 +818,16 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 3
+    client.testNodes.size shouldBe 3
 
     val expectedNames = listOf("testsuite", "testFailure1", "testFailure2")
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    client.testNodes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
   }
 
   @Test
@@ -840,15 +860,12 @@ class TestXmlParserTest {
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
-    val lastFinish = client.taskFinishCalls.first().data as? TestFinish
-    val lastFinishData = lastFinish?.data as? JUnitStyleTestCaseData
-    lastFinishData?.time shouldBe 0.02
+    client.testNodes.single { it.name == "testFailure1" }.duration shouldBe 20L
   }
 
   /**
@@ -938,10 +955,9 @@ WARNING: Delegated to the 'execute' command.
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
     val expectedNames =
@@ -951,16 +967,16 @@ WARNING: Delegated to the 'execute' command.
         "throws single-line exception with trailing newline()",
       )
 
-    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    val testFinishes = client.testNodes
 
-    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    testFinishes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
 
     testFinishes.forEach {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
+      val data = it
+      when (data.name) {
         "throws multi-line exception()" -> {
-          data.status shouldBe TestStatus.FAILED
-          data.message shouldBe
+          data.isDefect shouldBe true
+          data.errorMessage shouldBe
             """
             First line
               Second line
@@ -976,8 +992,8 @@ WARNING: Delegated to the 'execute' command.
             """.trimIndent()
         }
         "throws single-line exception with trailing newline()" -> {
-          data.status shouldBe TestStatus.FAILED
-          data.message shouldBe
+          data.isDefect shouldBe true
+          data.errorMessage shouldBe
             """
             First line
                 MethodSource [className = 'org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest', methodName = 'throws single-line exception with trailing newline', methodParameterTypes = '']
@@ -1007,13 +1023,12 @@ WARNING: Delegated to the 'execute' command.
     """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     // when
-    TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
     // then
-    client.taskStartCalls.size shouldBe 4
+    client.testNodes.size shouldBe 4
 
     val expectedNames =
       listOf(
@@ -1023,62 +1038,58 @@ WARNING: Delegated to the 'execute' command.
         "testAnother",
       )
 
-    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    val testFinishes = client.testNodes
 
-    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    testFinishes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
 
     testFinishes.forEach {
-      val data = (it.data as TestFinish)
-      when (data.displayName) {
+      val data = it
+      when (data.name) {
         "com.example.MyJunit4Test" -> {
         }
 
         "testError" -> {
-          data.status shouldBe TestStatus.FAILED
-          val details = (data.data as JUnitStyleTestCaseData)
-          details.errorMessage shouldBe "expected: <mock label> but was: <mock label1>"
-          details.output!!.split("\n".toRegex()).size shouldBe 7
+          data.isDefect shouldBe true
+          data.errorMessage shouldBe "expected: <mock label> but was: <mock label1>"
+          data.output() shouldContain "at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1141)"
         }
 
         "testSystemOut" -> {
-          data.status shouldBe TestStatus.PASSED
-          data.message shouldBe "Hi from test!\n"
-          val details = (data.data as JUnitStyleTestCaseData)
-          details.output shouldBe "Hi from test!\n"
+          data.isPassed shouldBe true
+          data.output() shouldBe "Hi from test!\n"
         }
 
         "testAnother" -> {
-          data.status shouldBe TestStatus.PASSED
+          data.isPassed shouldBe true
         }
       }
     }
   }
 
   @Test
-  fun `empty testsuites element reports nothing and returns zero`(
+  fun `empty testsuites element reports nothing`(
     @TempDir tempDir: Path,
   ) {
     // Go tests via rules_go without verbose output produce an empty <testsuites> on success.
-    // Nothing is reported, so parseAndReport must return 0 — BepServer then shows a target-level node
+    // Nothing is reported, so parseAndReport must return false — BepServer then shows a target-level node
     // instead of leaving the user with "No tests were found".
     val sampleContents = "<testsuites></testsuites>"
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     val reported =
-      TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+      TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
 
-    reported shouldBe 0
-    client.taskStartCalls.size shouldBe 0
+    reported shouldBe false
+    client.testNodes.size shouldBe 0
   }
 
   @Test
-  fun `suite with tests but no testcases is skipped and returns zero`(
+  fun `suite with tests but no testcases is skipped`(
     @TempDir tempDir: Path,
   ) {
     // A well-formed suite with tests > 0 but no <testcase> children is skipped (aggregation / filtered
-    // suites). parseAndReport returns 0 so the caller can fall back to a target-level result.
+    // suites). parseAndReport returns false so the caller can fall back to a target-level result.
     val sampleContents =
       """
       <?xml version='1.0' encoding='UTF-8'?>
@@ -1092,16 +1103,15 @@ WARNING: Delegated to the 'execute' command.
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
-    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
+    val reported = TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
 
-    reported shouldBe 0
-    client.taskStartCalls.size shouldBe 0
+    reported shouldBe false
+    client.testNodes.size shouldBe 0
   }
 
   @Test
-  fun `passing suite with testcases is reported and counted`(
+  fun `passing suite with testcases is reported`(
     @TempDir tempDir: Path,
   ) {
     val sampleContents =
@@ -1115,23 +1125,22 @@ WARNING: Delegated to the 'execute' command.
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
     val reported =
-      TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), pythonTargetKind)
+      TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), pythonTargetKind)
 
-    reported shouldBe 1
+    reported shouldBe true
     val expectedNames = listOf("//src/go/passing:passing_test", "TestSomething")
-    val finishes = client.taskFinishCalls.filter { it.data is TestFinish }
-    finishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    val finishes = client.testNodes
+    finishes.map { it.name } shouldContainExactlyInAnyOrder expectedNames
   }
 
   @Test
-  fun `fallback parser path reports suites and returns non-zero count`(
+  fun `fallback parser path reports suites`(
     @TempDir tempDir: Path,
   ) {
     // Missing the `id` attribute makes the strict primary parser fail, so this goes through the
-    // lenient fallback parser. parseAndReport must still return a non-zero count so the caller does
+    // lenient fallback parser. parseAndReport must still return true so the caller does
     // not wrongly emit a target-level fallback on top of the per-test results.
     val sampleContents =
       """
@@ -1144,12 +1153,105 @@ WARNING: Delegated to the 'execute' command.
       """.trimIndent()
 
     val client = MockBuildTaskEventsHandler()
-    val notifier = BspClientTestNotifier(client)
 
-    val reported = TestXmlParser(notifier).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
+    val reported = TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
 
-    reported shouldBe 1
-    client.taskStartCalls.size shouldBe 2
+    reported shouldBe true
+    client.testNodes.size shouldBe 2
+  }
+
+  @Test
+  fun `suite names split at dots and collapse nodes with one child`(
+    @TempDir tempDir: Path,
+  ) {
+    val sampleContents =
+      """
+      <?xml version='1.0' encoding='UTF-8'?>
+      <testsuites>
+        <testsuite name='com.example.a.FooTest' tests='1' failures='0' errors='0' time='0.1' package='' id='0'>
+          <testcase name='test1' classname='com.example.a.FooTest' time='0.1' />
+        </testsuite>
+        <testsuite name='com.example.b.BarTest' tests='1' failures='0' errors='0' time='0.1' package='' id='1'>
+          <testcase name='test1' classname='com.example.b.BarTest' time='0.1' />
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), javaTargetKind)
+
+    client.testNodes.map { "${it.parent.name}/${it.name}" } shouldBe listOf(
+      "[root]/com.example",
+      "com.example/a.FooTest",
+      "a.FooTest/test1",
+      "com.example/b.BarTest",
+      "b.BarTest/test1",
+    )
+    client.testNodes.map { it.locationUrl } shouldBe listOf(
+      null,
+      "java:suite://com.example.a.FooTest",
+      "java:test://com.example.a.FooTest/test1",
+      "java:suite://com.example.b.BarTest",
+      "java:test://com.example.b.BarTest/test1",
+    )
+  }
+
+  @Test
+  fun `go suites share the package node and hold their subtests`(
+    @TempDir tempDir: Path,
+  ) {
+    val sampleContents =
+      """
+      <testsuites>
+        <testsuite errors="0" failures="0" skipped="0" tests="1" time="0.001" name="server/filter/filter_test.TestSingle">
+          <testcase classname="filter_test" name="TestSingle" time="0.000"></testcase>
+        </testsuite>
+        <testsuite errors="0" failures="1" skipped="0" tests="3" time="0.630" name="server/filter/filter_test.TestWithSubtests">
+          <testcase classname="filter_test" name="TestWithSubtests" time="0.630"></testcase>
+          <testcase classname="filter_test" name="TestWithSubtests/Passes" time="0.030"></testcase>
+          <testcase classname="filter_test" name="TestWithSubtests/Fails" time="0.030"><failure message="Failed" type="">filter_test.go:10: wrong</failure></testcase>
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
+
+    client.testNodes.map { "${it.parent.name}/${it.name}" } shouldBe listOf(
+      "[root]/server/filter/filter_test",
+      "server/filter/filter_test/TestSingle",
+      "server/filter/filter_test/TestWithSubtests",
+      "TestWithSubtests/TestWithSubtests",
+      "TestWithSubtests/Passes",
+      "TestWithSubtests/Fails",
+    )
+    client.testNodes.single { it.name == "Fails" }.isDefect shouldBe true
+  }
+
+  @Test
+  fun `suites and test cases with the same name are all reported`(
+    @TempDir tempDir: Path,
+  ) {
+    val sampleContents =
+      """
+      <testsuites>
+        <testsuite name="catch" tests="2" failures="1" errors="0" time="0.1">
+          <testcase classname="catch.global" name="Generated" time="0.1"><failure message="failed run" type="CHECK">TestBase.cpp:10</failure></testcase>
+          <testcase classname="catch.global" name="Generated" time="0.1"></testcase>
+        </testsuite>
+        <testsuite name="catch" tests="1" failures="1" errors="0" time="0.1">
+          <testcase classname="catch.global" name="Other" time="0.1"><failure message="failed" type="CHECK">TestBase.cpp:20</failure></testcase>
+        </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildTaskEventsHandler()
+
+    TestXmlParser(client).parseAndReport(TaskGroupId.EMPTY.task(""), writeTempFile(tempDir, sampleContents), null)
+
+    client.testNodes.map { "${it.name}: ${it.isDefect}" } shouldBe listOf("catch: true", "Generated: true", "Generated: false", "Other: true")
   }
 
   private fun writeTempFile(tempDir: Path, contents: String): Path {

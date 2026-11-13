@@ -11,7 +11,6 @@ import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.toNioPathOrNull
-import com.intellij.util.system.LowLevelLocalMachineAccess
 import com.intellij.util.system.OS
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugSession
@@ -39,11 +38,10 @@ import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.state.GenericRunConfigurationState
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
-import org.jetbrains.bazel.server.bep.TestXmlParser
+import org.jetbrains.bazel.run.testResults.TestXmlParser
 import org.jetbrains.bazel.sync.environment.bazelProjectInfo
 import org.jetbrains.bazel.sync.workspace.snapshot.workspaceSnapshotOrNull
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
-import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bazel.utils.ExecutableInfo
 import org.jetbrains.bsp.protocol.TaskGroupId
 import java.nio.file.Path
@@ -161,7 +159,7 @@ private class CcCidrLauncher(private val environment: ExecutionEnvironment, priv
           taskHandler.saveListener(taskGroupId, runListener)
           try {
             val testXml = executionInfo.testXml ?: return
-            TestXmlParser(BspClientTestNotifier(taskHandler)).parseAndReport(taskGroupId.task("test"), testXml, CC_TEST_KIND)
+            TestXmlParser(taskHandler).parseAndReport(taskGroupId.task("test"), testXml, CC_TEST_KIND)
           }
           finally {
             taskHandler.removeListener(taskGroupId)

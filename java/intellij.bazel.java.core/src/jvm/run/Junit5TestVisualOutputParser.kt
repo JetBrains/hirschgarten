@@ -1,42 +1,33 @@
 package org.jetbrains.bazel.jvm.run
 
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.bep.IncompleteTestSuiteParser
+import com.intellij.execution.testframework.sm.ServiceMessageBuilder
+import org.jetbrains.bazel.run.testResults.BazelTestLocationHintProvider
+import org.jetbrains.bazel.run.testResults.IncompleteTestSuiteParser
+import org.jetbrains.bazel.run.testResults.testFailed
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JAVA_TEST_KIND
 import org.jetbrains.bazel.testing.BazelTestDetails
-import org.jetbrains.bazel.util.BspClientTestNotifier
-import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
-import org.jetbrains.bsp.protocol.TaskId
-import org.jetbrains.bsp.protocol.TestStatus
-import java.util.UUID
 import java.util.regex.Pattern
 
 /**
  * Parses the nice-looking test execution tree Junit5 produces
  */
 internal class Junit5TestVisualOutputParser : IncompleteTestSuiteParser {
-  override fun processTestOutput(bspClientTestNotifier: BspClientTestNotifier, parentId: TaskId, systemOut: String): Boolean {
-    if (!textContainsJunit5VisualOutput(systemOut)) return false
-    val tree = generateTestResultTree(systemOut, parentId)
-    notifyClient(bspClientTestNotifier, tree)
-    return true
+  override fun parseTestOutput(systemOut: String): List<ServiceMessageBuilder>? {
+    if (!textContainsJunit5VisualOutput(systemOut)) return null
+    return generateTestResultTree(systemOut).flatMap { it.report() }
   }
 
   /**
    * generateTestResultTree parse the junit5 test report and return the test result tree for each test target
    *
    * The tree for each target is organized as follows:
-   * - The root is a TestResultTreeNode where the name is the bazel test target, and its status is null.
+   * - The root is a TestResultTreeNode where the name is the bazel test target, and its result is null.
    *  - The sibling nodes of the root are the test result tree for each junit5 test classes in this test target. It can recursively
    * contain test result or a test suit result.
    *
-   * The sibling's taskId include its parent's taskId as parent. However, one exception is that direct sibling of root node does not have parents in taskId.
-   * It is because that when we notify the client, the root node will be converted to beginTestTarget call, while other nodes are converted into startTest
-   * call.
-   *
    * @return List of generated TestResultTreeNode instances
    * */
-  private fun generateTestResultTree(output: String, parentId: TaskId): List<TestResultTreeNode> {
+  private fun generateTestResultTree(output: String): List<TestResultTreeNode> {
     val lines = output.lines()
     val testResultTrees = mutableListOf<TestResultTreeNode>()
 
@@ -58,7 +49,7 @@ internal class Junit5TestVisualOutputParser : IncompleteTestSuiteParser {
             testResultsAreStarting -> ""
             else -> continue
           }
-        treeRootForCurrentTarget = TestResultTreeNode(rootNodeName, parentId.subTask(rootNodeName), null, mutableListOf(), -1)
+        treeRootForCurrentTarget = TestResultTreeNode(rootNodeName, null, mutableListOf(), -1)
         testResultTrees.add(treeRootForCurrentTarget)
         currentNode = treeRootForCurrentTarget
       } else if (testEndedMatcher.find()) {
@@ -78,8 +69,7 @@ internal class Junit5TestVisualOutputParser : IncompleteTestSuiteParser {
         val newNode =
           TestResultTreeNode(
             name = testName,
-            taskId = (parent?.taskId ?: parentId).uniqueSubTask(testName),
-            status = testLineMatcher.group("result").toTestStatus(),
+            result = testLineMatcher.group("result").toTestResult(),
             messageLines = mutableListOf(testLineMatcher.group("message")),
             indent = indent,
             parent = parent,
@@ -97,12 +87,6 @@ internal class Junit5TestVisualOutputParser : IncompleteTestSuiteParser {
       }
     }
     return testResultTrees
-  }
-
-  private fun notifyClient(bspClientTestNotifier: BspClientTestNotifier, trees: List<TestResultTreeNode>) {
-    for (tree in trees) {
-      tree.notifyClient(bspClientTestNotifier)
-    }
   }
 
   private fun parseBuildTargetName(line: String): String? {
@@ -164,13 +148,11 @@ internal class Junit5TestVisualOutputParser : IncompleteTestSuiteParser {
     return result
   }
 
-  private fun testUUID(): String = "test-" + UUID.randomUUID().toString()
-
-  private fun String.toTestStatus(): TestStatus =
+  private fun String.toTestResult(): TestResult =
     when (this) {
-      "✔" -> TestStatus.PASSED
-      "✘" -> TestStatus.FAILED
-      else -> TestStatus.SKIPPED
+      "✔" -> TestResult.PASSED
+      "✘" -> TestResult.FAILED
+      else -> TestResult.SKIPPED
     }
 
   companion object {
@@ -190,19 +172,11 @@ private val failuresCountPattern = Pattern.compile("^Failures \\(\\d+\\):$")
 private fun String.removeFormat(): String =
   this.replace(Regex("[?\\u001b]\\[[;\\d]*m"), "") // '1B' symbol appears in console output and test logs, while '?' appears in test XMLs
 
-private fun createTestCaseData(message: String, time: Long?): JUnitStyleTestCaseData =
-  JUnitStyleTestCaseData(
-    time = time?.let { it / 1000.0 },
-    className = null,
-    errorMessage = message,
-    output = null,
-    errorType = null,
-  )
+private enum class TestResult { PASSED, FAILED, SKIPPED }
 
 private class TestResultTreeNode(
   val name: String,
-  val taskId: TaskId,
-  val status: TestStatus?,
+  val result: TestResult?,
   val messageLines: MutableList<String>,
   val indent: Int,
   val parent: TestResultTreeNode? = null,
@@ -215,60 +189,54 @@ private class TestResultTreeNode(
 
   fun isRootNode() = parent == null
 
-  fun notifyClient(bspClientTestNotifier: BspClientTestNotifier) {
+  fun report(): List<ServiceMessageBuilder> {
     val parentSuiteNames = getAncestorSuiteNamesExcludingRoot()
     if (isRootNode()) {
-      bspClientTestNotifier.beginTestTarget(Label.parse(name), taskId)
-      children.forEach { it.value.notifyClient(bspClientTestNotifier) }
-    } else if (isLeafNode()) {
-      val fullMessage = generateMessage()
-
-      val testDetails = BazelTestDetails.testCase(name).withParentSuites(parentSuiteNames).build()
-      bspClientTestNotifier.startTest(testDetails, taskId, JAVA_TEST_KIND)
-
-      if (status == TestStatus.FAILED && parent?.isRootNode() == true && children.isEmpty()) {
+      return children.values.flatMap { it.report() }
+    }
+    if (isLeafNode()) {
+      val messages = reportTest(name, parentSuiteNames, result ?: return emptyList(), generateMessage())
+      if (result == TestResult.FAILED && parent?.isRootNode() == true) {
         // BAZEL-2080: if an exception happens at the start of a test suit, there will be no test case run
         // and no test case reported. Teamcity will mark a testsuit with no test case as success.
-        // So in this case, we need to report a dummy test case with TestStatus.FAILED status.
+        // So in this case, we need to report a dummy failed test case.
         val displayName = "no tests found"
-        val placeholderID = taskId.subTask("placeholder")
-
-        val placeholderTestDetails = BazelTestDetails.testCase(displayName).withParentSuites(parentSuiteNames).build()
-        bspClientTestNotifier.startAndFinishTest(
-          testDetails = placeholderTestDetails,
-          taskId = placeholderID,
-          status =
-            TestStatus.FAILED,
-          message = displayName,
-          data = createTestCaseData(displayName, time),
-          targetKind = JAVA_TEST_KIND,
-        )
+        return messages + reportTest(displayName, parentSuiteNames, TestResult.FAILED, displayName)
       }
-      bspClientTestNotifier.finishTest(
-        displayName = name,
-        taskId = taskId,
-        status =
-          status
-            ?: return,
-        // this should never be null, because every node except root nodes should have status. Just for compiling
-        message = fullMessage,
-        data = createTestCaseData(fullMessage, time),
-      )
-    } else {
-      val testDetails = BazelTestDetails.testSuite(name).withParentSuites(parentSuiteNames).build()
-      bspClientTestNotifier.startTest(testDetails, taskId, JAVA_TEST_KIND)
-      children.forEach { it.value.notifyClient(bspClientTestNotifier) }
-      bspClientTestNotifier.finishTest(
-        displayName = name,
-        taskId = taskId,
-        status =
-          status
-            ?: return,
-        // this should never be null, because every node except root nodes should have status. Just for compiling
-        message = messageLines.joinLinesIgnoringLastEmpty(),
-      )
+      return messages
     }
+    val suiteHint = locationHint(BazelTestDetails(name, isSuite = true, parentSuiteNames = parentSuiteNames))
+    val suiteStarted = ServiceMessageBuilder.testSuiteStarted(name)
+    if (suiteHint != null) suiteStarted.addAttribute("locationHint", suiteHint)
+    return listOf(suiteStarted) +
+           children.values.flatMap { it.report() } +
+           ServiceMessageBuilder.testSuiteFinished(name)
   }
+
+  private fun reportTest(
+    testName: String,
+    parentSuiteNames: List<String>,
+    testResult: TestResult,
+    message: String,
+  ): List<ServiceMessageBuilder> {
+    val testHint = locationHint(BazelTestDetails(testName, parentSuiteNames = parentSuiteNames))
+    val testStarted = ServiceMessageBuilder.testStarted(testName)
+    if (testHint != null) testStarted.addAttribute("locationHint", testHint)
+    val testFinished = ServiceMessageBuilder.testFinished(testName)
+    time?.let { testFinished.addAttribute("duration", it.toString()) }
+    return listOfNotNull(
+      testStarted,
+      when (testResult) {
+        TestResult.PASSED -> null
+        TestResult.FAILED -> testFailed(testName, message)
+        TestResult.SKIPPED -> ServiceMessageBuilder.testIgnored(testName).addAttribute("message", message)
+      },
+      testFinished,
+    )
+  }
+
+  private fun locationHint(testDetails: BazelTestDetails): String? =
+    BazelTestLocationHintProvider.getLocationHint(testDetails, JAVA_TEST_KIND)
 
   private fun getAncestorSuiteNamesExcludingRoot(): List<String> =
     generateSequence(parent) { it.parent }

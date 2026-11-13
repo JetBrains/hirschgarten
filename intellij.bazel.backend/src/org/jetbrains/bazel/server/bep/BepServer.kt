@@ -9,6 +9,7 @@ import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest
 import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
 import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
+import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.RawProgressReporter
@@ -18,12 +19,16 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.run.testResults.BazelTestLocationHintProvider
+import org.jetbrains.bazel.run.testResults.TestXmlParser
+import org.jetbrains.bazel.run.testResults.testFailed
 import org.jetbrains.bazel.server.BazelTestFileNames
 import org.jetbrains.bazel.server.diagnostics.Diagnostic
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
@@ -39,7 +44,6 @@ import org.jetbrains.bazel.sync.workspace.snapshot.workspaceTargetKey
 import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.testing.BazelTestDetails
-import org.jetbrains.bazel.util.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
 import org.jetbrains.bsp.protocol.BazelInvocationContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
@@ -53,7 +57,6 @@ import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
-import org.jetbrains.bsp.protocol.TestStatus
 import java.io.File
 import java.io.IOException
 import java.nio.file.FileSystemNotFoundException
@@ -75,7 +78,7 @@ class BepServer(
   private data class Abort(val reason: AbortReason, val label: Label)
 
   private var startedEvent: TaskId? = null
-  private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
+  private var isTest = false
   private val bepOutputBuilder = BepOutputBuilder()
   private val buildProgressParser = BuildProgressParser()
   private val customBepEventHandlers: List<BepEventHandler>
@@ -149,8 +152,7 @@ class BepServer(
   private fun processTestResult(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasTestResult()) {
       val taskId = startedEvent
-      val bspClientTestNotifier = this.bspClientTestNotifier
-      if (taskId == null || bspClientTestNotifier == null) {
+      if (taskId == null || !isTest) {
         return
       }
 
@@ -162,20 +164,6 @@ class BepServer(
       //  shard, and run per test. This allows BEP consumers to identify precisely
       //  which test actions failed their tests and identify the test outputs
       //  (such as logs, test.xml files) for each test action.
-
-      val testStatus =
-        when (testResult.status) {
-          BuildEventStreamProtos.TestStatus.NO_STATUS -> TestStatus.SKIPPED
-          BuildEventStreamProtos.TestStatus.PASSED -> TestStatus.PASSED
-          BuildEventStreamProtos.TestStatus.FLAKY -> TestStatus.FAILED
-          BuildEventStreamProtos.TestStatus.TIMEOUT -> TestStatus.FAILED
-          BuildEventStreamProtos.TestStatus.FAILED -> TestStatus.FAILED
-          BuildEventStreamProtos.TestStatus.INCOMPLETE -> TestStatus.SKIPPED
-          BuildEventStreamProtos.TestStatus.REMOTE_FAILURE -> TestStatus.IGNORED
-          BuildEventStreamProtos.TestStatus.FAILED_TO_BUILD -> TestStatus.CANCELLED
-          BuildEventStreamProtos.TestStatus.TOOL_HALTED_BEFORE_TESTING -> TestStatus.SKIPPED
-          else -> TestStatus.FAILED
-        }
 
       val coverageReport =
         testResult.testActionOutputList
@@ -211,19 +199,36 @@ class BepServer(
       val label = Label.parse(event.id.testResult.label)
       val targetKind = project.targetStorage.getTargetInfo(label)?.kind
       // Test cases identified and sent to the client by TestXmlParser.
-      val reportedSuites = testXml?.let { TestXmlParser(bspClientTestNotifier).parseAndReport(taskId, it, targetKind) } ?: 0
-      if (reportedSuites == 0) {
+      val reported = testXml?.let { TestXmlParser(taskEventsHandler).parseAndReport(taskId, it, targetKind) } ?: false
+      if (!reported) {
         // Nothing was reported per-test: the XML is missing, or present but empty / all-skipped.
         // Go tests via rules_go without verbose output don't emit <testcase> entries, so the parser
         // reports nothing. Fall back to a single target-level node so the target shows its status
         // instead of "No tests were found".
-        val targetName = label.toShortString(project)
-        val childId = taskId.uniqueSubTask("test")
-
-        val testDetails = BazelTestDetails.testSuite(targetName).build()
-        bspClientTestNotifier.startAndFinishTest(testDetails, childId, testStatus, "Test finished", targetKind)
+        reportTargetResult(taskId, label.toShortString(project), targetKind, testResult.status)
       }
     }
+  }
+
+  private fun reportTargetResult(taskId: TaskId, name: String, targetKind: TargetKind?, status: BuildEventStreamProtos.TestStatus) {
+    val locationHint = BazelTestLocationHintProvider.getLocationHint(BazelTestDetails(name, isSuite = true), targetKind)
+    val testStarted = ServiceMessageBuilder.testStarted(name)
+    if (locationHint != null) testStarted.addAttribute("locationHint", locationHint)
+    val messages = listOfNotNull(
+      testStarted,
+      when (status) {
+        BuildEventStreamProtos.TestStatus.PASSED -> null
+        BuildEventStreamProtos.TestStatus.NO_STATUS,
+        BuildEventStreamProtos.TestStatus.INCOMPLETE,
+        BuildEventStreamProtos.TestStatus.REMOTE_FAILURE,
+        BuildEventStreamProtos.TestStatus.FAILED_TO_BUILD,
+        BuildEventStreamProtos.TestStatus.TOOL_HALTED_BEFORE_TESTING,
+          -> ServiceMessageBuilder.testIgnored(name)
+        else -> testFailed(name, null)
+      },
+      ServiceMessageBuilder.testFinished(name),
+    )
+    messages.forEach { taskEventsHandler.onTestConsoleOutput(taskId, it.toString(), isError = false) }
   }
 
   private fun processTestSummary(event: BuildEventStreamProtos.BuildEvent) {
@@ -349,9 +354,7 @@ class BepServer(
         return
       }
 
-      val bspClientTestNotifier = BspClientTestNotifier(taskEventsHandler)
-      this.bspClientTestNotifier = bspClientTestNotifier
-      bspClientTestNotifier.beginTestTarget(target, taskId)
+      isTest = true
     }
 
     startedEvent = taskId
@@ -370,8 +373,8 @@ class BepServer(
       return
     }
 
-    if (bspClientTestNotifier != null) {
-      bspClientTestNotifier = null
+    if (isTest) {
+      isTest = false
       return
     }
 

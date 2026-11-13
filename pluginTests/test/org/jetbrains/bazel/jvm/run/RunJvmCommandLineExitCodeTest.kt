@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.jvm.run
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import kotlinx.coroutines.CompletableDeferred
-import org.jetbrains.bazel.run.task.MockBazelProcessHandler
+import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -23,4 +25,18 @@ class RunJvmCommandLineExitCodeTest {
 
     assertEquals(1, exitCode)
   }
+}
+
+internal class MockBazelProcessHandler(project: Project) : BazelProcessHandler(project, CompletableDeferred(0)) {
+  var latestText: String = ""
+
+  override fun notifyTextAvailable(text: String, outputType: Key<*>) {
+    latestText = text
+  }
+
+  override fun startNotify() {}
+
+  override fun destroyProcessImpl() {}
+
+  override fun detachProcessImpl() {}
 }

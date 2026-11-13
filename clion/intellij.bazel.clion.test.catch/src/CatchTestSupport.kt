@@ -35,13 +35,11 @@ class CatchTestSupport : BazelCcTestFrameworkSupport {
     get() = CatchTestLanguageSupport.getInstance()
 
   override fun locate(path: String, project: Project, scope: GlobalSearchScope): List<Location<*>> {
-
-    val test = path.substringAfter(TEST_NAME_PARTS_SPLITTER)
-
-    val linker = CidrCatchTestLinker.create(test)
-
+    // Catch2 joins the sections of a test case with slashes
+    val names = path.split(TEST_NAME_PARTS_SPLITTER)[1].split('/')
+    val catchPath = names.joinToString("") { "[" + CidrCatchTestLinker.prepareTestPathForPattern(it) + "]" }
     return CidrCatchTestLocationProvider.INSTANCE.getLocation(
-      CidrCatchTestLocationProvider.PROTOCOL, linker.findPath, project, scope,
+      CidrCatchTestLocationProvider.PROTOCOL, catchPath, project, scope,
     )
   }
 
