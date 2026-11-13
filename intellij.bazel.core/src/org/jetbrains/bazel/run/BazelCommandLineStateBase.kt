@@ -30,8 +30,8 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
 
   protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
-  /** Run the actual BSP command and return its exit code, or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(
+  /** Run the command and return its exit code, or throw an exception if the server does not support running the configuration */
+  protected abstract suspend fun runCommand(
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
@@ -57,7 +57,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment) : Co
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, pid, handler)
+          runCommand(server, pid, handler)
         }
       }
 
