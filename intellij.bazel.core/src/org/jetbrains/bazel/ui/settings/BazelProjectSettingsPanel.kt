@@ -25,7 +25,6 @@ import com.intellij.ui.components.fields.ExtendableTextComponent
 import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.DslComponentProperty
-import com.intellij.ui.dsl.builder.MAX_LINE_LENGTH_WORD_WRAP
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.registered.openProjectView
@@ -82,14 +81,12 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       ProjectViewService.getInstance(project).projectViewPath?.let { projectViewPath ->
         row(BazelPluginBundle.message("project.settings.project.view.label")) {
           link(projectViewPath.toString()) { event -> openProjectViewAndCloseSettings(event.source as Component) }
-            .comment(
-              BazelPluginBundle.message(
-                "project.settings.project.view.comment",
-                BazelPluginBundle.message("action.load.project.view.file"),
-              ),
-              MAX_LINE_LENGTH_WORD_WRAP,
-            )
-        }
+        }.rowComment(
+          BazelPluginBundle.message(
+            "project.settings.project.view.comment",
+            BazelPluginBundle.message("action.load.project.view.file"),
+          ),
+        )
       }
       row(BazelPluginBundle.message("project.settings.buildifier.label")) {
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
