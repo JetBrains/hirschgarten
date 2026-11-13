@@ -28,9 +28,16 @@ val BuildTargetInfo.baseDirectoryLocation: OutputLocation
 fun BuildTargetInfo.baseDirectory(project: Project): Path? =
   project.targetStorage.resolveExecrootOutputLocation(baseDirectoryLocation)
 
+/**
+ * Returns `true` if the target is in the main repository.
+ * Unlike [isWorkspace], this is `false` for a target of a local repository.
+ */
+@ApiStatus.Internal
+fun BuildTargetInfo.isMainRepository(): Boolean = id !is ResolvedLabel || id.isMainWorkspace
+
 @ApiStatus.Internal
 fun BuildTargetInfo.isWorkspace(repoMapping: RepoMapping): Boolean =
-  if (id !is ResolvedLabel || id.isMainWorkspace) {
+  if (isMainRepository()) {
     true
   }
   else {
@@ -46,3 +53,6 @@ fun BuildTarget.baseDirectory(project: Project): Path? = info.baseDirectory(proj
 
 @ApiStatus.Internal
 fun BuildTarget.isWorkspace(repoMapping: RepoMapping): Boolean = info.isWorkspace(repoMapping)
+
+@ApiStatus.Internal
+fun BuildTarget.isMainRepository(): Boolean = info.isMainRepository()
