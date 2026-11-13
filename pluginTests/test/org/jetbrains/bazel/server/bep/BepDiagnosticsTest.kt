@@ -387,7 +387,7 @@ src/build/NotCompiling.java:4: error: cannot find symbol
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `loading errors are reported and not demoted`(sync: Boolean) {
+  fun `loading errors are reported and demoted on sync`(sync: Boolean) {
     val client = MockBuildTaskEventsHandler()
     val server = newBepServer(client, if (sync) BazelInvocationContext.SYNC else BazelInvocationContext.BUILD)
     val buildStartedEvent = newBuildStartedEvent()
@@ -408,7 +408,7 @@ src/build/NotCompiling.java:4: error: cannot find symbol
     val publishedDiagnostic = client.buildPublishDiagnostics[0]
     assertEquals(1, publishedDiagnostic.diagnostics.size)
     val diagnostics = publishedDiagnostic.diagnostics[0]
-    assertEquals(DiagnosticSeverity.ERROR, diagnostics.level) // Analysis errors are always reported as errors
+    assertEquals(if (sync) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR, diagnostics.level) // Analysis errors are always reported as errors
     assertTrue(diagnostics.message.contains("loading_failure",  ignoreCase = true))
     assertTrue(diagnostics.message.contains("BUILD file not found"))
   }

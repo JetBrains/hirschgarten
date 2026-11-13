@@ -19,6 +19,7 @@ import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelBackendBundle
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
@@ -521,18 +522,30 @@ class BepServer(
   }
 
   private fun processAbortedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    if (event.hasAborted()) {
-      val reason = event.aborted.reason
-      if (abortReasonsToIgnore.contains(reason)) return
-      // Only report actionable events, i.e., those with a non-empty description of the error.
-      if (event.aborted.description.isNotEmpty()) {
-        val label = getLabelForAbortedEvent(event) ?: return
-        val message = "${reason}: ${label}\n" + event.aborted.description
-        val diagnostic = Diagnostic(Position.NONE, message, null, label,
-                                    if (abortReasonWarnOnly.contains(reason)) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR)
-        val params = PublishDiagnosticsParams(parentId, null, label, listOf(diagnostic), true)
-        taskEventsHandler.onBuildPublishDiagnostics(params)
-      }
+    if (!event.hasAborted()) return
+    val reason = event.aborted.reason
+    if (abortReasonsToIgnore.contains(reason)) return
+    // Only report actionable events, i.e., those with a non-empty description of the error.
+    if (event.aborted.description.isEmpty()) return
+
+    val label = getLabelForAbortedEvent(event) ?: return
+    val message = "${reason}: ${label}\n" + event.aborted.description
+    if ((context == BazelInvocationContext.SYNC) && event.id.pattern.patternList.isNotEmpty()){
+      // A user-requested target in sync does not resolve. In this case, we only report a warning
+      // and add an explanation about updating the project view (BAZEL-3801).
+      val explanation = if (label.isRecursive) BazelBackendBundle.message("console.warn.pattern.invalid.dir") else BazelBackendBundle.message("console.warn.pattern.invalid.other")
+      val diagnostic = Diagnostic(
+        Position.NONE, message + "\n\n" + explanation, null, label, DiagnosticSeverity.WARNING
+      )
+      val params = PublishDiagnosticsParams(parentId, null, label, listOf(diagnostic), true)
+      taskEventsHandler.onBuildPublishDiagnostics(params)
+    } else {
+      val diagnostic = Diagnostic(
+        Position.NONE, message, null, label,
+        if (abortReasonWarnOnly.contains(reason)) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR
+      )
+      val params = PublishDiagnosticsParams(parentId, null, label, listOf(diagnostic), true)
+      taskEventsHandler.onBuildPublishDiagnostics(params)
     }
   }
 
