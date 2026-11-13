@@ -15,7 +15,7 @@ import kotlin.coroutines.cancellation.CancellationException
 @ApiStatus.Internal
 open class BazelProcessHandler(
   private val project: Project,
-  private val runDeferred: Deferred<*>,
+  private val runDeferred: Deferred<Int>,
   val pid: Deferred<Long?>? = null,
 ) : ProcessHandler() {
   override fun startNotify() {
@@ -25,7 +25,7 @@ open class BazelProcessHandler(
       BazelCoroutineService.getInstance(project).start {
         when (e) {
           null -> {
-            notifyProcessTerminated(0)
+            notifyProcessTerminated(runDeferred.await())
           }
 
           is CancellationException -> {

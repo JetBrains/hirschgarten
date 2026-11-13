@@ -31,7 +31,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
-import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.concurrency.AsyncPromise
@@ -103,7 +102,7 @@ internal class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Sett
     port: Int,
     taskListener: StarlarkDebugTaskListener,
     target: Label,
-    futureProxy: CompletableDeferred<AnalysisDebugResult>,
+    futureProxy: CompletableDeferred<Int>,
   ): Job =
     project.connection.runWithServer { server ->
       BazelCoroutineService.getInstance(project).start {
@@ -117,7 +116,7 @@ internal class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Sett
     taskListener: StarlarkDebugTaskListener,
     target: Label,
     server: BazelServerFacade,
-    futureProxy: CompletableDeferred<AnalysisDebugResult>,
+    futureProxy: CompletableDeferred<Int>,
   ) {
     coroutineScope {
       val taskGroupId = TaskGroupId("analysis-debug-" + Random.nextBytes(8).toHexString())
@@ -126,8 +125,8 @@ internal class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Sett
 
       val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
       try {
-        val result = buildDeferred.await()
-        futureProxy.complete(result)
+        buildDeferred.await()
+        futureProxy.complete(0)
       } catch (e: Exception) {
         buildDeferred.cancel()
         futureProxy.completeExceptionally(e)

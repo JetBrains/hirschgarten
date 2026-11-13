@@ -182,7 +182,7 @@ class ExecuteService(
       }
     val result = runWithBepServer(command, params.taskId, BazelInvocationContext.RUN, pidDeferred = params.pidDeferred)
     return RunResult(
-      statusCode = result.processResult.bazelStatus,
+      exitCode = result.processResult.exitCode,
       taskId = params.taskId,
       stdout = if (params.captureStdout) result.processResult.stdout.decodeToString() else null,
       infoFiles = result.bepOutput.filesByInfoOutputGroup(),
@@ -227,7 +227,7 @@ class ExecuteService(
 
     // TODO: handle multiple targets
     val result = runWithBepServer(command, params.taskId, BazelInvocationContext.TEST)
-    return TestResult(statusCode = result.processResult.bazelStatus)
+    return TestResult(exitCode = result.processResult.exitCode)
   }
 
   private suspend fun build(

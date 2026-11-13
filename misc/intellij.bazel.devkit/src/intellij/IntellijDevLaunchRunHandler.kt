@@ -119,7 +119,7 @@ private class IntellijDevLaunchCommandLineState(
 ) : JvmDebuggableCommandLineState(environment, settings.debugPort, configuration) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: BazelServerFacade, pidDeferred: CompletableDeferred<Long?>, handler: BazelProcessHandler) {
+  override suspend fun startBsp(server: BazelServerFacade, pidDeferred: CompletableDeferred<Long?>, handler: BazelProcessHandler): Int {
     val project = environment.project
     val target = configuration.targets.single()
     val launchFile = findLaunchFile(project, target)
@@ -162,6 +162,7 @@ private class IntellijDevLaunchCommandLineState(
     runJvmCommandLine(commandLine, pidDeferred, handler) { processHandler ->
       attachJvmRunExtensions(environment, processHandler)
     }
+    return 0
   }
 }
 
