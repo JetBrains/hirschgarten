@@ -112,7 +112,7 @@ internal class ScriptPathTestCommandLineState(
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
-  override suspend fun startBsp(
+  override suspend fun runCommand(
       server: BazelServerFacade,
       pidDeferred: CompletableDeferred<Long?>,
       handler: BazelProcessHandler,

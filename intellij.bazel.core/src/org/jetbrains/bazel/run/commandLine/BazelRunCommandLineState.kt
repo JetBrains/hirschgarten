@@ -21,7 +21,7 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(
+  override suspend fun runCommand(
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,

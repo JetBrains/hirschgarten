@@ -33,7 +33,7 @@ open class BazelTestCommandLineState(
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelTestTaskListener(handler, coverageReportListener)
 
-  override suspend fun startBsp(
+  override suspend fun runCommand(
     server: BazelServerFacade,
     pidDeferred: CompletableDeferred<Long?>,
     handler: BazelProcessHandler,
