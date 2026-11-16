@@ -33,6 +33,7 @@
     <module name="intellij.platform.testExtensions" loading="required"/>
     <module name="intellij.platform.testFramework.common" loading="required"/>
     <module name="intellij.platform.testFramework.core" loading="required"/>
+    <module name="intellij.platform.testFramework.eelJava" loading="required"/>
     <module name="intellij.platform.testFramework" loading="required"/>
     <module name="intellij.platform.testFramework.impl" loading="required"/>
     <module name="intellij.platform.testFramework.junit5" loading="required"/>
