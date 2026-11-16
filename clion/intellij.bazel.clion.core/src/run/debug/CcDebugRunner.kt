@@ -23,6 +23,7 @@ import org.jetbrains.annotations.PropertyKey
 import org.jetbrains.bazel.clion.BazelCLionCoreBundle
 import org.jetbrains.bazel.clion.run.CcRunHandler
 import org.jetbrains.bazel.clion.run.CcTestHandler
+import org.jetbrains.bazel.clion.workspace.CcDebugSessionConfigurations
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.progress.ConsoleService
@@ -32,6 +33,7 @@ import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
@@ -150,6 +152,10 @@ private suspend fun prepareDebugSession(
 
     resolveDebugInfoIssues(environment.project, label, checkBuild(build), allowRetry = false)
   }
+
+  // the debug build is the latest evidence of the configuration that the user works in
+  val configurations = listOf(targetInfo.target.key.configuration) + build.targets.map { WorkspaceConfigurationId.of(it.key.configuration) }
+  CcDebugSessionConfigurations.getInstance(environment.project).update(configurations)
 
   state.targetInfo = targetInfo
   state.executionInfo = build.executable
