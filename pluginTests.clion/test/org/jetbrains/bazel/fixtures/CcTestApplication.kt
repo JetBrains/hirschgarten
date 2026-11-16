@@ -12,6 +12,7 @@ import java.lang.annotation.Inherited
 @Inherited
 @SystemPropertyClassLevel(BazelCLionFeatureFlags.CLION_ENABLED, "true")
 @SystemPropertyClassLevel(BazelFeatureFlags.USE_PTY, "false") // otherwise tests fail due to a leaked timer
+@SystemPropertyClassLevel("patch.engine.backend.freeze.timeout", "-1")
 @BazelTestApplication
 annotation class CcTestApplication
 
