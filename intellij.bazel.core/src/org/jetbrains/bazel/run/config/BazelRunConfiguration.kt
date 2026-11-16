@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.run.config
 
+import com.intellij.diagnostic.rethrowControlFlowException
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
@@ -55,6 +56,7 @@ class BazelRunConfiguration internal constructor(
       // rethrow configuration error
       throw e
     } catch (e: Throwable) {
+      rethrowControlFlowException(e)
       // exception here can prevent project from loading
       logger.error("Error checking configuration", e)
     }
