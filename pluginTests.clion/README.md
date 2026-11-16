@@ -8,36 +8,29 @@ https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 
 2) Compile Rider backend:
 ``` shell
-cd dotnet && Rider/compileBackend_Radler.cmd
+./dotnet/Rider/compileBackend_Radler.cmd
 ```
-
-3) Set `RESHARPER_HOST_BIN` to the Rider backend build. Run this command from the repository root:
-``` shell
-export RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend"
-```
-
-The test target inherits this variable from the shell, so no change of the `BUILD.bazel` file is necessary.
 
 ### Running CLion tests from the command line
 
-```bash
-bazel test //plugins/bazel/pluginTests.clion:pluginTests.clion_test
-```
-
-Instead of step 3, you can also pass the variable to one command:
+The `pluginTests.clion_test` target is a `test_suite` of all tests run in CI. To run the entire test suite:
 ```bash
 bazel test //plugins/bazel/pluginTests.clion:pluginTests.clion_test --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend"
 ```
 
-Each test file has its own test target. The name of the target is the name of the file without `.kt`.
-The `pluginTests.clion_test` target is a `test_suite` of all these targets. To run the tests of one file:
+Each test file has its own test target. The name of the target is the name of the file without `.kt`. To run the tests of one file:
 ```bash
-bazel test //plugins/bazel/pluginTests.clion:CcCoptsTest
+bazel test //plugins/bazel/pluginTests.clion:CcCoptsTest --test_env=RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend"
 ```
 
 To debug the tests of one file use `run` and pass `-- --debug`. A `test_suite` does not support `run`:
 ```bash
-bazel run //plugins/bazel/pluginTests.clion:CcCoptsTest -- --debug
+RESHARPER_HOST_BIN="$(pwd)/dotnet/Bin.RiderBackend" bazel run //plugins/bazel/pluginTests.clion:CcCoptsTest -- --debug
+```
+
+To filter tests add:
+```bash
+--test_env=JB_TEST_FILTER="fully qualified class name[:test name]"
 ```
 
 ### Layout
@@ -49,13 +42,10 @@ When you change a dependency, change it in `intellij.bazel.pluginTests.clion.iml
 - `tests/` holds one Kotlin file for each test target. Put a new test file there, and add a `cc_test` call for it to `BUILD.bazel`.
 - `framework/` holds the code that all the tests share. It compiles into the `pluginTests.clion_test_lib` library.
 - `test_defs.bzl` holds the `cc_test` macro and the dependency lists of all the tests.
+- `extension.bzl` holds the `registry` module extension. It downloads the archives of real projects.
+- `registry.MODULE.bazel` declares these projects. The root `MODULE.bazel` includes it.
 
-The directories have no package directories. Each Kotlin file keeps its `package` declaration.
-
-To filter tests add:
-```bash
---test_env=JB_IDE_SM_RUN=true --test_env=JB_TEST_FILTER="fully qualified class name[:test name]"
-```
+To add a test for a real project, add a `github` or `archive` tag and a `bazel mod tidy` to update the `use_repo`.
 
 On Windows msys2 (BAZEL_SH, needs to be set explicitly because some scripts in our repo overwrite it otherwise) and clang-cl (BAZEL_LLVM) are required and the following additional environment variables need to be set (copy this to your project view file):
 ```

@@ -5,8 +5,14 @@ import com.intellij.clion.testFramework.nolang.junit5.core.publishThreadDump
 import com.intellij.clion.testFramework.nolang.junit5.core.withClionTimeout
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.project.Project
+import com.intellij.platform.bazel.runfiles.BazelLabel
+import com.intellij.platform.bazel.runfiles.BazelRunfiles
+import com.intellij.openapi.vfs.impl.VirtualFilePointerManagerImpl
 import com.intellij.testFramework.junit5.fixture.TestFixture
+import com.intellij.testFramework.junit5.fixture.disposableFixture
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
 import com.intellij.testFramework.junit5.fixture.testFixture
+import com.intellij.util.io.Decompressor
 import kotlinx.coroutines.TimeoutCancellationException
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.test.framework.BazelPathManager
@@ -15,6 +21,11 @@ import org.jetbrains.bazel.test.framework.BazelTestCaches.testCacheRoot
 import org.jetbrains.bazel.test.framework.assertLastSyncSucceeded
 import org.jetbrains.bazel.test.framework.bazelProjectFixture
 import org.jetbrains.bazel.test.framework.writeProjectView
+import java.net.URI
+import java.nio.file.Path
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -47,6 +58,74 @@ internal fun clionBazelProjectFixture(
   buildProject: Boolean = false,
   jvmToolchains: Boolean = false,
   configure: ProjectViewBuilder.() -> Unit = {},
+): TestFixture<Project> = clionBazelProjectFixture(
+  projectsRoot = BazelPathManager.clionTestProjectsRoot,
+  projectPath = projectPath,
+  bazelVersion = bazelVersion,
+  registries = { listOf(BazelPathManager.testRegistry.toUri(), BazelRegistrySnapshot.registry(testCacheRoot()).toUri()) },
+  buildProject = buildProject,
+  jvmToolchains = jvmToolchains,
+  awaitSymbols = true,
+  configure = configure,
+)
+
+/**
+ * Opens the downloaded project in the zip file [archive], with the same setup as [clionBazelProjectFixture].
+ *
+ * [archive] is the label of the archive, for example `@cc_test_project_cloudflare_workerd//:archive`. The test target must have
+ * this label in its `data`.
+ *
+ * The archive must hold exactly one top-level directory. The fixture unpacks it into a temporary directory and opens
+ * this directory. With no [bazelVersion] set, the `.bazelversion` file of the project applies.
+ *
+ * When [waitForSymbols] is off, the fixture does not wait until the backend has loaded the symbols. The backend
+ * continues to index while the test runs. Turn it off for a test that reads only the project model, because the
+ * symbols of a large project can take minutes to load.
+ */
+@TestOnly
+internal fun clionBazelArchiveProjectFixture(
+  archive: String,
+  bazelVersion: String? = null,
+  buildProject: Boolean = false,
+  waitForSymbols: Boolean = true,
+  configure: ProjectViewBuilder.() -> Unit = {},
+): TestFixture<Project> = testFixture(debugString = "clionBazelArchiveProject") {
+
+  // turn off the consistency check of the virtual file pointers, since it can take minutes for the many source files of a large project
+  VirtualFilePointerManagerImpl.disableConsistencyChecksInTestsTemporarily(disposableFixture().init())
+
+  val projectsRoot = tempPathFixture().init()
+  val archiveFile = BazelRunfiles.getFileByLabel(BazelLabel.fromString(archive))
+
+  LOG.info("Unpacking the project archive $archive into $projectsRoot")
+  Decompressor.Zip(archiveFile).withZipExtensions().extract(projectsRoot)
+
+  val projectDir = projectsRoot.listDirectoryEntries().singleOrNull()?.takeIf { it.isDirectory() }
+                   ?: error("The project archive $archive must hold exactly one top-level directory")
+
+  val project = clionBazelProjectFixture(
+    projectsRoot = projectsRoot,
+    projectPath = projectDir.name,
+    bazelVersion = bazelVersion,
+    registries = { emptyList() },
+    buildProject = buildProject,
+    jvmToolchains = false,
+    awaitSymbols = waitForSymbols,
+    configure = configure,
+  ).init()
+
+  initialized(project) {}
+}
+
+private fun clionBazelProjectFixture(
+  projectsRoot: Path,
+  projectPath: String,
+  bazelVersion: String?,
+  registries: () -> List<URI>,
+  buildProject: Boolean,
+  jvmToolchains: Boolean,
+  awaitSymbols: Boolean,
+  configure: ProjectViewBuilder.() -> Unit,
 ): TestFixture<Project> = testFixture {
   val projectView = ProjectViewBuilder().addDirectories(".").apply(configure).build()
 
@@ -56,13 +135,14 @@ internal fun clionBazelProjectFixture(
         projectPath,
         buildProject = buildProject,
         bazelVersion = bazelVersion,
-        projectsRoot = BazelPathManager.clionTestProjectsRoot,
+        projectsRoot = projectsRoot,
         jvmToolchains = jvmToolchains,
-        registries = listOf(BazelPathManager.testRegistry.toUri(), BazelRegistrySnapshot.registry(testCacheRoot()).toUri()),
+        registries = registries(),
       ) { writeProjectView(it, projectView) }.init()
     },
     waitForSymbols = { project ->
       assertLastSyncSucceeded(project, allowWarnings = false)
+      if (!awaitSymbols) return@setUpClionBazelProject
 
       LOG.info("Waiting for symbols to load")
       try {

@@ -35,7 +35,9 @@ internal class CompilerSettingsAssert(actual: OCCompilerSettings?) :
   fun containsHeaders(vararg expected: String): CompilerSettingsAssert {
     isNotNull()
     val resolved = expected.filter { actual.resolveHeader(it) != null }
-    assertThat(resolved).contains(*expected)
+    assertThat(resolved)
+      .describedAs("the headers found in the header search roots %s", actual.headersSearchRoots.allRoots)
+      .contains(*expected)
     return this
   }
 
@@ -71,7 +73,7 @@ internal class CompilerSettingsAssert(actual: OCCompilerSettings?) :
   suspend fun containsCachedHeaders(fileName: String, project: Project, symlink: Boolean): CompilerSettingsAssert {
     isNotNull()
     val header = actual.resolveHeader(fileName)
-    checkNotNull(header)
+    checkNotNull(header) { "The header $fileName is in none of the header search roots: ${actual.headersSearchRoots.allRoots}" }
 
     val hardLinks = project.connection.runWithServer { server ->
       server.outFileHardLinks as DefaultBazelOutputFileHardLinks
@@ -92,7 +94,7 @@ internal class CompilerSettingsAssert(actual: OCCompilerSettings?) :
   fun containsWorkspaceHeader(fileName: String, project: Project): CompilerSettingsAssert {
     isNotNull()
     val header = actual.resolveHeader(fileName)
-    checkNotNull(header)
+    checkNotNull(header) { "The header $fileName is in none of the header search roots: ${actual.headersSearchRoots.allRoots}" }
 
     assertThat(header.toNioPath().startsWith(project.rootDir.toNioPath()))
       .withFailMessage(": ${header.path}")

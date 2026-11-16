@@ -69,6 +69,7 @@ CC_TEST_DEPS = [
     "//CIDR/clion-test-catch",
     "@community//platform/scratch/plugin",
     "//CIDR/cidr-lang-base",
+    "@community//platform/bazel-runfiles",
 ]
 
 # The runtime dependencies of `:pluginTests.clion_test_lib`. They hold Radler and the Rider backend.

@@ -1,0 +1,7 @@
+registry = use_extension("//plugins/bazel/pluginTests.clion:extension.bzl", "registry")
+registry.github(
+    commit = "db128e3389dd7f3e3d185c577419d4b124285dab",
+    repo = "cloudflare/workerd",
+    sha256 = "b7a45ce5978b611d9cbc46045bf67581567e0aea1c72a32297568a9213b9df11",
+)
+use_repo(registry, "cc_test_project_cloudflare_workerd")

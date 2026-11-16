@@ -99,7 +99,14 @@ cc_test(test = "TransitionTest.kt")
 
 cc_test(test = "VirtualIncludesTest.kt")
 
-# all the test targets of this package, used by TeamCity
+cc_test(
+    data = ["@cc_test_project_cloudflare_workerd//:archive"],
+    tags = ["manual"],
+    target_compatible_with = ["@platforms//os:linux"],
+    test = "WorkerdTest.kt",
+)
+
+# all the test targets of this package (except manual tests), used by TeamCity
 test_suite(name = "pluginTests.clion_test")
 
 # all projcet test targets of this, slower and only supposed to run manually atm
