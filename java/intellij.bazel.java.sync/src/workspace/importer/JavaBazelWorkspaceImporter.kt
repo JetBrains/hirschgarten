@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.platform.diagnostic.telemetry.helpers.use
@@ -80,6 +81,7 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
       repoMapping = snapshot.repoMapping,
       resolveLocation = resolveLocation,
       resolveExecrootLocation = execrootLocationResolver(context, snapshot),
+      eelDescriptor = context.project.getEelDescriptor(),
     ).resolveAll()
 
     plan = JvmImportPlan(rawTargets = moduleTargets, jvmResolved = jvmResolved, resolveLocation = resolveLocation)

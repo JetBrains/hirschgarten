@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.bazelHost
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -60,7 +61,7 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
       return false
     }
     val target = runConfiguration.targets.single()
-    val scriptPath = ScriptPathBuildTargetTask.createTempScriptFile()
+    val scriptPath = ScriptPathBuildTargetTask.createTempScriptFile(project.bazelHost)
     val extraBazelParams = listOf("--dynamic_mode=off", "--compilation_mode=dbg") + runConfiguration.extractAdditionalBazelParams()
     // runBlocking instead of runBlockingCancellable because before run tasks aren't cancellable
     val status = runBlocking {
@@ -80,7 +81,7 @@ internal class ScriptPathDebugBeforeRunTaskProvider : BeforeRunTaskProvider<Scri
       .onFailure { handleScriptReadingErrors(it, target) }
       .getOrNull() ?: return false
     val executableInfo = runCatching {
-      ExecutableInfo.fromBazelRunScript(scriptContent).also { it.createRequiredDirectories() }
+      ExecutableInfo.fromBazelRunScript(scriptContent, project.bazelHost).also { it.createRequiredDirectories() }
     }.onFailure { handleScriptParsingErrors(it, target) }.getOrNull() ?: return false
     executableKey.set(executableInfo)
     return true

@@ -79,7 +79,9 @@ internal class DefaultBazelServerConnection(private val project: Project) : Baze
     val bazelInfo = bazelInfoResolver.resolveBazelInfo(bazelRunner, projectView, taskId)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
 
+    // The file system that the IDE uses for another environment, for example for WSL, cannot create a hard link.
     val outFileHardLinks = if (BazelFeatureFlags.hardLinkOutputFiles &&
+                               bazelRunner.host.isLocal &&
                                !service<BazelApplicationContextService>().disableHardLinksOutputFiles)
       DefaultBazelOutputFileHardLinks(project, bazelInfo)
     else

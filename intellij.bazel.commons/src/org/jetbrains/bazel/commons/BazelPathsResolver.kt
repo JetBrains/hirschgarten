@@ -8,16 +8,17 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.RepoType
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.toPath
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
-import kotlin.io.path.toPath
 
 @ApiStatus.Internal
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
+  /** The environment where Bazel runs. Bazel prints absolute paths and URIs in the form of this host. */
+  val host: BazelHost = BazelHost.of(bazelInfo.workspaceRoot)
+
   fun workspaceRoot(): Path = bazelInfo.workspaceRoot
 
   fun bazelBin(): Path = bazelInfo.bazelBin
@@ -25,7 +26,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   fun resolvePaths(fileLocations: List<ArtifactLocation>, localRepositories: LocalRepositoryMapping): List<Path> =
     fileLocations.map { resolve(it, localRepositories) }
 
-  fun resolve(file: BuildEventStreamProtos.File): Path = URI.create(file.uri).toPath()
+  fun resolve(file: BuildEventStreamProtos.File): Path = host.uriToIdePath(file.uri)
 
   fun isExternal(
     fileLocation: ArtifactLocation,
@@ -49,7 +50,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     val rootSegments = fileLocation.rootPath.split('/')
     val localPath: Path = localRepositories.localRepositories[rootSegments[1]] ?: return fileLocation
     // Update relative path, keeping bazel's file-system hierarchy separator
-    val newRelativePath = localPath.invariantSeparatorsPathString + "/" + fileLocation.relativePath
+    val localHostPath = if (host.isLocal) localPath.invariantSeparatorsPathString else host.toHostPath(localPath)
+    val newRelativePath = localHostPath + "/" + fileLocation.relativePath
     return ArtifactLocation.newBuilder().setRootPath("").setRelativePath(newRelativePath).setIsSource(fileLocation.isSource).build()
   }
 
@@ -65,10 +67,10 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   private fun isAbsolute(fileLocation: ArtifactLocation): Boolean {
     val relative = fileLocation.relativePath
-    return relative.startsWith("/") && Files.exists(Paths.get(relative))
+    return relative.startsWith("/") && host.toIdePathOrNull(relative)?.let { Files.exists(it) } == true
   }
 
-  private fun resolveAbsolute(fileLocation: ArtifactLocation): Path = Paths.get(fileLocation.relativePath)
+  private fun resolveAbsolute(fileLocation: ArtifactLocation): Path = host.toIdePath(fileLocation.relativePath)
 
   private fun resolveExternal(fileLocation: ArtifactLocation): Path {
     val outputBaseRelativePath = Paths.get(fileLocation.rootPath, fileLocation.relativePath)

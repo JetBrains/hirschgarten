@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
+import org.jetbrains.bazel.commons.killProcess
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -16,7 +17,12 @@ import kotlin.coroutines.cancellation.CancellationException
 typealias OutputHandler = (String) -> Unit
 
 @ApiStatus.Internal
-class OutputProcessor(private val process: Process, showStdout: Boolean = false, handler: OutputHandler? = null) {
+class OutputProcessor(
+  private val process: Process,
+  showStdout: Boolean = false,
+  handler: OutputHandler? = null,
+  private val host: BazelHost = BazelHost.LOCAL,
+) {
   val stdoutCollector = OutputCollector()
   val stderrCollector = OutputCollector()
 
@@ -100,11 +106,7 @@ class OutputProcessor(private val process: Process, showStdout: Boolean = false,
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
         try {
-          if (killProcessTreeOnCancel) {
-            OSProcessUtil.killProcessTree(process)
-          } else {
-            process.destroyForcibly()
-          }
+          host.killProcess(process, killTree = killProcessTreeOnCancel)
         } catch (_: Throwable) {
         }
         throw e

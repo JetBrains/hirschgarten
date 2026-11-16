@@ -1,17 +1,15 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.ExcludableValue
 import org.jetbrains.bazel.label.Label
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import kotlin.io.path.createDirectories
 import kotlin.io.path.writeLines
 
 @ApiStatus.Internal
@@ -96,13 +94,19 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   var enablePty: Boolean = false
 
+  /**
+   * The environment where this command runs. [BazelRunner.buildBazelCommand] sets it.
+   * The command passes each file path to Bazel in the form of this host.
+   */
+  var host: BazelHost = BazelHost.LOCAL
+
   abstract fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor
 
   // See https://bazel.build/reference/command-line-reference#flag--build_event_binary_file
   fun useBes(besOutputFile: Path) {
     options.addAll(
       listOf(
-        BazelFlag.buildEventBinaryFile(besOutputFile.toAbsolutePath().toString()),
+        BazelFlag.buildEventBinaryFile(host.toHostPath(besOutputFile.toAbsolutePath())),
         BazelFlag.buildEventBinaryFileWait(),
         "--bes_outerr_buffer_size=10",
         // No --build_event_publish_all_actions to save Bazel memory: https://github.com/bazelbuild/bazel/issues/21540#issuecomment-3505368753
@@ -163,7 +167,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
       val targetPatternFile = prepareTargetPatternFile()
-      commandLine.add(BazelFlag.targetPatternFile(targetPatternFile.toString()))
+      commandLine.add(BazelFlag.targetPatternFile(host.toHostPath(targetPatternFile)))
 
       return BazelCommandExecutionDescriptor(
         commandLine,
@@ -173,7 +177,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     fun prepareTargetPatternFile(): Path =
-      createBazelCommandFile(TARGET_PATTERN_FILE, targets.map { it.toString() } + excludedTargets.map { "-$it" })
+      createBazelCommandFile(host, TARGET_PATTERN_FILE, targets.map { it.toString() } + excludedTargets.map { "-$it" })
   }
 
   class Test(bazelBinary: String) :
@@ -281,7 +285,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     private fun excludeManualTargetsQueryString(targetString: String): String =
-      if (SystemInfo.isWindows) {
+      if (host.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
       }
       else {
@@ -378,8 +382,8 @@ abstract class BazelCommand(val bazelBinary: String) {
         return BazelCommandExecutionDescriptor(commandLine, enablePty)
       }
 
-      val queryFile = createBazelCommandFile(QUERY_FILE, listOf(expression))
-      commandLine.add(BazelFlag.queryFile(queryFile.toString()))
+      val queryFile = createBazelCommandFile(host, QUERY_FILE, listOf(expression))
+      commandLine.add(BazelFlag.queryFile(host.toHostPath(queryFile)))
 
       return BazelCommandExecutionDescriptor(
         commandLine,
@@ -409,11 +413,13 @@ private val QUERY_FILE = BazelCommandFile(what = "query", prefix = "query-")
 
 private class BazelCommandFile(val what: String, val prefix: String)
 
-private fun createBazelCommandFile(kind: BazelCommandFile, lines: List<String>): Path {
+private fun createBazelCommandFile(host: BazelHost, kind: BazelCommandFile, lines: List<String>): Path {
   var file: Path? = null
   try {
-    val tmpDir = PathManager.getTempDir().createDirectories()
-    file = Files.createTempFile(tmpDir, kind.prefix, "").also { it.toFile().deleteOnExit() }
+    file = host.createTempFile(kind.prefix, "").also {
+      // The file of another host has no java.io.File, and the plugin deletes it after the command anyway.
+      if (host.isLocal) it.toFile().deleteOnExit()
+    }
     file.writeLines(lines, Charsets.UTF_8, StandardOpenOption.WRITE)
   }
   catch (e: IOException) {

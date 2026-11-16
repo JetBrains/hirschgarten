@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -16,7 +17,6 @@ import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.asLogger
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
-import kotlin.io.path.pathString
 
 /**
  * Runs Bazel commands with proper repository configuration.
@@ -28,6 +28,9 @@ class BazelRunner(
   private val bazelProcessLauncher: BazelProcessLauncher,
   private val bazelBinary: Path,
 ) {
+  /** The environment where Bazel runs, see [BazelHost]. */
+  val host: BazelHost = BazelHost.of(workspaceRoot)
+
   companion object {
     suspend fun create(
       project: Project,
@@ -114,8 +117,9 @@ class BazelRunner(
     inheritProjectviewOptionsOverride: Boolean? = null,
     doBuild: CommandBuilder.() -> BazelCommand,
   ): BazelCommand {
-    val commandBuilder = CommandBuilder(bazelBinary.pathString)
+    val commandBuilder = CommandBuilder(host.toHostPath(bazelBinary))
     val command = doBuild(commandBuilder)
+    command.host = host
 
     if (command.enablePty) {
       command.options.addAll(
@@ -176,6 +180,7 @@ class BazelRunner(
       showStdout,
       outputLogger,
       finishCallback,
+      host,
     ).also {
       BazelLog.write {
         appendLine(argsToString(executionDescriptor.command))

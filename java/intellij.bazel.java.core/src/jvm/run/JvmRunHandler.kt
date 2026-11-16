@@ -17,6 +17,7 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.Nls
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.bazelHost
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
@@ -125,8 +126,10 @@ internal fun getAdditionalJvmRunParameters(environment: ExecutionEnvironment, de
     // https://github.com/bazelbuild/rules_java/blob/747bddd6091a624c54a42c1ac20308190c1ad849/java/bazel/rules/java_stub_template.txt#L23
     this += "--wrapper_script_flag=--debug=$debugPort"
   }
-  this += getJvmDebuggerAgentVmOptions(environment).map { wrapVmOptionAsArg(it) }
-  this += getJvmRunExtensionVmOptions(environment).map { wrapVmOptionAsArg(it) }
+  // The JVM runs in the environment of Bazel, for example in WSL, and the IDE computes these options for its own machine.
+  val host = environment.project.bazelHost
+  this += adaptVmOptionsForHost(host, getJvmDebuggerAgentVmOptions(environment)).map { wrapVmOptionAsArg(it) }
+  this += adaptVmOptionsForHost(host, getJvmRunExtensionVmOptions(environment)).map { wrapVmOptionAsArg(it) }
 }
 
 /**

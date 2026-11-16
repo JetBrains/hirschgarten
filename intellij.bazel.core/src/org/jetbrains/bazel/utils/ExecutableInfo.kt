@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.utils
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
 import java.io.IOException
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.readText
 
@@ -14,6 +14,12 @@ data class ExecutableInfo(
   val args: List<String>,
   val envVars: Map<String, String>,
   val directoriesToCreate: List<Path> = emptyList(),
+  /**
+   * The environment where the executable runs.
+   * [binary], [workingDir] and [directoriesToCreate] are IDE paths.
+   * [args] and [envVars] go to the process, so each path in them is a path of this host. See [BazelHost].
+   */
+  val host: BazelHost = BazelHost.LOCAL,
 ) {
   fun createRequiredDirectories() {
     for (directory in directoriesToCreate) {
@@ -21,7 +27,7 @@ data class ExecutableInfo(
     }
   }
 
-  val testXml: Path? get() = envVars[XML_OUTPUT_FILE]?.let { Path(it) }
+  val testXml: Path? get() = envVars[XML_OUTPUT_FILE]?.let { host.toIdePathAllowingRelative(it) }
 
   companion object {
     /**
@@ -32,10 +38,10 @@ data class ExecutableInfo(
      * The debugger starts the test binary directly, so this function applies the environment changes of the test wrapper.
      */
     @Throws(UnexpectedScriptContentException::class)
-    fun fromBazelRunScript(scriptContent: String): ExecutableInfo {
+    fun fromBazelRunScript(scriptContent: String, host: BazelHost = BazelHost.LOCAL): ExecutableInfo {
       // Bazel 9.2 and earlier write no newline after the last line, later versions write one.
       val content = scriptContent.removeSuffix("\n")
-      val script = if (content.startsWith("#!")) parseBashScript(content) else parseCmdScript(content)
+      val script = if (content.startsWith("#!")) parseBashScript(content, host) else parseCmdScript(content, host)
       return if (TEST_SRCDIR in script.env) script.toTestExecutableInfo() else script.toBinaryExecutableInfo()
     }
   }
@@ -46,7 +52,11 @@ private class ScriptPathContent(
   val env: Map<String, String>,
   val command: List<String>,
   val pathSeparator: Char,
-)
+  val host: BazelHost,
+) {
+  /** Converts a path of the script, which is a path of [host], to an IDE path. */
+  fun idePath(path: String): Path = host.toIdePathAllowingRelative(path)
+}
 
 /**
  * Parses a script of this form:
@@ -59,7 +69,7 @@ private class ScriptPathContent(
  *   <command> "$@"
  * ```
  */
-private fun parseBashScript(content: String): ScriptPathContent {
+private fun parseBashScript(content: String, host: BazelHost): ScriptPathContent {
   val lines = content.lines()
   if (lines.size < 4) throw UnexpectedScriptContentException("Expected at least 4 lines, actual: $lines")
   // lines[0] is `#!/bin/bash`
@@ -73,7 +83,7 @@ private fun parseBashScript(content: String): ScriptPathContent {
       val assignment = words.singleOrNull() ?: throw UnexpectedScriptContentException("Expected one env var per line, actual: $words")
       parseEnvAssignment(assignment)
     }
-  return ScriptPathContent(Path(cdLine[1]), env, parseBashWords(lines.last()).dropLast(1), ':')
+  return ScriptPathContent(host.toIdePathAllowingRelative(cdLine[1]), env, parseBashWords(lines.last()).dropLast(1), ':', host)
 }
 
 private fun parseEnvAssignment(assignment: String): Pair<String, String> {
@@ -92,7 +102,7 @@ private fun parseEnvAssignment(assignment: String): Pair<String, String> {
  *   <command> %*
  * ```
  */
-private fun parseCmdScript(content: String): ScriptPathContent {
+private fun parseCmdScript(content: String, host: BazelHost): ScriptPathContent {
   val lines = content.lines().map { it.trimStart() }
   if (lines.size < 3) throw UnexpectedScriptContentException("Expected at least 3 lines, actual: ${lines.size}")
   // lines[0] is `@echo off`
@@ -103,16 +113,17 @@ private fun parseCmdScript(content: String): ScriptPathContent {
     val (name, value) = parseEnvAssignment(line.removePrefix("SET "))
     if (value.isEmpty()) env.remove(name) else env[name] = value
   }
-  return ScriptPathContent(Path(lines[1].removePrefix("cd /d ")), env, parseCmdWords(lines.last()).dropLast(1), ';')
+  return ScriptPathContent(host.toIdePathAllowingRelative(lines[1].removePrefix("cd /d ")), env, parseCmdWords(lines.last()).dropLast(1), ';', host)
 }
 
 private fun ScriptPathContent.toBinaryExecutableInfo(): ExecutableInfo {
   if (command.isEmpty()) throw UnexpectedScriptContentException("Expected an executable for regular binary.")
   return ExecutableInfo(
-    binary = Path(command[0]),
+    binary = idePath(command[0]),
     workingDir = execRoot,
     args = command.drop(1),
     envVars = env,
+    host = host,
   )
 }
 
@@ -124,18 +135,18 @@ private fun ScriptPathContent.toTestExecutableInfo(): ExecutableInfo {
   val testEnv = env.toMutableMap()
   testEnv["BAZEL_TEST"] = "1"
   for (name in relativePathVarsToResolve) {
-    testEnv.computeIfPresent(name) { _, value -> execRoot.resolve(value).toString() }
+    testEnv.computeIfPresent(name) { _, value -> host.toHostPath(execRoot.resolve(idePath(value))) }
   }
   testEnv.keys.removeAll(varsToUnset)
   testEnv[TEST_TMPDIR]?.let { testEnv["GTEST_TMP_DIR"] = it }
   testEnv["PATH"]?.let { testEnv["PATH"] = ".$pathSeparator$it" }
 
-  val testSrcDir = Path(testEnv.getValue(TEST_SRCDIR))
+  val testSrcDir = idePath(testEnv.getValue(TEST_SRCDIR))
   // A test in an external repository is ../<repo>/<path>
   val runfilePath = if (command[1].startsWith("../")) command[1].removePrefix("../") else "$workspaceName/${command[1]}"
   val binary = if (testEnv["RUNFILES_MANIFEST_ONLY"] == "1") {
     val manifest = testSrcDir.resolve("MANIFEST")
-    testEnv["RUNFILES_MANIFEST_FILE"] = manifest.toString()
+    testEnv["RUNFILES_MANIFEST_FILE"] = host.toHostPath(manifest)
     val manifestContent = try {
       manifest.readText()
     }
@@ -145,7 +156,7 @@ private fun ScriptPathContent.toTestExecutableInfo(): ExecutableInfo {
     // Each manifest line is `<runfile path> <target path>`.
     val target = manifestContent.lines().firstOrNull { it.startsWith("$runfilePath ") }
                  ?: throw UnexpectedScriptContentException("Unable to find $runfilePath in the runfiles manifest $manifest.")
-    Path(target.removePrefix("$runfilePath "))
+    idePath(target.removePrefix("$runfilePath "))
   }
   else {
     testSrcDir.resolve(runfilePath)
@@ -157,11 +168,12 @@ private fun ScriptPathContent.toTestExecutableInfo(): ExecutableInfo {
     args = command.drop(2),  // tests go through the wrapper script, so <wrapper> <binary> arg0 ... argN
     envVars = testEnv,
     directoriesToCreate = listOfNotNull(
-      testEnv[TEST_TMPDIR]?.let { Path(it) },
-      testEnv[TEST_UNDECLARED_OUTPUTS_DIR]?.let { Path(it) },
-      testEnv[TEST_UNDECLARED_OUTPUTS_ANNOTATIONS_DIR]?.let { Path(it) },
-      testEnv[XML_OUTPUT_FILE]?.let { Path(it) }?.parent,
+      testEnv[TEST_TMPDIR]?.let { idePath(it) },
+      testEnv[TEST_UNDECLARED_OUTPUTS_DIR]?.let { idePath(it) },
+      testEnv[TEST_UNDECLARED_OUTPUTS_ANNOTATIONS_DIR]?.let { idePath(it) },
+      testEnv[XML_OUTPUT_FILE]?.let { idePath(it) }?.parent,
     ),
+    host = host,
   )
 }
 

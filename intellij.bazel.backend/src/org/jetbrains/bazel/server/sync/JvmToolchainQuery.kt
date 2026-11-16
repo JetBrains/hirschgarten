@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.ExecUtils
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
@@ -29,7 +29,7 @@ object JvmToolchainQuery {
         .waitAndGetResult()
     if (aqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for jvm toolchain info")
 
-    return parseJavaHomeAndToolchainPathFromAquery(aqueryResult.stdout)
+    return parseJavaHomeAndToolchainPathFromAquery(aqueryResult.stdout, bazelRunner.host)
   }
 
   fun javacMnemonic(target: Label): String = "mnemonic(\"Javac\", \"$target\")"
@@ -38,7 +38,7 @@ object JvmToolchainQuery {
    * Extract java_home, toolchain_path, and jvm_opts from aquery result.
    * Uses -jar as delimiter: everything before -jar are JVM options, everything after are compiler options.
    */
-  private fun parseJavaHomeAndToolchainPathFromAquery(stdout: ByteArray): JvmToolchainInfo {
+  private fun parseJavaHomeAndToolchainPathFromAquery(stdout: ByteArray, host: BazelHost): JvmToolchainInfo {
     val gson = Gson()
     val jsonObject = gson.fromJson(stdout.inputStream().reader(), JsonObject::class.java)
     val actions = jsonObject.getAsJsonArray("actions")
@@ -72,7 +72,7 @@ object JvmToolchainQuery {
     // Extract java_home from first argument
     if (arguments.size() > 0) {
       val javaExec = arguments[0].asString
-      val javaExecName = ExecUtils.calculateExecutableName("java")
+      val javaExecName = host.executableName("java")
       if (javaExec.endsWith("/bin/$javaExecName") || javaExec.endsWith("/$javaExecName")) {
         javaHome = javaExec.substring(0, javaExec.lastIndexOf("/bin/$javaExecName"))
       } else if (javaExec.contains("/bin/$javaExecName")) {

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.debug.platform
 
 import com.intellij.xdebugger.frame.XExecutionStack
 import com.intellij.xdebugger.frame.XStackFrame
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
@@ -9,6 +10,7 @@ internal class StarlarkExecutionStack(
   private val thread: SDP.PausedThread,
   private val valueComputer: StarlarkValueComputer,
   private val evaluatorProvider: StarlarkDebuggerEvaluator.Provider,
+  private val host: BazelHost = BazelHost.LOCAL,
 ) : XExecutionStack("${thread.id}: ${thread.name}") {
   private var topFrame: XStackFrame? = null
 
@@ -28,5 +30,5 @@ internal class StarlarkExecutionStack(
     }
   }
 
-  private fun SDP.Frame.toStackFrame(): StarlarkStackFrame = StarlarkStackFrame(this, thread.id, valueComputer, evaluatorProvider)
+  private fun SDP.Frame.toStackFrame(): StarlarkStackFrame = StarlarkStackFrame(this, thread.id, valueComputer, evaluatorProvider, host)
 }

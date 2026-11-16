@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.server.tasks
 
 import com.intellij.openapi.util.io.FileUtilRt
-import com.intellij.util.system.OS
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.progress.TaskConsole
@@ -38,12 +38,20 @@ class ScriptPathBuildTargetTask(
 
   companion object {
     /** Returns the Bazel flags that make `bazel run` write a script for the target to [scriptPath] instead of running it. */
-    fun scriptPathParams(scriptPath: Path): List<String> = listOf("--script_path=$scriptPath", "--test_sharding_strategy=disabled")
+    fun scriptPathParams(scriptPath: Path): List<String> =
+      // Bazel writes the script, so Bazel gets the path in the form of its own environment.
+      listOf("--script_path=${BazelHost.of(scriptPath).toHostPath(scriptPath)}", "--test_sharding_strategy=disabled")
 
-    fun createTempScriptFile(): Path {
+    /**
+     * Creates the file for the script of `bazel run --script_path`.
+     * Bazel writes the script, and then the IDE starts it in the environment of Bazel.
+     * So the file is in a directory of [host], and the kind of the script follows the system of [host].
+     */
+    fun createTempScriptFile(host: BazelHost = BazelHost.LOCAL): Path {
       // on Windows, the only way to have an executable script is to have a
       // .bat file, but on unix the extension doesn't matter
-      val suffix = if (OS.CURRENT == OS.Windows) ".bat" else ""
+      val suffix = if (host.isWindows) ".bat" else ""
+      if (!host.isLocal) return host.createTempFile("bazel-script-", suffix)
       return Files.createTempFile(Paths.get(FileUtilRt.getTempDirectory()), "bazel-script-", suffix)
         .also { it.toFile().deleteOnExit() }
     }

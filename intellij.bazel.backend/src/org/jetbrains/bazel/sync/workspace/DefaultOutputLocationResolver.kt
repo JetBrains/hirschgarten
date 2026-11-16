@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.workspace
 
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.LocalRepositoryMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -12,12 +13,12 @@ import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.toExecrootPath
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 @ApiStatus.Internal
 open class DefaultOutputLocationResolver private constructor(
   private val bazelInfo: BazelInfo,
 ) : OutputLocationResolver {
+  private val host = BazelHost.of(bazelInfo.workspaceRoot)
 
   companion object {
     fun createLocalWorkspaceOnly(bazelInfo: BazelInfo, repoMapping: RepoMapping): OutputLocationResolver =
@@ -49,7 +50,8 @@ open class DefaultOutputLocationResolver private constructor(
     localOverride: LocalRepositoryMapping?,
   ): Path? = try {
     val resolved = when (location) {
-      is OutputLocation.Host -> Path(location.absolutePath)
+      // Bazel prints this path in the form of its own environment
+      is OutputLocation.Host -> host.toIdePathAllowingRelative(location.absolutePath)
       is OutputLocation.Workspace -> bazelInfo.workspaceRoot.resolve(location.relativePath)
       is OutputLocation.Output -> bazelInfo.execRoot.resolve(location.toExecrootPath())
       is OutputLocation.External -> resolveExternal(location, localOverride)

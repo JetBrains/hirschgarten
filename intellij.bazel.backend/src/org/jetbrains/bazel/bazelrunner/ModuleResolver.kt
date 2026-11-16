@@ -331,7 +331,7 @@ class ModuleResolver(
   }
 
   private fun batchModules(modules: List<String>): List<List<String>> {
-    if (OS.CURRENT != OS.Windows) return modules.chunked(BATCH_SIZE_COUNT_POSIX)
+    if (!bazelRunner.host.isWindows) return modules.chunked(BATCH_SIZE_COUNT_POSIX)
     val batches = mutableListOf<List<String>>()
     var currentBatch = mutableListOf<String>()
     var currentBatchSize = 0

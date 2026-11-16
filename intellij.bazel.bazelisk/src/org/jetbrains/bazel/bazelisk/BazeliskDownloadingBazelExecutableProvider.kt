@@ -13,7 +13,13 @@ import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.sha256Hex
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
+import com.intellij.platform.eel.provider.toEelApi
+import com.intellij.platform.eel.provider.utils.EelSystemFolderUtils
+import com.intellij.platform.eel.provider.utils.toCpuArch
+import com.intellij.platform.eel.provider.utils.toOs
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
+import org.jetbrains.bazel.commons.bazelHost
 import org.jetbrains.bazel.sync.BazelEnvironmentService
 import org.jetbrains.bazel.sync.environment.BazelApplicationContextService
 import org.jetbrains.bazel.sync.environment.BazeliskDownload
@@ -39,28 +45,46 @@ private val RETRY_BACKOFF = 2.seconds
  */
 internal class BazeliskDownloadingBazelExecutableProvider : BazelExecutableProvider {
   override suspend fun computeBazelExecutable(project: Project): Path? {
-    val forcedFile = service<BazelApplicationContextService>().forcedBazeliskDownload.bazeliskFile(OS.CURRENT, CpuArch.CURRENT)
+    // Bazelisk runs in the environment of the project, which is not the machine of the IDE for a WSL project.
+    val host = project.bazelHost
+    val (os, arch) = if (host.isLocal) {
+      OS.CURRENT to CpuArch.CURRENT
+    }
+    else {
+      val platform = host.descriptor.toEelApi().platform
+      platform.toOs() to platform.arch.toCpuArch()
+    }
+    val forcedFile = service<BazelApplicationContextService>().forcedBazeliskDownload.bazeliskFile(os, arch)
     if (forcedFile == null) {
       val inPath = BazelEnvironmentService.getInstance(project).findInPath("bazel", "bazelisk")
       if (inPath != null)
         return inPath
     }
-    val bazeliskFile = forcedFile ?: BazeliskDownload.GitHub.bazeliskFile(OS.CURRENT, CpuArch.CURRENT) ?: run {
+    val bazeliskFile = forcedFile ?: BazeliskDownload.GitHub.bazeliskFile(os, arch) ?: run {
       log.error("Unsupported platform or architecture for bazelisk download")
       return null
     }
     return withContext(Dispatchers.IO) {
-      downloadBazelisk(project, bazeliskFile)
+      downloadBazelisk(project, bazeliskFile, host)
     }
   }
 
   @Suppress("BlockingMethodInNonBlockingContext")
-  private suspend fun downloadBazelisk(project: Project, file: BazeliskDownload.BazeliskFile): Path? {
+  private suspend fun downloadBazelisk(project: Project, file: BazeliskDownload.BazeliskFile, host: BazelHost): Path? {
     val expectedSha256 = file.sha256
     val downloadUrl = file.url
 
-    // Use IntelliJ's system cache directory
-    val cacheDir = Path.of(PathManager.getSystemPath(), "bazel-plugin")
+    // Use the system cache directory of the IDE. For another environment, the IDE keeps such a directory there,
+    // because a process in that environment must be able to run the file.
+    val cacheDir = try {
+      val systemDir = if (host.isLocal) Path.of(PathManager.getSystemPath()) else EelSystemFolderUtils.getSystemFolder(host.descriptor)
+      systemDir.resolve("bazel-plugin")
+    }
+    catch (e: Exception) {
+      rethrowControlFlowException(e)
+      log.error("Could not find the cache directory", e)
+      return null
+    }
     try {
       Files.createDirectories(cacheDir)
     }
