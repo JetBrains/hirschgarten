@@ -212,7 +212,10 @@ internal class BazelBzlModExternalRulesetsQueryImpl(
             val diagnostics =
               DiagnosticsService(bazelRunner.workspaceRoot)
                 .extractDiagnostics(result.stderrLines, target, taskId, isCommandLineFormattedOutput = true)
-            diagnostics.forEach { taskEventsHandler.onBuildPublishDiagnostics(it) }
+            // Given the state of BCR, it is normal that asking for the module graph we find modules with ill-formed definitions, and
+            // users seem to accept it. As bazel still outputs the part it could understand we have all we need to analyze the well-formed
+            // part of the project. So let's demote all errors to warnings here (BAZEL-3827).
+            diagnostics.forEach { taskEventsHandler.onBuildPublishDiagnostics(it.copy(diagnostics = it.diagnostics.map {it.demoteErrors()})) }
           }
           // best effort to parse the output even when there are errors
           try {
