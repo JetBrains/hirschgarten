@@ -1,119 +1,115 @@
 load("@community//build:jps_module.bzl", "jps_module")
-load("@community//build:tests-options.bzl", "jps_test")
-load("@community//plugins/kotlin:kotlin_test_dependencies.bzl", "all_test_dep_targets")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load(":test_defs.bzl", "CC_TEST_DEPS", "CC_TEST_RUNTIME_DEPS", "cc_test")
 
-jps_test(
-    name = "pluginTests.clion_test",
-    data = all_test_dep_targets,
-    env_inherit = ["RESHARPER_HOST_BIN"],
-    runtime_deps = [":pluginTests.clion_test_lib"],
-)
+# The CLion tests run only with Bazel. See README.md. Iml file only exists for code insight.
+### skip generation section `build intellij.bazel.pluginTests.clion`
 ### skip generation section `test intellij.bazel.pluginTests.clion`
 
-### auto-generated section `build intellij.bazel.pluginTests.clion` start
-resourcegroup(
-    name = "pluginTests.clion_test_resources",
-    srcs = glob(
-        ["testData/**/*"],
-    ),
-    strip_prefix = "testData",
-)
-
+# The code that all the tests share. Each `cc_test` associates it. The name is the one that the generator derives.
 jvm_library(
     name = "pluginTests.clion_test_lib",
     testonly = True,
-    srcs = glob(
-        [
-            "test/**/*.kt",
-            "test/**/*.java",
-            "test/**/*.form",
-        ],
-        allow_empty = True,
-    ),
+    srcs = glob(["framework/*.kt"]),
     module_name = "intellij.bazel.pluginTests.clion",
-    resource_jars = [":pluginTests.clion_test_resources"],
     resource_strip_prefix = "testResources",
-    resources = glob(
-        ["testResources/**/*"],
-    ),
+    resources = glob(["testResources/**/*"]),
     visibility = ["//visibility:public"],
-    runtime_deps = [
-        # do not sort,
-        "//CIDR/clion-radler",
-        "//CIDR/clion-runFile/nova",
-        "//CIDR/clion-radler/testFramework/junit5",
-        "//rider/rdclient-dotnet",
-        "//rider/model/generated",
-        "//CIDR/clion-radler/testing",
-        "//CIDR/clion-radler/core",
-        "@community//json/plugin",
-        "@community//plugins/yaml/plugin",
-        "//CIDR/clion-test-google/nova",
-        "//CIDR/clion-test-catch/nova",
-    ],
-    deps = [
-        # do not sort,
-        "//plugins/bazel/pluginTests:pluginTests_test_lib",
-        "@lib//:kotlin-stdlib",
-        "//CIDR/nativeDebug/plugin",
-        "//CIDR/clion",
-        "//CIDR/cidr-projectModel",
-        "//CIDR/cidr-psi-base",
-        "//CIDR/clion-testFramework-nolang/junit5/core",
-        "@community//platform/analysis-api:analysis",
-        "@community//platform/core-api:core",
-        "@community//platform/core-impl",
-        "@community//platform/lang-api:lang",
-        "@community//platform/lang-impl",
-        "@community//platform/buildView",
-        "@community//platform/testFramework",
-        "@community//platform/testFramework/junit5",
-        "@community//platform/projectModel-impl",
-        "@community//platform/workspace/storage",
-        "@community//libraries/assertj-core",
-        "//plugins/bazel/intellij.bazel.commons:commons",
-        "//plugins/bazel/intellij.bazel.backend:backend",
-        "//plugins/bazel/intellij.bazel.core:core",
-        "//plugins/bazel/intellij.bazel.languages:languages",
-        "//plugins/bazel/clion/intellij.bazel.clion.common:bazel-clion-common",
-        "//plugins/bazel/clion/intellij.bazel.clion.core:bazel-clion-core",
-        "//plugins/bazel/clion/intellij.bazel.clion.shared:bazel-clion-shared",
-        "@community//libraries/junit6",
-        "@community//libraries/junit6-params",
-        "@community//platform/execution",
-        "@community//platform/smRunner",
-        "@community//platform/ide-core",
-        "@community//platform/testRunner",
-        "//CIDR/clion-testFramework-nolang/junit5/debugger",
-        "//CIDR/cidr-common-testFramework/nolang",
-        "//CIDR/clion-execution",
-        "//CIDR/cidr-debugger/core",
-        "@community//platform/xdebugger-api:debugger",
-        "@community//platform/xdebugger-testFramework:debugger-testFramework",
-        "//CIDR/cidr-runner",
-        "//CIDR/cidr-debugger/backend-api:cidr-debugger-backend",
-        "//CIDR/cidr-debugger/profiles/backend",
-        "//CIDR/cidr-debugger/dap",
-        "@community//platform/xdebugger-impl:debugger-impl",
-        "@community//platform/projectModel-api:projectModel",
-        "//plugins/bazel/clion/intellij.bazel.clion.test.google:bazel-clion-test-google",
-        "//plugins/bazel/clion/intellij.bazel.clion.test.catch:bazel-clion-test-catch",
-        "//CIDR/cidr-execution",
-        "@community//libraries/rd/core",
-        "@community//libraries/rd/framework",
-        "@community//platform/execution-impl",
-        "@community//platform/consoleView",
-        "@community//platform/core-ui",
-        "@community//platform/util:util-ui",
-        "@community//platform/editor-ui-api:editor-ui",
-        "//CIDR/clion-test-google",
-        "//CIDR/clion-test-catch",
-        "@community//platform/scratch/plugin",
-        "//CIDR/cidr-lang-base",
+    runtime_deps = CC_TEST_RUNTIME_DEPS,
+    deps = CC_TEST_DEPS,
+)
+
+cc_test(test = "ArmToolchainTest.kt")
+
+cc_test(test = "BazelCLionSmokeTest.kt")
+
+cc_test(test = "CatchTestSupportTest.kt")
+
+cc_test(test = "CcCompilerSettingsTest.kt")
+
+cc_test(test = "CcCoptsTest.kt")
+
+cc_test(test = "CcDebugInfoCheckTest.kt")
+
+cc_test(test = "CcDebugInfoDialogTest.kt")
+
+cc_test(test = "CcDebugInfoPromptTest.kt")
+
+cc_test(test = "CcDebugTargetInfoTest.kt")
+
+cc_test(test = "CcDebugTest.kt")
+
+cc_test(test = "CcEquivalenceClassesTest.kt")
+
+cc_test(test = "CcFileToTargetMapTest.kt")
+
+cc_test(test = "CcForcedRunHandlerTest.kt")
+
+cc_test(test = "CcHeaderLanguageTest.kt")
+
+cc_test(test = "CcHeaderOwnershipTest.kt")
+
+cc_test(test = "CcImportTest.kt")
+
+cc_test(test = "CcLocalToolchainTest.kt")
+
+cc_test(test = "CcGeneratedToolchainTest.kt")
+
+cc_test(test = "CcResyncTest.kt")
+
+cc_test(test = "CcNewFileTest.kt")
+
+cc_test(test = "CcResolveConfigurationDisplayNameProviderTest.kt")
+
+cc_test(test = "CcRunConfigurationProducerTest.kt")
+
+cc_test(test = "CcDebugSessionChooserTest.kt")
+
+cc_test(test = "CcTestExplorationTest.kt")
+
+cc_test(test = "CcTestTreeTest.kt")
+
+cc_test(test = "CcToolchainMapTest.kt")
+
+cc_test(test = "CcUnresolvedImportCheckerTest.kt")
+
+cc_test(test = "ClionBazelFixtureTimeoutTest.kt")
+
+cc_test(test = "ExecutionTest.kt")
+
+cc_test(test = "ForeignCCTest.kt")
+
+cc_test(test = "GeneratedSourcesTest.kt")
+
+cc_test(test = "GoogleTestSupportTest.kt")
+
+cc_test(test = "GutterTest.kt")
+
+cc_test(test = "HardlinkIncludeDirsTest.kt")
+
+cc_test(test = "LlvmToolchainTest.kt")
+
+cc_test(test = "MixedImportTest.kt")
+
+cc_test(test = "MSVCEnvironmentUtilTest.kt")
+
+cc_test(test = "TargetCompatibleTest.kt")
+
+cc_test(test = "TransitionTest.kt")
+
+cc_test(test = "VirtualIncludesTest.kt")
+
+# all the test targets of this package, used by TeamCity
+test_suite(name = "pluginTests.clion_test")
+
+# all projcet test targets of this, slower and only supposed to run manually atm
+test_suite(
+    name = "pluginTests.clion_project_test",
+    tags = ["manual"],
+    tests = [
+        ":WorkerdTest",
     ],
 )
-### auto-generated section `build intellij.bazel.pluginTests.clion` end
 
 ### auto-generated section `iml intellij.bazel.pluginTests.clion` start
 jps_module(
