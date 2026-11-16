@@ -18,8 +18,6 @@ import org.jetbrains.bazel.test.framework.writeProjectView
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-private const val FREEZE_TIMEOUT_PROPERTY = "patch.engine.backend.freeze.timeout"
-
 /**
  * Opens the Bazel test project at [projectPath], runs a real `performBazelSync`, brings up the CLion
  * Nova (Radler) backend, and returns the ready [Project].
@@ -48,18 +46,6 @@ internal fun clionBazelProjectFixture(
   jvmToolchains: Boolean = false,
   configure: ProjectViewBuilder.() -> Unit = {},
 ): TestFixture<Project> = testFixture {
-  testFixture(debugString = "backendFreezeTimeout") {
-    val oldValue = System.setProperty(FREEZE_TIMEOUT_PROPERTY, "-1")
-    initialized(Unit) {
-      if (oldValue == null) {
-        System.clearProperty(FREEZE_TIMEOUT_PROPERTY)
-      }
-      else {
-        System.setProperty(FREEZE_TIMEOUT_PROPERTY, oldValue)
-      }
-    }
-  }.init()
-
   val projectView = ProjectViewBuilder().addDirectories(".").apply(configure).build()
 
   val project = setUpClionBazelProject(
