@@ -569,8 +569,16 @@ interface IdeFatalError {
   fun getThrowableText(): String
 }
 
+// TODO(BAZEL-3835): replace buildViewLookup with the platform helper IdeaFrameUI.buildToolWindow()
+fun UiComponent.buildViewLookup(): UiComponent = x {
+  or(
+    byType("com.intellij.build.BuildView"),
+    byType("com.intellij.platform.buildView.frontend.FrontendBuildView"),
+  )
+}
+
 fun UiComponent.waitForSyncSucceeded(timeout: Duration = 2.minutes) {
-  val buildView = x { byType("com.intellij.build.BuildView") }
+  val buildView = buildViewLookup()
   val syncSuccessText = BazelBackendBundle.message("console.task.sync.success")
   buildView.waitOneText(message = "Waiting for Bazel sync to finish", timeout = timeout) {
     it.text.contains(syncSuccessText)

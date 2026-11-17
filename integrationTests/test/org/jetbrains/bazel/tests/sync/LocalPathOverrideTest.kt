@@ -14,6 +14,7 @@ import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
@@ -60,7 +61,7 @@ class LocalPathOverrideTest : IdeStarterBaseProjectTest() {
           step("BUILD file should contain build target") {
             editorTabs().gutter().getGutterIcons().first { it.getIconPath().contains("build") }.click()
             takeScreenshot("After library build started")
-            val buildView = x { byType("com.intellij.build.BuildView") }
+            val buildView = buildViewLookup()
             buildView.waitContainsText("Build completed successfully", timeout = 60.seconds)
             takeScreenshot("afterBuildCompleted")
             // double check we actually built the correct single target

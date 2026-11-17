@@ -38,6 +38,7 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.base.assertSyncedTargets
 import org.jetbrains.bazel.base.buildAndSync
+import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.syncBazelProject
@@ -111,7 +112,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
           .gutter()
           .clickOnIcon(12)
         takeScreenshot("afterTriggerBuild")
-        val buildView = x { byType("com.intellij.build.BuildView") }
+        val buildView = buildViewLookup()
         waitFor(
           message = "Build console should show the end of the build with the escape sequences interpreted",
           timeout = 2.minutes,
