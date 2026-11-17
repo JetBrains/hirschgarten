@@ -85,6 +85,24 @@ private class CcCidrLauncher(private val environment: ExecutionEnvironment, priv
       // on macos the debugger resolves debug symbols relative to the working directory
       debugProfile = debugProfile.withDapWorkingDir(executionRoot)
     }
+    else {
+      // On other platforms, Bazel can force a compiler to replace the real prefixes of source
+      // file paths with /proc/self/cwd.
+      // E.g. /home/user/project/main.c becomes /proc/self/cwd/main.c in DWARF
+      //
+      // After that, an attempt to run lldb-dap in /home/user/project and set a breakpoint
+      // using a relative path (such as "main.c") results in LLDB successfully finding the file in
+      // /home/user/project and deciding that the absolute path for this file is now
+      // /home/user/project/main.c
+      //
+      // If this happens, LLDB cannot resolve the breakpoint because it starts searching for
+      // /home/user/project/main.c in DWARF while DWARF only knows about /proc/self/cwd/main.c.
+      //
+      // So, the workaround is to run the adapter in a directory where it cannot find source files
+      // by appending their relative paths to cwd. In this case, LLDB is not sure about the
+      // absolute path, so it applies various heuristics that find the file in DWARF successfully.
+      debugProfile = debugProfile.withDapWorkingDir(executionInfo.workingDir)
+    }
 
     val debugDriver = debugProfile.createDriverConfiguration(
       project = project,
