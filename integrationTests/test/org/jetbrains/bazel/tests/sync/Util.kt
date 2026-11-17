@@ -8,6 +8,7 @@ import com.intellij.driver.sdk.wait
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.types.shouldBeInstanceOf
+import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.config.BazelBackendBundle
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
@@ -18,7 +19,7 @@ fun Driver.verifyNoSyncOnReopen() {
       val start = TimeSource.Monotonic.markNow()
       while (TimeSource.Monotonic.markNow() - start < 20.seconds) {
         try {
-          val buildView = x { byType("com.intellij.build.BuildView") }
+          val buildView = buildViewLookup()
           withClue("Build view contains sync text") {
             buildView
               .getAllTexts()

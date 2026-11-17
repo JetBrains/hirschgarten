@@ -13,6 +13,7 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.base.failIfFatalIdeErrorsPresent
 import org.jetbrains.bazel.base.findFile
 import org.jetbrains.bazel.base.openFile
@@ -82,7 +83,7 @@ private fun partialResyncConsoleText(targetCount: Int): String =
 
 private fun IdeaFrameUI.waitForPartialResync(phase: String, targetCount: Int) {
   val expected = partialResyncConsoleText(targetCount)
-  x { byType("com.intellij.build.BuildView") }
+  buildViewLookup()
     .should("The sync console reports '$expected' after $phase", 5.minutes) {
       getAllTexts().any { it.text.contains(expected) }
     }

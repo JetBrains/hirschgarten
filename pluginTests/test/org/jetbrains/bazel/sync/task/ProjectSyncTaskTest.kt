@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.task
 
 import com.intellij.internal.statistic.FUCollectorTestCase
+import com.intellij.testFramework.junit5.RegistryKey
 import io.kotest.matchers.collections.shouldBeUnique
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -42,6 +43,8 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.util.concurrent.CancellationException
 
 @BazelTestApplication
+// TODO(BAZEL-3837): workaround, remove this key when the split Build view releases its editors
+@RegistryKey(key = "build.toolwindow.split", value = "false")
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest {
   private val testBazel by testBazelProjectFixture()
