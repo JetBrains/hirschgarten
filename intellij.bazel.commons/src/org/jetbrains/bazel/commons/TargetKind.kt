@@ -15,8 +15,6 @@
  */
 package org.jetbrains.bazel.commons
 
-import org.jetbrains.annotations.ApiStatus
-
 /**
  * A set of recognized bazel rule names, together with [LanguageClass] and [RuleType].
  * Language-specific extensions can provide their own set of rule names, as well as heuristics to
@@ -25,7 +23,6 @@ import org.jetbrains.annotations.ApiStatus
  *
  * Each rule name maps to at most one Kind.
  */
-@ApiStatus.Internal
 data class TargetKind(
   val kind: String,
   val languageClasses: Set<LanguageClass> = emptySet(),

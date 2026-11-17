@@ -34,6 +34,7 @@ f:org.jetbrains.bazel.sync.ProjectPostSyncHook$ProjectPostSyncHookEnvironment
 - f:getProgressReporter():com.intellij.platform.util.progress.SequentialProgressReporter
 - f:getProject():com.intellij.openapi.project.Project
 - f:getProjectModelUpdated():Z
+- f:getTaskId():org.jetbrains.bsp.protocol.TaskId
 - hashCode():I
 org.jetbrains.bazel.sync.ProjectPreSyncHook
 - sf:Companion:org.jetbrains.bazel.sync.ProjectPreSyncHook$Companion
@@ -84,3 +85,42 @@ f:org.jetbrains.bazel.sync.status.SyncStatusListener$Companion
 - f:getTOPIC():com.intellij.util.messages.Topic
 f:org.jetbrains.bazel.sync.status.SyncStatusServiceKt
 - sf:isSyncInProgress(com.intellij.openapi.project.Project):Z
+f:org.jetbrains.bazel.target.api.BuildTargetApi
+- sf:Companion:org.jetbrains.bazel.target.api.BuildTargetApi$Companion
+- <init>(com.intellij.openapi.project.Project):V
+- sf:getInstance(com.intellij.openapi.project.Project):org.jetbrains.bazel.target.api.BuildTargetApi
+- f:getSyncedTargets():java.util.List
+f:org.jetbrains.bazel.target.api.BuildTargetApi$Companion
+- f:getInstance(com.intellij.openapi.project.Project):org.jetbrains.bazel.target.api.BuildTargetApi
+f:org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+- com.intellij.platform.workspace.storage.EntitySource
+- sf:INSTANCE:org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
+- equals(java.lang.Object):Z
+- hashCode():I
+org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity
+- com.intellij.platform.workspace.storage.WorkspaceEntity
+- a:getCompilerVersion():java.lang.String
+- a:getModule():com.intellij.platform.workspace.jps.entities.ModuleEntity
+- a:getScalacOptions():java.util.List
+- a:getSdkClasspaths():java.util.List
+org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder
+- com.intellij.platform.workspace.storage.WorkspaceEntity$Builder
+- a:getCompilerVersion():java.lang.String
+- a:getEntitySource():com.intellij.platform.workspace.storage.EntitySource
+- a:getModule():com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder
+- a:getScalacOptions():java.util.List
+- a:getSdkClasspaths():java.util.List
+- a:setCompilerVersion(java.lang.String):V
+- a:setEntitySource(com.intellij.platform.workspace.storage.EntitySource):V
+- a:setModule(com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder):V
+- a:setScalacOptions(java.util.List):V
+- a:setSdkClasspaths(java.util.List):V
+f:org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityKt
+- sf:getScalaAddendumEntity(com.intellij.platform.workspace.jps.entities.ModuleEntity):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity
+f:org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityModifications
+- sf:createScalaAddendumEntity(java.lang.String,java.util.List,java.util.List,com.intellij.platform.workspace.storage.EntitySource):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder
+- sf:createScalaAddendumEntity(java.lang.String,java.util.List,java.util.List,com.intellij.platform.workspace.storage.EntitySource,kotlin.jvm.functions.Function1):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder
+- bs:createScalaAddendumEntity$default(java.lang.String,java.util.List,java.util.List,com.intellij.platform.workspace.storage.EntitySource,kotlin.jvm.functions.Function1,I,java.lang.Object):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder
+- sf:getScalaAddendumEntity(com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder
+- sf:modifyScalaAddendumEntity(com.intellij.platform.workspace.storage.MutableEntityStorage,org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity,kotlin.jvm.functions.Function1):org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity
+- sf:setScalaAddendumEntity(com.intellij.platform.workspace.jps.entities.ModuleEntityBuilder,org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntityBuilder):V

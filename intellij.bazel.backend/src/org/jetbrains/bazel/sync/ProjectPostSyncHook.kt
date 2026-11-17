@@ -41,7 +41,6 @@ interface ProjectPostSyncHook {
    */
   data class ProjectPostSyncHookEnvironment(
     val project: Project,
-    @ApiStatus.Internal
     val taskId: TaskId,
     val progressReporter: SequentialProgressReporter,
     val projectModelUpdated: Boolean,
