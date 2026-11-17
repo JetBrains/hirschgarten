@@ -26,6 +26,9 @@ class StarlarkParsingStatementTest {
   fun testBreak() = parsing.doTest(true)
 
   @Test
+  fun testColonAtLineEndInBrackets() = parsing.doTest(true)
+
+  @Test
   fun testComments() = parsing.doTest(true)
 
   @Test

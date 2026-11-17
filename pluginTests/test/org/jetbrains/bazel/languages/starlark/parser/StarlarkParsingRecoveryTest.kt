@@ -14,7 +14,13 @@ class StarlarkParsingRecoveryTest {
   private val parsing by starlarkParsingFixture(project, "recovery")
 
   @Test
+  fun testArgumentsWithWrongCloser() = parsing.doTest(true)
+
+  @Test
   fun testArgumentsWithoutComma() = parsing.doTest(true)
+
+  @Test
+  fun testArgumentsWithoutCommaAtLineEnd() = parsing.doTest(true)
 
   @Test
   fun testArgumentsWithoutCommaBeforeNamedArgument() = parsing.doTest(true)
@@ -50,6 +56,9 @@ class StarlarkParsingRecoveryTest {
   fun testDictWithoutValue() = parsing.doTest(true)
 
   @Test
+  fun testExtraClosingBracket() = parsing.doTest(true)
+
+  @Test
   fun testForWithoutIn() = parsing.doTest(true)
 
   @Test
@@ -77,13 +86,22 @@ class StarlarkParsingRecoveryTest {
   fun testIfWithoutCondition() = parsing.doTest(true)
 
   @Test
+  fun testInconsistentDedentWithSameIndentLines() = parsing.doTest(true)
+
+  @Test
   fun testLambdaWithoutColon() = parsing.doTest(true)
+
+  @Test
+  fun testListClosedByParenthesis() = parsing.doTest(true)
 
   @Test
   fun testListWithoutComma() = parsing.doTest(true)
 
   @Test
   fun testListWithoutCommaBetweenStrings() = parsing.doTest(true)
+
+  @Test
+  fun testLoadValueBytes() = parsing.doTest(true)
 
   @Test
   fun testLoadValueNotString() = parsing.doTest(true)
@@ -122,22 +140,70 @@ class StarlarkParsingRecoveryTest {
   fun testStarArgumentWithoutValue() = parsing.doTest(true)
 
   @Test
+  fun testStrayKeywordBeforeUnclosedCall() = parsing.doTest(true)
+
+  @Test
+  fun testStrayTokenBeforeStatement() = parsing.doTest(true)
+
+  @Test
   fun testUnclosedArgumentList() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedBracketInHeaderBeforeBody() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallBeforeComment() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallBeforeDefAndStrayCloser() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallBeforeReturn() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallBeforeStatements() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallBeforeStrayCloser() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallInIfHeader() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedCallWithTrailingComma() = parsing.doTest(true)
 
   @Test
   fun testUnclosedDict() = parsing.doTest(true)
 
   @Test
+  fun testUnclosedDictBeforeIf() = parsing.doTest(true)
+
+  @Test
   fun testUnclosedList() = parsing.doTest(true)
 
   @Test
+  fun testUnclosedListBeforeAssignment() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedListBeforeIf() = parsing.doTest(true)
+
+  @Test
   fun testUnclosedListInCall() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedListInForHeader() = parsing.doTest(true)
 
   @Test
   fun testUnclosedLoad() = parsing.doTest(true)
 
   @Test
   fun testUnclosedParameters() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedParametersInDefHeader() = parsing.doTest(true)
+
+  @Test
+  fun testUnclosedParametersWithoutCommaBeforeColon() = parsing.doTest(true)
 
   @Test
   fun testUnclosedSlice() = parsing.doTest(true)
@@ -147,4 +213,7 @@ class StarlarkParsingRecoveryTest {
 
   @Test
   fun testUnexpectedIndent() = parsing.doTest(true)
+
+  @Test
+  fun testUnexpectedTokenAtStatementStart() = parsing.doTest(true)
 }

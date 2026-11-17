@@ -19,6 +19,39 @@ object StarlarkTokenSets {
 
   val WHITESPACE_AND_COMMENTS = TokenSet.orSet(WHITESPACE, COMMENT)
 
+  /**
+   * The keywords that can only start a statement or a clause and cannot be inside brackets (`[` `(` or `{`) in valid code.
+   * `if`, `else` and `for` are not here, because an expression can hold them, as in `[x for x in y if x]`.
+   * This set partially overlaps with [COMPOUND_STATEMENT_KEYWORDS] on purpose, because the two sets have different uses.
+   * Some of these keywords, `def` and `elif`, also start a compound statement when a `:` comes after them.
+   */
+  val KEYWORDS_OUTSIDE_BRACKETS =
+    TokenSet.create(
+      StarlarkTokenTypes.BREAK_KEYWORD,
+      StarlarkTokenTypes.CONTINUE_KEYWORD,
+      StarlarkTokenTypes.DEF_KEYWORD,
+      StarlarkTokenTypes.ELIF_KEYWORD,
+      StarlarkTokenTypes.LOAD_KEYWORD,
+      StarlarkTokenTypes.PASS_KEYWORD,
+      StarlarkTokenTypes.RETURN_KEYWORD,
+    )
+
+  /**
+   * The keywords that can start a compound statement (or one of its clauses) when a `:` comes after them, as in `if x:`.
+   * This set partially overlaps with [KEYWORDS_OUTSIDE_BRACKETS] on purpose, because the two sets have different uses.
+   * Some of these keywords, `def` and `elif`, also cannot be inside brackets in valid code.
+   */
+  val COMPOUND_STATEMENT_KEYWORDS =
+    TokenSet.create(
+      StarlarkTokenTypes.DEF_KEYWORD,
+      StarlarkTokenTypes.ELIF_KEYWORD,
+      StarlarkTokenTypes.ELSE_KEYWORD,
+      StarlarkTokenTypes.FOR_KEYWORD,
+      StarlarkTokenTypes.IF_KEYWORD,
+    )
+
+  val SPACES_AND_TABS = TokenSet.create(StarlarkTokenTypes.SPACE, StarlarkTokenTypes.TAB)
+
   val STRINGS = TokenSet.create(StarlarkTokenTypes.STRING, StarlarkTokenTypes.BYTES)
 
   val OPEN_BRACKETS = TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LBRACE, StarlarkTokenTypes.LPAR)
@@ -67,6 +100,18 @@ object StarlarkTokenSets {
       StarlarkTokenTypes.TRUE_KEYWORD,
       StarlarkTokenTypes.FALSE_KEYWORD,
     )
+
+  /**
+   * The tokens that start an operand: a name, a number, a string, `None`, `True` or `False`.
+   * An open bracket is not here, because after an expression it starts a call or an index, as in `f(x)`.
+   */
+  val OPERAND_STARTS = TokenSet.andNot(PRIMARY_EXPRESSION_STARTERS, OPEN_BRACKETS)
+
+  /**
+   * The tokens that can end an expression: an operand or a closing bracket.
+   * An operand right after one of them, on the next line, starts a new statement, as `y` in `x = f(a⏎y = 2`.
+   */
+  val EXPRESSION_ENDS = TokenSet.orSet(OPERAND_STARTS, CLOSE_BRACKETS)
 
   val ENDS_OF_STATEMENT = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)
 

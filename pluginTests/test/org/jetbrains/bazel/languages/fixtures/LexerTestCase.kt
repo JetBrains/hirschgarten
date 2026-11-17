@@ -54,6 +54,9 @@ abstract class LexerTestCase {
           }
 
           if (idx < expectedTokens.size) fail<Unit>("Not enough tokens")
+          withClue("The tokens end before the text end") {
+            tokenPos shouldBeEqual code.length
+          }
         }
       }
     }

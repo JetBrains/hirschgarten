@@ -1,0 +1,33 @@
+FILE
+  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)('f')
+    PsiElement(def)('def')
+    PsiWhiteSpace(' ')
+    PsiElement(identifier)('f')
+    StarlarkParameterList(PARAMETER_LIST)
+      PsiElement(()('(')
+      StarlarkMandatoryParameter(MANDATORY_PARAMETER)('a')
+        PsiElement(identifier)('a')
+      PsiElement(,)(',')
+      PsiWhiteSpace('\n      ')
+      StarlarkMandatoryParameter(MANDATORY_PARAMETER)('b')
+        PsiElement(identifier)('b')
+      PsiErrorElement:',' or '(' or ')' expected
+        <empty list>
+    PsiWhiteSpace('\n      ')
+    StarlarkStatementList(STATEMENT_LIST)
+      StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+        StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+          PsiElement(identifier)('c')
+        PsiErrorElement:End of statement expected
+          <empty list>
+      PsiElement(:)(':')
+      PsiErrorElement:Statement expected, found :
+        <empty list>
+      PsiErrorElement:Unindent does not match any outer indentation level
+        <empty list>
+  PsiWhiteSpace('\n    ')
+  StarlarkReturnStatement(RETURN_STATEMENT)
+    PsiElement(return)('return')
+    PsiWhiteSpace(' ')
+    StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(integer)('1')
