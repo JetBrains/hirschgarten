@@ -3,12 +3,12 @@ package org.jetbrains.bazel.tests.sync
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.buildToolWindow
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.wait
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.config.BazelBackendBundle
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
@@ -19,7 +19,7 @@ fun Driver.verifyNoSyncOnReopen() {
       val start = TimeSource.Monotonic.markNow()
       while (TimeSource.Monotonic.markNow() - start < 20.seconds) {
         try {
-          val buildView = buildViewLookup()
+          val buildView = buildToolWindow()
           withClue("Build view contains sync text") {
             buildView
               .getAllTexts()

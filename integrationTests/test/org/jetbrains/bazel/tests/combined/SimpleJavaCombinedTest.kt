@@ -4,6 +4,7 @@ import com.intellij.driver.client.Remote
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.UiText.Companion.asString
+import com.intellij.driver.sdk.ui.components.common.buildToolWindow
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
@@ -29,7 +30,6 @@ import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.base.assertFileKind
 import org.jetbrains.bazel.base.bazelClean
 import org.jetbrains.bazel.base.buildAndSync
-import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.openFile
 import org.jetbrains.bazel.base.waitForSyncSucceeded
@@ -284,7 +284,7 @@ class SimpleJavaCombinedTest : IdeStarterCombinedBaseTest() {
           takeScreenshot("afterShardSync")
 
           // Verify there are no reports about failure reading target info files
-          val buildView = buildViewLookup()
+          val buildView = buildToolWindow()
           waitFor(
             message = "Build console shouldn't indicate error reading targets",
             timeout = 10.seconds,

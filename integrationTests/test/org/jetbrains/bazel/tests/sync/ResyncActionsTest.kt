@@ -4,6 +4,7 @@ import com.intellij.driver.client.service
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
+import com.intellij.driver.sdk.ui.components.common.buildToolWindow
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.driver.sdk.ui.components.elements.actionHyperlinkLabel
@@ -13,7 +14,6 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.base.failIfFatalIdeErrorsPresent
 import org.jetbrains.bazel.base.findFile
 import org.jetbrains.bazel.base.openFile
@@ -83,7 +83,7 @@ private fun partialResyncConsoleText(targetCount: Int): String =
 
 private fun IdeaFrameUI.waitForPartialResync(phase: String, targetCount: Int) {
   val expected = partialResyncConsoleText(targetCount)
-  buildViewLookup()
+  buildToolWindow()
     .should("The sync console reports '$expected' after $phase", 5.minutes) {
       getAllTexts().any { it.text.contains(expected) }
     }

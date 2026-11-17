@@ -17,6 +17,7 @@ import com.intellij.driver.sdk.ui.UiText.Companion.asString
 import com.intellij.driver.sdk.ui.components.UiComponent
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
+import com.intellij.driver.sdk.ui.components.common.buildToolWindow
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.mainToolbar
 import com.intellij.driver.sdk.ui.components.common.restartDebugButton
@@ -569,16 +570,8 @@ interface IdeFatalError {
   fun getThrowableText(): String
 }
 
-// TODO(BAZEL-3835): replace buildViewLookup with the platform helper IdeaFrameUI.buildToolWindow()
-fun UiComponent.buildViewLookup(): UiComponent = x {
-  or(
-    byType("com.intellij.build.BuildView"),
-    byType("com.intellij.platform.buildView.frontend.FrontendBuildView"),
-  )
-}
-
-fun UiComponent.waitForSyncSucceeded(timeout: Duration = 2.minutes) {
-  val buildView = buildViewLookup()
+fun IdeaFrameUI.waitForSyncSucceeded(timeout: Duration = 2.minutes) {
+  val buildView = buildToolWindow()
   val syncSuccessText = BazelBackendBundle.message("console.task.sync.success")
   buildView.waitOneText(message = "Waiting for Bazel sync to finish", timeout = timeout) {
     it.text.contains(syncSuccessText)
