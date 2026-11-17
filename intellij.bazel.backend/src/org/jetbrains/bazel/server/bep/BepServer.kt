@@ -72,11 +72,14 @@ class BepServer(
   private val rawProgressReporter: RawProgressReporter? = null,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
 
+  private data class Abort(val reason: AbortReason, val label: Label)
+
   private var startedEvent: TaskId? = null
   private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
   private val bepOutputBuilder = BepOutputBuilder()
   private val buildProgressParser = BuildProgressParser()
   private val customBepEventHandlers: List<BepEventHandler>
+  private val otherErrors : MutableMap<Label, MutableSet<Abort>> = HashMap()
 
   init {
     val bepEventHandlerContext = BepEventHandlerContext(project, parentId, taskEventsHandler, diagnosticsService, bazelPathsResolver)
@@ -323,6 +326,7 @@ class BepServer(
 
   private fun consumeBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     bepOutputBuilder.clear()
+    otherErrors.clear()
 
     bepOutputBuilder.buildToolVersion =
       BazelRelease.fromReleaseString(event.started.buildToolVersion) ?: BazelRelease.FALLBACK_VERSION
@@ -369,6 +373,14 @@ class BepServer(
     if (bspClientTestNotifier != null) {
       bspClientTestNotifier = null
       return
+    }
+
+    // Message all remaining errors sharded by root cause
+    otherErrors.forEach {
+      val message = (listOf("${it.key} root cause for") + it.value.toList().map { " ${it.reason}: ${it.label}"}).joinToString("\n")
+      val diagnostic = Diagnostic(Position.NONE, message, null, it.key, DiagnosticSeverity.ERROR)
+      val params = PublishDiagnosticsParams(parentId, null, it.key, listOf(diagnostic), true)
+      taskEventsHandler.onBuildPublishDiagnostics(params)
     }
 
     val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code)
@@ -525,12 +537,16 @@ class BepServer(
     if (!event.hasAborted()) return
     val reason = event.aborted.reason
     if (abortReasonsToIgnore.contains(reason)) return
-    // Only report actionable events, i.e., those with a non-empty description of the error.
-    if (event.aborted.description.isEmpty()) return
-
     val label = getLabelForAbortedEvent(event) ?: return
     val message = "${reason}: ${label}\n" + event.aborted.description
-    if ((context == BazelInvocationContext.SYNC) && event.id.pattern.patternList.isNotEmpty()){
+    if (event.aborted.description.isEmpty()) {
+      // Events without description are not actionable as this, but we collect the failure sharded by root cause.
+      // The root cause is given as child event is id UnconfiguredLabel.
+      val rootCause = event.childrenList.map { it.unconfiguredLabel.label }.firstOrNull { it.isNotEmpty() }?.let { Label.parse(it) }
+      rootCause?.let {
+        otherErrors.getOrPut(it, {HashSet()}).add(Abort(reason, label))
+      }
+    } else if ((context == BazelInvocationContext.SYNC) && event.id.pattern.patternList.isNotEmpty()){
       // A user-requested target in sync does not resolve. In this case, we only report a warning
       // and add an explanation about updating the project view (BAZEL-3801).
       val explanation = if (label.isRecursive) BazelBackendBundle.message("console.warn.pattern.invalid.dir") else BazelBackendBundle.message("console.warn.pattern.invalid.other")
