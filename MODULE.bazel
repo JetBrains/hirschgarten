@@ -120,17 +120,20 @@ java_import(
 
 # SDK 263
 
-SDK_263_BASE_VERSION = "263.7307"
+SDK_263_BASE_VERSION = "263.8311"
 
-SDK_263_INTELLIJ_REPO_VERSION = SDK_263_BASE_VERSION + ".112"
+SDK_263_INTELLIJ_REPO_VERSION = SDK_263_BASE_VERSION + ".4"
 
-SDK_263_INTELLIJ_VERSION = SDK_263_BASE_VERSION + ".112-EAP"
+SDK_263_INTELLIJ_VERSION = SDK_263_BASE_VERSION + ".4-EAP-CANDIDATE"
+
+# The Marketplace has no 263.8311 builds of DevKit, PythonCore, Go and protoeditor yet
+SDK_263_MARKETPLACE_VERSION = "263.7307.112"
 
 SDK_263_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
 IC_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s.zip" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_VERSION, SDK_263_INTELLIJ_VERSION)
 
-IC_263_SHA = "358928d174a7e3caf37fce8074860e323139aa2adfbdac95fa1847b3fc400e0a"
+IC_263_SHA = "e38b1dc1e31c4d8f2112e4c4dd99327571fc9418b25190788bfe390ea9bfc5ce"
 
 http_archive(
     name = "intellij_ce_2026_3",
@@ -141,7 +144,7 @@ http_archive(
 
 IC_263_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s-sources.jar" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_VERSION, SDK_263_INTELLIJ_VERSION)
 
-IC_263_SOURCES_SHA = "ba19f01b32b55c8e66e7fada5afcbeea9ef0650abec30ad18ca8309a51981d8c"
+IC_263_SOURCES_SHA = "a315772a96afba0520d3d15c31d99351cdbc7f0e77ce473f48c07536d783cd39"
 
 http_jar(
     name = "intellij_ce_2026_3_sources",
@@ -149,7 +152,7 @@ http_jar(
     url = IC_263_SOURCES_URL,
 )
 
-DEVKIT_263_VERSION = SDK_263_INTELLIJ_REPO_VERSION
+DEVKIT_263_VERSION = SDK_263_MARKETPLACE_VERSION
 
 DEVKIT_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_263_VERSION, DEVKIT_263_VERSION)
 
@@ -162,7 +165,7 @@ http_archive(
     url = DEVKIT_263_URL,
 )
 
-PYTHON_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_263_INTELLIJ_REPO_VERSION, SDK_263_INTELLIJ_REPO_VERSION)
+PYTHON_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_263_MARKETPLACE_VERSION, SDK_263_MARKETPLACE_VERSION)
 
 PYTHON_PLUGIN_263_SHA = "73bf24a049941bec8657d2f910b51cc670f4940e0fa7e71f833c89a3f8a504a2"
 
@@ -173,7 +176,7 @@ http_archive(
     url = PYTHON_PLUGIN_263_URL,
 )
 
-GO_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_263_INTELLIJ_REPO_VERSION, SDK_263_INTELLIJ_REPO_VERSION)
+GO_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_263_MARKETPLACE_VERSION, SDK_263_MARKETPLACE_VERSION)
 
 GO_PLUGIN_263_SHA = "4b0b6ad7637147a25442fe38a7a24ddec417f3a604a562ca332218b9865b0b28"
 
@@ -186,7 +189,7 @@ http_archive(
 
 PERFORMANCE_PLUGIN_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_REPO_VERSION, SDK_263_INTELLIJ_REPO_VERSION)
 
-PERFORMANCE_PLUGIN_263_SHA = "0877c332623cad798f82ec86f6475248e773bd640fa01542ea3e99e10582f554"
+PERFORMANCE_PLUGIN_263_SHA = "2d12946def2e62a5cc0f43d2115e86bf799f6b844ede58f2179c79e998001f80"
 
 http_jar(
     name = "performance_2026_3",
@@ -200,7 +203,7 @@ TEST_FRAMEWORK_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/j
 
 http_jar(
     name = "test_framework",
-    sha256 = "d1b044c943e2425b74f3750ea7dcc8bb757b00db7c064433400e890df3611b6e",
+    sha256 = "18d350d8d2786c8989fb5e514fbe771434be998d4d58e935146b7707f71b6e33",
     url = TEST_FRAMEWORK_263_URL % ("platform", "test-framework", "test-framework"),
 )
 
@@ -218,19 +221,19 @@ http_jar(
 
 http_jar(
     name = "test_framework_junit5",
-    sha256 = "11531d7ee2738e374feb6bec6670e1ef8bb4e5dc0aa364a0006d3ca1b81f6f61",
+    sha256 = "c372fe95f3572fb8b711d524e3cb2d791517774167856f0669660a1d61dacaf2",
     url = TEST_FRAMEWORK_263_URL % ("platform", "test-framework-junit5", "test-framework-junit5"),
 )
 
 http_jar(
     name = "test_framework_junit5_code_insight",
-    sha256 = "0f4591eef2608293e1c3f776510a03c24122deccfb1bc537e17c018758fa10ec",
+    sha256 = "977f5099822df4d38cbb8a8199c315275e5badf30addfcf1906b065465f32f70",
     url = TEST_FRAMEWORK_263_URL % ("platform", "test-framework-junit5-code-insight", "test-framework-junit5-code-insight"),
 )
 
 http_jar(
     name = "test_extensions",
-    sha256 = "6863326dcbf8a15fabcc4e4ae697a9d42186259825fff2cc8c93ed72595bfde2",
+    sha256 = "92538fa0218e042663ae9c52e69e22db273fc2accea2a123569deebb691bfc44",
     url = TEST_FRAMEWORK_263_URL % ("platform", "test-extensions", "test-extensions"),
 )
 
@@ -260,7 +263,7 @@ http_jar(
 
 http_jar(
     name = "tests_bootstrap",
-    sha256 = "617fddad78e15e86f87a3b38012aaa1d3d2e8112963bbb80e95123ad04a7b69a",
+    sha256 = "7c71de9b76fc6569c95bda0e93f15195d56e1cf94514d0c14e565f4cecfaa74f",
     url = TEST_FRAMEWORK_263_URL % ("tools", "tests-bootstrap", "tests-bootstrap"),
 )
 
@@ -290,7 +293,7 @@ http_file(
 
 CODE_WITH_ME_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_REPO_VERSION, SDK_263_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_263_SHA = "8f9e64874fd5f194a353d556cab93f144408c674598761b5bd8c967ae4218344"
+CODE_WITH_ME_263_SHA = "8fdbb66bc39661475a3fcd523d98fd60ef3866527d06a2e99058e9e09aebf15f"
 
 http_jar(
     name = "code_with_me_2026_3",
@@ -300,7 +303,7 @@ http_jar(
 
 CODE_WITH_ME_SPLIT_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/split/%s/split-%s.jar" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_REPO_VERSION, SDK_263_INTELLIJ_REPO_VERSION)
 
-CODE_WITH_ME_SPLIT_263_SHA = "1011e1190dbb6309ffdee22ebf8fb7870cbe46b7d61e9a1037b06a8fd2a4e52b"
+CODE_WITH_ME_SPLIT_263_SHA = "8c6216a3943262906b2742a73806541cb2538ee7336e793507ea187de9b8ee97"
 
 http_jar(
     name = "code_with_me_split_2026_3",
@@ -310,7 +313,7 @@ http_jar(
 
 TERMINAL_PLUGIN_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_REPO_VERSION, SDK_263_INTELLIJ_REPO_VERSION)
 
-TERMINAL_PLUGIN_263_SHA = "0356c146b2a5765c7fe9ed4bffd85fab2a6d3ce7bb84e92d051e23bd0da7dc38"
+TERMINAL_PLUGIN_263_SHA = "841fb41dcdbd5515cc615fae24bc4e2c6806a8a33a79f393ac750f7e986b50f9"
 
 http_jar(
     name = "terminal_2026_3",
@@ -328,7 +331,7 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_263_URL,
 )
 
-PROTOEDIT_PLUGIN_263_VERSION = SDK_263_BASE_VERSION + ".101"
+PROTOEDIT_PLUGIN_263_VERSION = "263.7307.101"
 
 PROTOEDIT_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_263_VERSION, PROTOEDIT_PLUGIN_263_VERSION)
 
