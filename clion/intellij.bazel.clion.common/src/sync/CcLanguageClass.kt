@@ -1,11 +1,15 @@
 package org.jetbrains.bazel.clion.sync
 
+import com.jetbrains.cidr.lang.OCFileTypeHelpers
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.LanguageClassProvider
 import org.jetbrains.bazel.commons.TargetKind
 
-val CC_LANGUAGE_CLASS = LanguageClass("cc", emptySet())
+val CC_LANGUAGE_CLASS: LanguageClass = LanguageClass(
+  "C/C++",
+  OCFileTypeHelpers.allExtensions().filter { it.isNotEmpty() }.toSet(),
+)
 
 internal class CcLanguageClassProvider : LanguageClassProvider {
 
