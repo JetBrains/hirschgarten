@@ -12,7 +12,6 @@ import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.ui.components.elements.popup
-import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.wait
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.ide.IDETestContext
@@ -320,7 +319,7 @@ class SimpleKotlinCombinedTest : IdeStarterCombinedBaseTest() {
       val gutterIcons = editorTabs().gutter().getGutterIcons()
       val selectedGutterIcon = gutterIcons.first()
       selectedGutterIcon.click()
-      val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
+      val heavyWeightWindow = popup()
       val texts = heavyWeightWindow.getAllTexts()
       texts.any { it.text.contains("Test") }.shouldBeTrue()
     }
