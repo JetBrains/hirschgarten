@@ -43,7 +43,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import java.util.concurrent.CancellationException
 
 @BazelTestApplication
-// TODO(BAZEL-3837): workaround, remove this key when the split Build view releases its editors
+// TODO(IJPL-261996): workaround, remove this key when the split Build view releases its editors
 @RegistryKey(key = "build.toolwindow.split", value = "false")
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest {
