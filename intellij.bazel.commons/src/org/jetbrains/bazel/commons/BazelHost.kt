@@ -15,6 +15,9 @@ import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.openapi.application.PathManager
 import com.intellij.platform.eel.provider.toEelApiBlocking
 import com.intellij.platform.eel.provider.utils.EelPathUtils
+import com.intellij.platform.eel.provider.utils.toOs
+import com.intellij.util.system.OS
+import java.util.Locale
 import org.jetbrains.annotations.ApiStatus
 import java.net.URI
 import java.nio.file.Files
@@ -58,6 +61,24 @@ class BazelHost(val descriptor: EelDescriptor) {
 
   /** The separator between the names of a host path. */
   val fileSeparator: String get() = if (isWindows) "\\" else "/"
+
+  /**
+   * Returns the name of the operating system of this host in lower case,
+   * in the form of the `os.name` system property of a JVM on that host: `linux`, `mac os x`, `windows 11`.
+   *
+   * For another host than the machine of the IDE, the call connects to the host,
+   * so do not call this function on the event dispatch thread.
+   */
+  fun osNameLowercase(): String {
+    if (isLocal) return System.getProperty("os.name").lowercase(Locale.ROOT)
+    return when (descriptor.toEelApiBlocking().platform.toOs()) {
+      OS.Windows -> "windows"
+      OS.macOS -> "mac os x"
+      OS.Linux -> "linux"
+      OS.FreeBSD -> "freebsd"
+      else -> if (isWindows) "windows" else "linux"
+    }
+  }
 
   /** Returns the file name of the executable [name]: `<name>.exe` on Windows, and [name] on other systems. */
   fun executableName(name: String): String = if (isWindows) "$name.exe" else name
