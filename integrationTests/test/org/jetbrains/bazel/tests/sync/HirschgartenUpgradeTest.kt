@@ -3,6 +3,7 @@ package org.jetbrains.bazel.tests.sync
 import com.intellij.driver.sdk.WaitForException
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.buildToolWindow
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.welcomeScreen
 import com.intellij.driver.sdk.wait
@@ -21,7 +22,6 @@ import org.jetbrains.bazel.data.BazelProjectConfigurer
 import org.jetbrains.bazel.data.IdeaBazelCases
 import org.jetbrains.bazel.data.IdeStarterOs
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
-import org.jetbrains.bazel.base.buildViewLookup
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.base.syncBazelProject
@@ -168,7 +168,7 @@ class HirschgartenUpgradeTest : IdeStarterBaseProjectTest() {
           ideFrame {
             wait(20.seconds)
             try {
-              val buildView = buildViewLookup()
+              val buildView = buildToolWindow()
               withClue("Unexpected resync triggered after plugin upgrade") {
                 buildView
                   .getAllTexts()
