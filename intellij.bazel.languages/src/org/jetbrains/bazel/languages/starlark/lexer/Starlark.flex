@@ -57,7 +57,7 @@ LINE_CONTINUATION = \\[\n]
 ESCAPE_SEQUENCE = \\[^]
 %%
 
-[\ ]          { return StarlarkTokenTypes.SPACE; }
+[\ ]+         { return StarlarkTokenTypes.SPACE; }
 [\t]          { return StarlarkTokenTypes.TAB; }
 [\n]          { return StarlarkTokenTypes.LINE_BREAK; }
 {LINE_CONTINUATION} { return StarlarkTokenTypes.LINE_CONTINUATION; }

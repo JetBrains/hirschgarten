@@ -27,3 +27,5 @@ FILE
     <empty list>
   StarlarkAugAssignmentStatement(PASS_STATEMENT)
     PsiElement(pass)('pass')
+  PsiErrorElement:Statement expected, found dedent
+    <empty list>

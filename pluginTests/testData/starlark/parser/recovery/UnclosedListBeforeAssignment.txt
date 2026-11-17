@@ -1,0 +1,22 @@
+FILE
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('x')
+      PsiElement(identifier)('x')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkListLiteralExpression(LIST_LITERAL_EXPRESSION)
+      PsiElement([)('[')
+      StarlarkReferenceExpression(REFERENCE_EXPRESSION)
+        PsiElement(identifier)('a')
+      PsiErrorElement:']' or ',' expected
+        <empty list>
+  PsiWhiteSpace('\n')
+  StarlarkAssignmentStatement(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpression(TARGET_EXPRESSION)('y')
+      PsiElement(identifier)('y')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(integer)('1')
