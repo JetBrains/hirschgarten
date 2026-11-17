@@ -8,13 +8,16 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 @ApiStatus.Internal
 data class BuildTargetInfo(
   val key: WorkspaceTargetKey,
-  val kind: TargetKind,
+  override val kind: TargetKind,
   val generatorName: String?,
   val isTestOnly: Boolean,
   val tags: List<String>,
   val workspaceName: String,
-) {
+) : org.jetbrains.bazel.target.api.BazelTargetDescriptor {
   val id: Label
+    get() = key.label
+
+  override val label: Label
     get() = key.label
 }
 

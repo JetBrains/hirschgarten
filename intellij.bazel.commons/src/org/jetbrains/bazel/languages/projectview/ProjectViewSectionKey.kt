@@ -3,5 +3,4 @@ package org.jetbrains.bazel.languages.projectview
 import com.intellij.openapi.util.NlsSafe
 import org.jetbrains.annotations.ApiStatus
 
-@ApiStatus.Internal
-class ProjectViewSectionKey<T>(@NlsSafe val name: String, val default: T)
+class ProjectViewSectionKey<T> @ApiStatus.Internal constructor(@NlsSafe val name: String, @get:ApiStatus.Internal val default: T)

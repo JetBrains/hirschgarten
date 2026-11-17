@@ -6,10 +6,11 @@ import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.target.api.BazelTargetDescriptor
 
 // TODO: make concrete data class in 2027.1, keep it sealed
 @ApiStatus.Internal
-sealed interface BuildTarget {
+sealed interface BuildTarget : BazelTargetDescriptor {
   val info: BuildTargetInfo
   val dependencies: List<DependencyLabel>
   val sources: OutputLocationCollection
@@ -19,7 +20,10 @@ sealed interface BuildTarget {
   val key: WorkspaceTargetKey
     get() = info.key
 
-  val kind: TargetKind
+  override val label: Label
+    get() = key.label
+
+  override val kind: TargetKind
     get() = info.kind
 
   val generatorName: String?

@@ -24,6 +24,31 @@ f:org.jetbrains.bazel.commons.ExcludableValue$Included
 - equals(java.lang.Object):Z
 - getValue():java.lang.Object
 - hashCode():I
+e:org.jetbrains.bazel.commons.RuleType
+- java.lang.Enum
+- sf:BINARY:org.jetbrains.bazel.commons.RuleType
+- sf:LIBRARY:org.jetbrains.bazel.commons.RuleType
+- sf:TEST:org.jetbrains.bazel.commons.RuleType
+- sf:UNKNOWN:org.jetbrains.bazel.commons.RuleType
+- s:getEntries():kotlin.enums.EnumEntries
+- s:valueOf(java.lang.String):org.jetbrains.bazel.commons.RuleType
+- s:values():org.jetbrains.bazel.commons.RuleType[]
+f:org.jetbrains.bazel.commons.TargetKind
+- sf:Companion:org.jetbrains.bazel.commons.TargetKind$Companion
+- <init>(java.lang.String,java.util.Set,org.jetbrains.bazel.commons.RuleType):V
+- b:<init>(java.lang.String,java.util.Set,org.jetbrains.bazel.commons.RuleType,I,kotlin.jvm.internal.DefaultConstructorMarker):V
+- f:component1():java.lang.String
+- f:component2():java.util.Set
+- f:component3():org.jetbrains.bazel.commons.RuleType
+- f:copy(java.lang.String,java.util.Set,org.jetbrains.bazel.commons.RuleType):org.jetbrains.bazel.commons.TargetKind
+- bs:copy$default(org.jetbrains.bazel.commons.TargetKind,java.lang.String,java.util.Set,org.jetbrains.bazel.commons.RuleType,I,java.lang.Object):org.jetbrains.bazel.commons.TargetKind
+- equals(java.lang.Object):Z
+- f:getKind():java.lang.String
+- f:getLanguageClasses():java.util.Set
+- f:getRuleType():org.jetbrains.bazel.commons.RuleType
+- hashCode():I
+- f:isExecutable():Z
+f:org.jetbrains.bazel.commons.TargetKind$Companion
 f:org.jetbrains.bazel.config.ProjectKt
 - sf:getRootDir(com.intellij.openapi.project.Project):com.intellij.openapi.vfs.VirtualFile
 - sf:isBazelProject(com.intellij.openapi.project.Project):Z
@@ -73,10 +98,13 @@ f:org.jetbrains.bazel.label.SingleTarget
 org.jetbrains.bazel.label.TargetType
 f:org.jetbrains.bazel.languages.projectview.ProjectView
 - equals(java.lang.Object):Z
+- f:getSections():java.util.Map
 - hashCode():I
 f:org.jetbrains.bazel.languages.projectview.ProjectViewExtensionsKt
 - sf:getAllowManualTargetsSync(org.jetbrains.bazel.languages.projectview.ProjectView):Z
 - sf:getDeriveTargetsFromDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):Z
+f:org.jetbrains.bazel.languages.projectview.ProjectViewSectionKey
+- f:getName():java.lang.String
 f:org.jetbrains.bazel.languages.projectview.ProjectViewTargetsKt
 - sf:getDirectories(org.jetbrains.bazel.languages.projectview.ProjectView):java.util.List
 f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
@@ -88,6 +116,9 @@ f:org.jetbrains.bazel.settings.bazel.BazelProjectSettings
 - hashCode():I
 f:org.jetbrains.bazel.settings.bazel.BazelProjectSettingsKt
 - sf:getBazelProjectSettings(com.intellij.openapi.project.Project):org.jetbrains.bazel.settings.bazel.BazelProjectSettings
+org.jetbrains.bazel.target.api.BazelTargetDescriptor
+- a:getKind():org.jetbrains.bazel.commons.TargetKind
+- a:getLabel():org.jetbrains.bazel.label.Label
 org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 - a:onBuildPublishDiagnostics(org.jetbrains.bsp.protocol.PublishDiagnosticsParams):V
 f:org.jetbrains.bsp.protocol.PublishDiagnosticsParams

@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.projectview.imports.Import
  * Immutable representation of a ProjectView: a map of section keys to parsed values.
  */
 class ProjectView @Internal constructor(
-  @get:Internal val sections: Map<ProjectViewSectionKey<*>, Any>,
+  val sections: Map<ProjectViewSectionKey<*>, Any>,
   @get:Internal val imports: List<Import.Resolved>,
 ) {
   @Internal

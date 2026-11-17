@@ -6,7 +6,6 @@ import org.jetbrains.annotations.ApiStatus
 @ApiStatus.Internal
 sealed interface BazelEntitySource : EntitySource
 
-@ApiStatus.Internal
 data object BazelProjectEntitySource : BazelEntitySource
 
 @ApiStatus.Internal
