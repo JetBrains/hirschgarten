@@ -6,7 +6,6 @@ import com.google.protobuf.Any
 import com.google.protobuf.ByteString
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import it.unimi.dsi.fastutil.chars.CharSet
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
@@ -103,16 +102,31 @@ class BepDiagnosticsTest {
             }.build()
       }.build()
 
-  fun newAbortedConfiguredTarget(descriptionString: String, abortReason: BuildEventStreamProtos.Aborted.AbortReason = BuildEventStreamProtos.Aborted.AbortReason.ANALYSIS_FAILURE) =
+  fun newAbortedConfiguredTarget(descriptionString: String, abortReason: BuildEventStreamProtos.Aborted.AbortReason = BuildEventStreamProtos.Aborted.AbortReason.ANALYSIS_FAILURE,
+                                 abortedLabel: String = CONSIDERED_LABEL, rootCauses: List<String> = listOf()) =
     BuildEventStreamProtos.BuildEvent.newBuilder().apply {
     id = BuildEventStreamProtos.BuildEventId.newBuilder().apply {
      targetConfigured = targetConfiguredBuilder.apply {
-       label = CONSIDERED_LABEL
+       label = abortedLabel
      }.build()
     }.build()
+    addAllChildren(rootCauses.map{BuildEventStreamProtos.BuildEventId.newBuilder().setUnconfiguredLabel(
+      BuildEventStreamProtos.BuildEventId.UnconfiguredLabelId.newBuilder().setLabel(it).build()).build()})
     aborted = abortedBuilder.apply {
       reason = abortReason
       description = descriptionString
+    }.build()
+  }.build()
+
+  fun newBuildFinishedEvent(exitCodeValue: Int = 7 /* analysis failure */) =
+    BuildEventStreamProtos.BuildEvent.newBuilder().apply {
+    id = BuildEventStreamProtos.BuildEventId.newBuilder().apply {
+      finished = finishedBuilder.build()
+    }.build()
+    finished = BuildEventStreamProtos.BuildFinished.newBuilder().apply {
+      exitCode = BuildEventStreamProtos.BuildFinished.ExitCode.newBuilder().apply {
+        code = exitCodeValue
+      }.build()
     }.build()
   }.build()
 
@@ -411,5 +425,35 @@ src/build/NotCompiling.java:4: error: cannot find symbol
     assertEquals(if (sync) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR, diagnostics.level) // Analysis errors are always reported as errors
     assertTrue(diagnostics.message.contains("loading_failure",  ignoreCase = true))
     assertTrue(diagnostics.message.contains("BUILD file not found"))
+  }
+
+  @Test
+  fun `messageless events are reported by root cause`() {
+    val client = MockBuildTaskEventsHandler()
+    val server = newBepServer(client)
+    val buildStartedEvent = newBuildStartedEvent()
+    server.handleBuildEventStreamProtosEvent(buildStartedEvent)
+
+    val rootCause = "//the/root:cause"
+    val affected = listOf("//first:step", "//second:label", "//yet/another:label")
+    affected.forEach {
+      server.handleBuildEventStreamProtosEvent(newAbortedConfiguredTarget("", BuildEventStreamProtos.Aborted.AbortReason.ANALYSIS_FAILURE,
+                                                                          it, listOf(rootCause)))
+    }
+    server.handleBuildEventStreamProtosEvent(newBuildFinishedEvent())
+    assertEquals(2, client.buildPublishDiagnostics.size)
+    val errorsForRootCausePublishDiagnostics = client.buildPublishDiagnostics[0]
+    assertEquals(1, errorsForRootCausePublishDiagnostics.diagnostics.size)
+    val errors = errorsForRootCausePublishDiagnostics.diagnostics[0]
+
+    assertTrue(errors.message.contains(rootCause))
+    affected.forEach {
+      assertTrue(errors.message.contains(it))
+    }
+
+    val overallError = client.buildPublishDiagnostics[1]
+    assertEquals(1, overallError.diagnostics.size)
+    val errorDiagnostic = overallError.diagnostics[0]
+    assertEquals(DiagnosticSeverity.ERROR, errorDiagnostic.level)
   }
 }
