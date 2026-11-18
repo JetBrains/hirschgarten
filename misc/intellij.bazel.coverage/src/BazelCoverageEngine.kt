@@ -27,7 +27,7 @@ internal class BazelCoverageEngine : CoverageEngine() {
 
   override fun isApplicableTo(configuration: RunConfigurationBase<*>): Boolean {
     if (configuration !is BazelRunConfiguration) return false
-    return configuration.handler?.isTestHandler == true
+    return configuration.handler?.supportsCoverage == true
   }
 
   override fun createCoverageEnabledConfiguration(configuration: RunConfigurationBase<*>): CoverageEnabledConfiguration =

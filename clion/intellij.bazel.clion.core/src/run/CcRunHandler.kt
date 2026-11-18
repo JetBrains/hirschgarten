@@ -67,6 +67,8 @@ class CcTestHandler : BazelRunHandler {
 
   override val isTestHandler: Boolean = true
 
+  override val supportsCoverage: Boolean = false
+
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return if (executor is DefaultDebugExecutor) {
       CcDebugCommandLineState(environment, state)
