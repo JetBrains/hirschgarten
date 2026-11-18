@@ -440,7 +440,7 @@ class CcEquivalenceClassesTest {
         label("//lib:feature")
         srcs("lib/src/feature.cc")
         hdrs("lib/include/feature.h")
-        generatedHdrs("lib/_virtual_includes/feature/feature.h")
+        privateHdrs("lib/_virtual_includes/feature/feature.h", generated = true)
       }
     }
 

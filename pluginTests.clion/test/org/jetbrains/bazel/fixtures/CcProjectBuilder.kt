@@ -95,9 +95,9 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   private val aspectIds = mutableListOf<String>()
 
   private val srcs = mutableListOf<OutputLocation>()
-  private val hdrs = mutableListOf<String>()
-  private val privateHdrs = mutableListOf<String>()
-  private val generatedHdrs = mutableListOf<String>()
+  private val hdrs = mutableListOf<OutputLocation>()
+  private val textualHdrs = mutableListOf<OutputLocation>()
+  private val privateHdrs = mutableListOf<OutputLocation>()
   private val copts = mutableListOf<String>()
   private val conlyopts = mutableListOf<String>()
   private val cxxopts = mutableListOf<String>()
@@ -123,29 +123,22 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
   }
 
   fun srcs(vararg paths: String, generated: Boolean = false) {
-    srcs += paths.map {
-      if (generated) {
-        OutputLocation.Output(TEST_OUTPUT_ROOT, it)
-      }
-      else {
-        OutputLocation.Workspace(it)
-      }
-    }
+    srcs += sourceLocations(paths, generated)
   }
 
   /** Declares a header. It reaches both the rule context and the compilation context. */
-  fun hdrs(vararg paths: String) {
-    hdrs += paths
+  fun hdrs(vararg paths: String, generated: Boolean = false) {
+    hdrs += sourceLocations(paths, generated)
   }
 
-  /** Declares a header that the rule attributes do not report, the way a private or textual header is. */
-  fun privateHdrs(vararg paths: String) {
-    privateHdrs += paths
+  /** Declares a textual header. It reaches both the rule context and the compilation context. */
+  fun textualHdrs(vararg paths: String, generated: Boolean = false) {
+    textualHdrs += sourceLocations(paths, generated)
   }
 
-  /** Declares a header that Bazel generates, the way `strip_include_prefix` re-exports one. */
-  fun generatedHdrs(vararg paths: String) {
-    generatedHdrs += paths
+  /** Declares a header that the rule attributes do not report, the way a private header is. */
+  fun privateHdrs(vararg paths: String, generated: Boolean = false) {
+    privateHdrs += sourceLocations(paths, generated)
   }
 
   fun copts(vararg options: String) {
@@ -199,11 +192,8 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       deps(DependencyLabelKind.TOOLCHAIN, defaultToolchain())
     }
 
-    val ruleHeaders = hdrs.map(OutputLocation::Workspace)
-    val directHeaders = ruleHeaders +
-                        privateHdrs.map(OutputLocation::Workspace) +
-                        generatedHdrs.map { OutputLocation.Output(TEST_OUTPUT_ROOT, it) }
-    val allHeaders = ruleHeaders.toMutableList<OutputLocation>()
+    val directHeaders = hdrs + textualHdrs + privateHdrs
+    val allHeaders = (hdrs + textualHdrs).toMutableList()
     val allIncludes = includes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
     val allQuoteIncludes = quoteIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
     val allSystemIncludes = systemIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
@@ -230,8 +220,8 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       data = listOf(
         CcBuildTarget(
           ruleContext = if (!useRuleContext) null else CcBuildTarget.RuleContext(
-            headers = locations(ruleHeaders),
-            textualHeaders = OutputLocationCollection.EMPTY,
+            headers = locations(hdrs),
+            textualHeaders = locations(textualHdrs),
             copts = StringsCollection.of(copts),
             conlyopts = StringsCollection.of(conlyopts),
             cxxopts = StringsCollection.of(cxxopts),
@@ -367,14 +357,7 @@ internal class PlainTargetBuilder {
   }
 
   fun srcs(vararg paths: String, generated: Boolean = false) {
-    srcs += paths.map {
-      if (generated) {
-          OutputLocation.Output(TEST_OUTPUT_ROOT, it)
-      }
-      else {
-          OutputLocation.Workspace(it)
-      }
-    }
+    srcs += sourceLocations(paths, generated)
   }
 
   internal fun build(): BuildTarget {
@@ -390,6 +373,10 @@ internal class PlainTargetBuilder {
 
 private fun targetKey(label: String, configurationId: String?, aspectIds: List<String> = emptyList()): WorkspaceTargetKey {
   return WorkspaceTargetKey(Label.parse(label), WorkspaceConfigurationId.of(configurationId), WorkspaceAspectIds.of(aspectIds))
+}
+
+private fun sourceLocations(paths: Array<out String>, generated: Boolean): List<OutputLocation> {
+  return paths.map { if (generated) OutputLocation.Output(TEST_OUTPUT_ROOT, it) else OutputLocation.Workspace(it) }
 }
 
 private fun locations(paths: Collection<OutputLocation>): OutputLocationCollection {

@@ -74,6 +74,7 @@ jvm_library(
         "@community//libraries/kotlinx/coroutines/core",
         "@community//platform/consoleView/impl",
         "@community//platform/execution-impl",
+        "//CIDR/cidr-lang-base",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.core` end
