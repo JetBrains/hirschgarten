@@ -1,0 +1,3 @@
+bazel_dep(name = "rules_java", version = "9.3.0")
+bazel_dep(name = "cc_false_toolchain", version = "local")
+bazel_dep(name = "false_launcher", version = "local")
