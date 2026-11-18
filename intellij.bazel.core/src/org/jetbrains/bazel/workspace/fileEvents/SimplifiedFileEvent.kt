@@ -16,7 +16,6 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.ignore.BazelIgnoreService
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -46,8 +45,7 @@ sealed class SimplifiedFileEvent private constructor(
     // the content of a source file never changes the target that owns it
     this !is ContentChange && affectedPaths().any { it.isSourceFile(project) }
 
-  fun shouldBeProcessed(project: Project): Boolean {
-    val rootPath = project.rootDir.toNioPath()
+  fun shouldBeProcessed(project: Project, rootPath: Path): Boolean {
     if (affectedPaths().none { it.startsWith(rootPath) }) return false
 
     // Check for ignored files
@@ -65,9 +63,6 @@ sealed class SimplifiedFileEvent private constructor(
   private fun Path.isSourceFile(project: Project): Boolean =
     LanguageClass.fromExtension(this.extension) != null &&
     !BazelIgnoreService.getInstance(project).isIgnored(this)
-
-  fun doesAffectFolder(folderPath: Path): Boolean =
-    fileRemoved?.startsWith(folderPath) == true || fileAdded?.startsWith(folderPath) == true
 
   @RequiresReadLock(generateAssertion = false /* IJPL-115548 */)
   fun affectsExcludedFiles(fileIndex: ProjectFileIndex, fileManager: VirtualFileManager): Boolean =
