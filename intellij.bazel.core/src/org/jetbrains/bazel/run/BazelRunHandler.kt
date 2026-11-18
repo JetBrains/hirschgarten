@@ -25,6 +25,12 @@ interface BazelRunHandler {
 
   val isTestHandler: Boolean
 
+  /**
+   * Whether the run configuration can run with the coverage executor.
+   */
+  val supportsCoverage: Boolean
+    get() = isTestHandler
+
   fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState
 
   val extensionsManager: RunConfigurationExtensionsManager<in RunConfigurationBase<*>, *>?
