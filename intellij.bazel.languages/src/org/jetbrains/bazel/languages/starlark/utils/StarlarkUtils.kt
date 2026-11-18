@@ -3,31 +3,19 @@ package org.jetbrains.bazel.languages.starlark
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.PsiElement
-import com.intellij.psi.tree.TokenSet
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenType
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 
 @ApiStatus.Internal
 object StarlarkUtils {
-  val STARLARK_ASSIGNMENT_OPERATORS = TokenSet.create(
-    StarlarkTokenTypes.EQ,
-    *StarlarkTokenSets.COMPOUND_ASSIGN_OPERATIONS.types,
-    StarlarkTokenTypes.IN_KEYWORD,
-  )
-  val STARLARK_WHITESPACES_AND_COMMENTS = TokenSet.orSet(
-    StarlarkTokenSets.WHITESPACE,
-    StarlarkTokenSets.COMMENT,
-  )
-
   fun nearestRelevantBeforeOperator(node: PsiElement?): PsiElement? {
     var current = node
     while (current != null) {
       val elementType = current.node?.elementType
-      if (STARLARK_ASSIGNMENT_OPERATORS.contains(elementType)) return null
-      if (current is StarlarkBaseElement && !STARLARK_WHITESPACES_AND_COMMENTS.contains(elementType)) return current
+      if (StarlarkTokenSets.ASSIGNMENT_OPERATORS.contains(elementType)) return null
+      if (current is StarlarkBaseElement && !StarlarkTokenSets.WHITESPACE_AND_COMMENTS.contains(elementType)) return current
       current = current.nextSibling
     }
     return null
@@ -37,7 +25,7 @@ object StarlarkUtils {
     var current = element.prevSibling
     while (current != null) {
       val elementType = current.node?.elementType
-      if (current is StarlarkBaseElement && !STARLARK_WHITESPACES_AND_COMMENTS.contains(elementType)) return current
+      if (current is StarlarkBaseElement && !StarlarkTokenSets.WHITESPACE_AND_COMMENTS.contains(elementType)) return current
       current = current.prevSibling
     }
     return null
@@ -47,7 +35,7 @@ object StarlarkUtils {
     var current = element.nextSibling
     while (current != null) {
       val elementType = current.node?.elementType
-      if (current is StarlarkBaseElement && !STARLARK_WHITESPACES_AND_COMMENTS.contains(elementType)) return current
+      if (current is StarlarkBaseElement && !StarlarkTokenSets.WHITESPACE_AND_COMMENTS.contains(elementType)) return current
       current = current.nextSibling
     }
     return null

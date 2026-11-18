@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.parser
 
 import com.intellij.lang.PsiBuilder.Marker
 import com.intellij.psi.tree.IElementType
-import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
@@ -364,14 +363,14 @@ internal class ExpressionParsing(context: ParsingContext) : Parsing(context) {
       } else {
         parseSingleExpression(isTarget = false)
       }
-      if (!BRACKET_COLON_COMMA.contains(builder.tokenType)) {
+      if (!StarlarkTokenSets.RBRACKET_COLON_OR_COMMA.contains(builder.tokenType)) {
         builder.error(StarlarkBundle.message("parser.expected.colon.or.rbracket"))
       }
       if (matchToken(StarlarkTokenTypes.COLON)) {
         parseSingleExpression(isTarget = false)
       }
       sliceItemStart.done(StarlarkElementTypes.SLICE_ITEM)
-      if (!BRACKET_OR_COMMA.contains(builder.tokenType)) {
+      if (!StarlarkTokenSets.RBRACKET_OR_COMMA.contains(builder.tokenType)) {
         builder.error(StarlarkBundle.message("parser.rbracket.or.comma.expected"))
       }
     }
@@ -392,7 +391,7 @@ internal class ExpressionParsing(context: ParsingContext) : Parsing(context) {
         }
       }
       sliceItemStart.done(StarlarkElementTypes.SLICE_ITEM)
-      if (!BRACKET_OR_COMMA.contains(builder.tokenType)) {
+      if (!StarlarkTokenSets.RBRACKET_OR_COMMA.contains(builder.tokenType)) {
         builder.error(StarlarkBundle.message("parser.rbracket.or.comma.expected"))
         break
       }
@@ -802,10 +801,4 @@ internal class ExpressionParsing(context: ParsingContext) : Parsing(context) {
     } else {
       StarlarkElementTypes.REFERENCE_EXPRESSION
     }
-
-  companion object {
-    private val BRACKET_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)
-    private val BRACKET_COLON_COMMA =
-      TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COLON, StarlarkTokenTypes.COMMA)
-  }
 }

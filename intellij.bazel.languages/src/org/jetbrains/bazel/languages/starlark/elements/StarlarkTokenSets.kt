@@ -17,11 +17,19 @@ object StarlarkTokenSets {
 
   val COMMENT = TokenSet.create(StarlarkTokenTypes.COMMENT)
 
+  val WHITESPACE_AND_COMMENTS = TokenSet.orSet(WHITESPACE, COMMENT)
+
   val STRINGS = TokenSet.create(StarlarkTokenTypes.STRING, StarlarkTokenTypes.BYTES)
 
   val OPEN_BRACKETS = TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LBRACE, StarlarkTokenTypes.LPAR)
 
   val CLOSE_BRACKETS = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.RBRACE, StarlarkTokenTypes.RPAR)
+
+  val LBRACKET_OR_LPAR = TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LPAR)
+
+  val RBRACKET_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)
+
+  val RBRACKET_COLON_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COLON, StarlarkTokenTypes.COMMA)
 
   val RESERVED_KEYWORDS =
     TokenSet.create(
@@ -75,6 +83,13 @@ object StarlarkTokenSets {
       StarlarkTokenTypes.XOREQ,
       StarlarkTokenTypes.LTLTEQ,
       StarlarkTokenTypes.GTGTEQ,
+    )
+
+  val ASSIGNMENT_OPERATORS =
+    TokenSet.create(
+      StarlarkTokenTypes.EQ,
+      *COMPOUND_ASSIGN_OPERATIONS.types,
+      StarlarkTokenTypes.IN_KEYWORD,
     )
 
   val COMPARISON_OPERATIONS =

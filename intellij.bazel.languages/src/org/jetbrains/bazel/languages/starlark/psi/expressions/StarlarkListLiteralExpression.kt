@@ -2,10 +2,10 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkUtils
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
@@ -28,7 +28,7 @@ class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
   fun insertString(toInsert: String) {
     val add = StarlarkElementGenerator(this.project).createStringLiteralExpression(toInsert)
     val exprNode = this.node
-    val closingTokens = exprNode.getChildren(TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LPAR))
+    val closingTokens = exprNode.getChildren(StarlarkTokenSets.LBRACKET_OR_LPAR)
     if (closingTokens.isEmpty()) {
       // we tried our best. let's just insert it at the end
       exprNode.addChild(add)
