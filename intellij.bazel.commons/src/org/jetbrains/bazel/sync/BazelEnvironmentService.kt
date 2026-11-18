@@ -12,6 +12,7 @@ import com.intellij.platform.eel.isWindows
 import com.intellij.platform.eel.path.EelPath
 import com.intellij.platform.eel.path.EelPathException
 import com.intellij.platform.eel.pathSeparator
+import com.intellij.platform.eel.provider.LocalEelDescriptor
 import com.intellij.platform.eel.provider.asNioPath
 import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.platform.eel.provider.toEelApi
@@ -19,12 +20,14 @@ import com.intellij.util.ShellEnvironmentReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<BazelEnvironmentService>()
@@ -50,8 +53,38 @@ class BazelEnvironmentService(private val project: Project, scope: CoroutineScop
     }
     catch (e: Throwable) {
       LOG.warn(e)
-      System.getenv()
+      fallbackEnvironment()
     }
+  }
+
+  /**
+   * The environment to use when the interactive login shell fails or is too slow.
+   *
+   * The environment of the IDE fits only a project on the machine of the IDE.
+   * For a project in WSL, it holds a Windows `PATH`, and a process in WSL cannot find even `bash` with it.
+   * So for another host, ask it again with cheaper means, and prefer no environment at all over the one of the IDE.
+   */
+  private suspend fun fallbackEnvironment(): Map<String, String> {
+    val descriptor = project.getEelDescriptor()
+    if (descriptor === LocalEelDescriptor) return System.getenv()
+    val exec = descriptor.toEelApi().exec
+    val attempts: List<Pair<String, suspend () -> Map<String, String>>> = listOf(
+      "login shell" to { exec.environmentVariables().loginNonInteractive().eelIt().await() },
+      "process" to { exec.environmentVariables().minimal().eelIt().await() },
+    )
+    for ((name, fetch) in attempts) {
+      try {
+        return withTimeout(10.seconds) { fetch() }
+      }
+      catch (e: CancellationException) {
+        if (e !is TimeoutCancellationException) throw e
+        LOG.warn("Cannot read the $name environment of $descriptor", e)
+      }
+      catch (e: Exception) {
+        LOG.warn("Cannot read the $name environment of $descriptor", e)
+      }
+    }
+    return emptyMap()
   }
 
   suspend fun getEnvironment(): Map<String, String> =
