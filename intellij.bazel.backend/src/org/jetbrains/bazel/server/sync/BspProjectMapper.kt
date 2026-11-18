@@ -137,10 +137,16 @@ class BspProjectMapper(
   }
 
   // bazel symlinks exclusion logic is taken care by BazelSymlinkExcludeService
-  private fun getTechnicalDirectoriesToExclude(): MutableSet<Path> =
-    mutableSetOf(
-      workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME),
-    )
+  private fun getTechnicalDirectoriesToExclude(): MutableSet<Path> {
+    val directories = mutableSetOf(workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME))
+    // `--output_base` can point inside the workspace. The convenience symlinks are excluded by path only,
+    // so without this the real output directory stays project content and the IDE scans all of it.
+    val outputBase = bazelPathsResolver.outputBase().normalize()
+    if (outputBase != workspaceRoot && outputBase.startsWith(workspaceRoot)) {
+      directories.add(outputBase)
+    }
+    return directories
+  }
 
   suspend fun jvmBuilderParamsForTarget(target: Label): JvmToolchainInfo =
     JvmToolchainQuery.jvmToolchainQueryForTarget(bazelRunner, projectView, target)

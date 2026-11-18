@@ -23,6 +23,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun bazelBin(): Path = bazelInfo.bazelBin
 
+  fun outputBase(): Path = bazelInfo.outputBase
+
   fun resolvePaths(fileLocations: List<ArtifactLocation>, localRepositories: LocalRepositoryMapping): List<Path> =
     fileLocations.map { resolve(it, localRepositories) }
 

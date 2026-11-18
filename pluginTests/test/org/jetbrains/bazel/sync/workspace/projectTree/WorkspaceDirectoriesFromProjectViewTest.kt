@@ -8,6 +8,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
@@ -384,13 +385,48 @@ class WorkspaceDirectoriesFromProjectViewTest {
     options shouldNotContain extraToolchainsOption
   }
 
+  @Test
+  fun `test should exclude the output base when it is inside the workspace`() {
+    // GIVEN
+    val outputBase = workspaceRoot.resolve(".bazel").createDirectories()
+    val projectViewContent =
+      """
+        directories: .
+        derive_targets_from_directories: false
+      """.trimIndent()
+
+    // WHEN
+    val result = runMapper(projectViewContent, bazelInfo = testBazel.bazelInfo.copy(outputBase = outputBase))
+
+    // THEN
+    result.includedDirectories shouldContainExactlyInAnyOrder listOf(workspaceRoot)
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(outputBase, dotBazelBspPath)
+  }
+
+  @Test
+  fun `test should not exclude the output base when it is outside the workspace`() {
+    // GIVEN
+    val projectViewContent =
+      """
+        directories: .
+        derive_targets_from_directories: false
+      """.trimIndent()
+
+    // WHEN
+    val result = runMapper(projectViewContent)
+
+    // THEN
+    result.excludedDirectories shouldContainExactlyInAnyOrder listOf(dotBazelBspPath)
+  }
+
   private fun runMapper(
     projectViewContent: String,
     repoMapping: RepoMapping = RepoMappingDisabled,
+    bazelInfo: BazelInfo = testBazel.bazelInfo,
   ): WorkspaceDirectoriesResult {
     val projectView = ProjectViewFactory.from(project, content = projectViewContent)
     val owner = ModalTaskOwner.guess()
-    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(testBazel.bazelInfo))
+    val mapper = BspProjectMapper(workspaceRoot, bazelRunner, projectView, BazelPathsResolver(bazelInfo))
     // runWithModalProgressBlocking enters a modal state, and this needs the EDT.
     return runInEdtAndGet {
       runWithModalProgressBlocking(
