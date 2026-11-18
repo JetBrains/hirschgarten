@@ -8,12 +8,11 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.elementType
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.StarlarkUtils
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
@@ -29,7 +28,7 @@ class StarlarkUnsupportedPythonSyntaxInspection : LocalInspectionTool() {
 
   private class UnsupportedSyntaxVisitor(private val holder: ProblemsHolder) : StarlarkElementVisitor() {
     override fun visitElement(element: PsiElement) {
-      if (element.firstChild == null && UNSUPPORTED_KEYWORDS.contains(element.elementType))
+      if (element.firstChild == null && StarlarkTokenSets.RESERVED_KEYWORDS.contains(element.elementType))
         holder.registerProblem(
           element,
           StarlarkBundle.message("inspection.description.unsupported.keyword", element.text),
@@ -65,7 +64,7 @@ class StarlarkUnsupportedPythonSyntaxInspection : LocalInspectionTool() {
             operator,
             StarlarkBundle.message("inspection.description.unsupported.binary.operator", operator.text),
           )
-        COMPARISON_OPERATORS.contains(operator.elementType) && node.isPartOfChainedComparison() ->
+        StarlarkTokenSets.COMPARISON_OPERATIONS.contains(operator.elementType) && node.isPartOfChainedComparison() ->
           holder.registerProblem(
             node,
             node.operatorProblemRange(operator),
@@ -79,7 +78,7 @@ class StarlarkUnsupportedPythonSyntaxInspection : LocalInspectionTool() {
 
     private fun PsiElement?.isComparisonExpression(): Boolean {
       val binaryExpression = this as? StarlarkBinaryExpression ?: return false
-      return binaryExpression.getOperator()?.let(COMPARISON_OPERATORS::contains) == true
+      return binaryExpression.getOperator()?.let(StarlarkTokenSets.COMPARISON_OPERATIONS::contains) == true
     }
 
     private fun StarlarkBinaryExpression.operatorProblemRange(operator: PsiElement): TextRange {
@@ -101,40 +100,6 @@ class StarlarkUnsupportedPythonSyntaxInspection : LocalInspectionTool() {
 
     private fun PsiElement.isRelevant(): Boolean =
       this !is PsiErrorElement && this !is PsiWhiteSpace && elementType != null &&
-      !StarlarkUtils.STARLARK_WHITESPACES_AND_COMMENTS.contains(elementType)
-  }
-
-  companion object {
-    private val UNSUPPORTED_KEYWORDS = TokenSet.create(
-      StarlarkTokenTypes.AS_KEYWORD,
-      StarlarkTokenTypes.ASSERT_KEYWORD,
-      StarlarkTokenTypes.ASYNC_KEYWORD,
-      StarlarkTokenTypes.AWAIT_KEYWORD,
-      StarlarkTokenTypes.CLASS_KEYWORD,
-      StarlarkTokenTypes.DEL_KEYWORD,
-      StarlarkTokenTypes.EXCEPT_KEYWORD,
-      StarlarkTokenTypes.FINALLY_KEYWORD,
-      StarlarkTokenTypes.FROM_KEYWORD,
-      StarlarkTokenTypes.GLOBAL_KEYWORD,
-      StarlarkTokenTypes.IMPORT_KEYWORD,
-      StarlarkTokenTypes.IS_KEYWORD,
-      StarlarkTokenTypes.NONLOCAL_KEYWORD,
-      StarlarkTokenTypes.RAISE_KEYWORD,
-      StarlarkTokenTypes.TRY_KEYWORD,
-      StarlarkTokenTypes.WHILE_KEYWORD,
-      StarlarkTokenTypes.WITH_KEYWORD,
-      StarlarkTokenTypes.YIELD_KEYWORD,
-    )
-
-    private val COMPARISON_OPERATORS = TokenSet.create(
-      StarlarkTokenTypes.LT,
-      StarlarkTokenTypes.LE,
-      StarlarkTokenTypes.GT,
-      StarlarkTokenTypes.GE,
-      StarlarkTokenTypes.EQEQ,
-      StarlarkTokenTypes.NE,
-      StarlarkTokenTypes.IN_KEYWORD,
-      StarlarkTokenTypes.NOT_KEYWORD,
-    )
+      !StarlarkTokenSets.WHITESPACE_AND_COMMENTS.contains(elementType)
   }
 }
