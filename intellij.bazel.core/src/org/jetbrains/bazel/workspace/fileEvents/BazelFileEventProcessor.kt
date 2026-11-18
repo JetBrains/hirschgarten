@@ -40,6 +40,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkSrcsListEval
@@ -297,7 +298,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
 
   private fun collectCreatedFiles(root: VirtualFile?): List<Create> {
     if (root == null || !root.isValid) return emptyList()
-    val rootPath = root.toNioPathOrNull() ?: return emptyList()
+    val projectRootPath = project.rootDir.toNioPath() // enqueue method ensures it exists
 
     val filesInDirectory = ArrayList<Create>()
     try {
@@ -305,7 +306,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
         if (!file.isValid) return@iterateContentUnderDirectory true
         if (!file.isDirectory) {
           val createFileEvent = Create(file.path, file)
-          if (createFileEvent.shouldBeProcessed(project, rootPath))
+          if (createFileEvent.shouldBeProcessed(project, projectRootPath))
             filesInDirectory.add(createFileEvent)
         }
         true

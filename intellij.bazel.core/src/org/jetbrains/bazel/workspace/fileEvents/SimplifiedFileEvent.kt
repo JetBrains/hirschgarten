@@ -45,15 +45,15 @@ sealed class SimplifiedFileEvent private constructor(
     // the content of a source file never changes the target that owns it
     this !is ContentChange && affectedPaths().any { it.isSourceFile(project) }
 
-  fun shouldBeProcessed(project: Project, rootPath: Path): Boolean {
-    if (affectedPaths().none { it.startsWith(rootPath) }) return false
+  fun shouldBeProcessed(project: Project, projectRootPath: Path): Boolean {
+    if (affectedPaths().none { it.startsWith(projectRootPath) }) return false
 
     // Check for ignored files
     if (affectedPaths().all { BazelIgnoreService.getInstance(project).isIgnored(it) })
       return false
 
     // check for files under .bazelbsp
-    val bazelBsp = rootPath.resolve(Constants.DOT_BAZELBSP_DIR_NAME)
+    val bazelBsp = projectRootPath.resolve(Constants.DOT_BAZELBSP_DIR_NAME)
     if (affectedPaths().all { it.startsWith(bazelBsp) })
       return false
 
