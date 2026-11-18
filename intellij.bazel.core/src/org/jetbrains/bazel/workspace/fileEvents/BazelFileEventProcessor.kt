@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.storeAndGet
 import com.intellij.platform.backend.workspace.virtualFile
@@ -39,8 +40,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkSrcsListEval
@@ -147,13 +146,18 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
 
     // No directory is known. Startup or tests?
-    if (project.bazelProjectInfo.projectRootDir == null)
+    val projectRootPath = project.bazelProjectInfo.projectRootDir?.toNioPathOrNull()
+    if (projectRootPath == null)
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
 
+    val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+    val fileManager = VirtualFileManager.getInstance()
     val simplifiedEvents = events
       .mapNotNull { SimplifiedFileEvent.from(it) }
-      .filter { it.shouldBeProcessed(project) }
-      .filterByProject()
+      .filter { it.shouldBeProcessed(project, projectRootPath) }
+      .filter {
+        readAction { !it.affectsExcludedFiles(fileIndex, fileManager) }
+      }
 
     if (simplifiedEvents.isEmpty())
       return CompletableDeferred(BazelFileEventProcessorResult.EMPTY)
@@ -293,6 +297,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
 
   private fun collectCreatedFiles(root: VirtualFile?): List<Create> {
     if (root == null || !root.isValid) return emptyList()
+    val rootPath = root.toNioPathOrNull() ?: return emptyList()
 
     val filesInDirectory = ArrayList<Create>()
     try {
@@ -300,7 +305,7 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
         if (!file.isValid) return@iterateContentUnderDirectory true
         if (!file.isDirectory) {
           val createFileEvent = Create(file.path, file)
-          if (createFileEvent.shouldBeProcessed(project))
+          if (createFileEvent.shouldBeProcessed(project, rootPath))
             filesInDirectory.add(createFileEvent)
         }
         true
@@ -545,25 +550,6 @@ open class DefaultBazelFileEventProcessor(private val project: Project) : BazelF
     }
     return true
   }
-
-  private suspend fun List<SimplifiedFileEvent>.filterByProject(): List<SimplifiedFileEvent> {
-    if (this.isEmpty() || !project.isBazelProject) return emptyList()
-    val rootDirPath = projectRootPath() ?: return emptyList()
-    val fileIndex = ProjectRootManager.getInstance(project).fileIndex
-    val fileManager = VirtualFileManager.getInstance()
-    return readAction {
-      filter { it.doesAffectFolder(rootDirPath) && !it.affectsExcludedFiles(fileIndex, fileManager) }
-    }
-  }
-
-  private fun projectRootPath(): Path? =
-    try {
-      project.rootDir.toNioPath()
-    } catch (_: IllegalStateException) { // Bazel rootDir not set
-      null
-    } catch (_: UnsupportedOperationException) { // unable to create a Path instance
-      null
-    }
 
   protected data class ProcessingContext(
     val urlManager: VirtualFileUrlManager,
