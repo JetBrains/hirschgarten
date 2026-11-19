@@ -1,6 +1,6 @@
 load("@community//build:jps_module.bzl", "jps_module")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
-load(":test_defs.bzl", "CC_TEST_DEPS", "CC_TEST_RUNTIME_DEPS", "cc_test")
+load(":test_defs.bzl", "CC_TEST_DEPS", "CC_TEST_RUNTIME_DEPS", "clion_plugin_test")
 
 # The CLion tests run only with Bazel. See README.md. Iml file only exists for code insight.
 ### skip generation section `build intellij.bazel.pluginTests.clion`
@@ -19,87 +19,87 @@ jvm_library(
     deps = CC_TEST_DEPS,
 )
 
-cc_test(test = "ArmToolchainTest.kt")
+clion_plugin_test(test = "ArmToolchainTest.kt")
 
-cc_test(test = "BazelCLionSmokeTest.kt")
+clion_plugin_test(test = "BazelCLionSmokeTest.kt")
 
-cc_test(test = "CatchTestSupportTest.kt")
+clion_plugin_test(test = "CatchTestSupportTest.kt")
 
-cc_test(test = "CcCompilerSettingsTest.kt")
+clion_plugin_test(test = "CcCompilerSettingsTest.kt")
 
-cc_test(test = "CcCoptsTest.kt")
+clion_plugin_test(test = "CcCoptsTest.kt")
 
-cc_test(test = "CcDebugInfoCheckTest.kt")
+clion_plugin_test(test = "CcDebugInfoCheckTest.kt")
 
-cc_test(test = "CcDebugInfoDialogTest.kt")
+clion_plugin_test(test = "CcDebugInfoDialogTest.kt")
 
-cc_test(test = "CcDebugInfoPromptTest.kt")
+clion_plugin_test(test = "CcDebugInfoPromptTest.kt")
 
-cc_test(test = "CcDebugTargetInfoTest.kt")
+clion_plugin_test(test = "CcDebugTargetInfoTest.kt")
 
-cc_test(test = "CcDebugTest.kt")
+clion_plugin_test(test = "CcDebugTest.kt")
 
-cc_test(test = "CcEquivalenceClassesTest.kt")
+clion_plugin_test(test = "CcEquivalenceClassesTest.kt")
 
-cc_test(test = "CcFileToTargetMapTest.kt")
+clion_plugin_test(test = "CcFileToTargetMapTest.kt")
 
-cc_test(test = "CcForcedRunHandlerTest.kt")
+clion_plugin_test(test = "CcForcedRunHandlerTest.kt")
 
-cc_test(test = "CcHeaderLanguageTest.kt")
+clion_plugin_test(test = "CcHeaderLanguageTest.kt")
 
-cc_test(test = "CcHeaderOwnershipTest.kt")
+clion_plugin_test(test = "CcHeaderOwnershipTest.kt")
 
-cc_test(test = "CcImportTest.kt")
+clion_plugin_test(test = "CcImportTest.kt")
 
-cc_test(test = "CcLocalToolchainTest.kt")
+clion_plugin_test(test = "CcLocalToolchainTest.kt")
 
-cc_test(test = "CcGeneratedToolchainTest.kt")
+clion_plugin_test(test = "CcGeneratedToolchainTest.kt")
 
-cc_test(test = "CcResyncTest.kt")
+clion_plugin_test(test = "CcResyncTest.kt")
 
-cc_test(test = "CcNewFileTest.kt")
+clion_plugin_test(test = "CcNewFileTest.kt")
 
-cc_test(test = "CcResolveConfigurationDisplayNameProviderTest.kt")
+clion_plugin_test(test = "CcResolveConfigurationDisplayNameProviderTest.kt")
 
-cc_test(test = "CcRunConfigurationProducerTest.kt")
+clion_plugin_test(test = "CcRunConfigurationProducerTest.kt")
 
-cc_test(test = "CcDebugSessionChooserTest.kt")
+clion_plugin_test(test = "CcDebugSessionChooserTest.kt")
 
-cc_test(test = "CcTestExplorationTest.kt")
+clion_plugin_test(test = "CcTestExplorationTest.kt")
 
-cc_test(test = "CcTestTreeTest.kt")
+clion_plugin_test(test = "CcTestTreeTest.kt")
 
-cc_test(test = "CcToolchainMapTest.kt")
+clion_plugin_test(test = "CcToolchainMapTest.kt")
 
-cc_test(test = "CcUnresolvedImportCheckerTest.kt")
+clion_plugin_test(test = "CcUnresolvedImportCheckerTest.kt")
 
-cc_test(test = "ClionBazelFixtureTimeoutTest.kt")
+clion_plugin_test(test = "ClionBazelFixtureTimeoutTest.kt")
 
-cc_test(test = "ExecutionTest.kt")
+clion_plugin_test(test = "ExecutionTest.kt")
 
-cc_test(test = "ForeignCCTest.kt")
+clion_plugin_test(test = "ForeignCCTest.kt")
 
-cc_test(test = "GeneratedSourcesTest.kt")
+clion_plugin_test(test = "GeneratedSourcesTest.kt")
 
-cc_test(test = "GoogleTestSupportTest.kt")
+clion_plugin_test(test = "GoogleTestSupportTest.kt")
 
-cc_test(test = "GutterTest.kt")
+clion_plugin_test(test = "GutterTest.kt")
 
-cc_test(test = "HardlinkIncludeDirsTest.kt")
+clion_plugin_test(test = "HardlinkIncludeDirsTest.kt")
 
-cc_test(test = "LlvmToolchainTest.kt")
+clion_plugin_test(test = "LlvmToolchainTest.kt")
 
-cc_test(test = "MixedImportTest.kt")
+clion_plugin_test(test = "MixedImportTest.kt")
 
-cc_test(test = "MSVCEnvironmentUtilTest.kt")
+clion_plugin_test(test = "MSVCEnvironmentUtilTest.kt")
 
-cc_test(test = "TargetCompatibleTest.kt")
+clion_plugin_test(test = "TargetCompatibleTest.kt")
 
-cc_test(test = "TransitionTest.kt")
+clion_plugin_test(test = "TransitionTest.kt")
 
-cc_test(test = "VirtualIncludesTest.kt")
+clion_plugin_test(test = "VirtualIncludesTest.kt")
 
-cc_test(
+clion_plugin_test(
     data = ["@cc_test_project_cloudflare_workerd//:archive"],
     tags = ["manual"],
     target_compatible_with = ["@platforms//os:linux"],
