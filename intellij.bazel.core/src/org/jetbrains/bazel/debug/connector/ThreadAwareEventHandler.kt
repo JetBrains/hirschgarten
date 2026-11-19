@@ -4,6 +4,7 @@ import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.D
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.bazelHost
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointProperties
 import org.jetbrains.bazel.debug.platform.StarlarkDebuggerEvaluator
 import org.jetbrains.bazel.debug.platform.StarlarkSuspendContext
@@ -46,6 +47,7 @@ class ThreadAwareEventHandler(
         valueComputer = valueComputer,
         evaluatorProvider = evaluatorProvider,
         primaryThreadId = primaryThreadId,
+        host = session.project.bazelHost,
       )
 
     when (event.thread.pauseReason) {

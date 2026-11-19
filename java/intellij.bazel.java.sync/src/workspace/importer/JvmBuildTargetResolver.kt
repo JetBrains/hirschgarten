@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.workspace.importer
 
+import com.intellij.platform.eel.EelDescriptor
+import com.intellij.platform.eel.provider.LocalEelDescriptor
 import com.intellij.openapi.util.Ref
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
@@ -51,6 +53,8 @@ class JvmBuildTargetResolver(
   private val repoMapping: RepoMapping,
   private val resolveLocation: (OutputLocation) -> Path?,
   private val resolveExecrootLocation: (OutputLocation) -> Path?,
+  /** The environment of the project. The search for a fallback JDK runs there. */
+  private val eelDescriptor: EelDescriptor = LocalEelDescriptor,
 ) {
   private var extraLibDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
   private var toolchainDependencies: Map<WorkspaceTargetKey, List<DependencyLabel>> = mapOf()
@@ -68,7 +72,7 @@ class JvmBuildTargetResolver(
       }
     }
 
-  private val projectJavaHome: Path? by lazy { JdkResolver(allTargets, resolveExecrootLocation).resolve()?.javaHome }
+  private val projectJavaHome: Path? by lazy { JdkResolver(allTargets, resolveExecrootLocation, eelDescriptor).resolve()?.javaHome }
 
   fun resolveAll(): Map<WorkspaceTargetKey, JvmResolvedTarget> {
     wellKnownTargetKeyByMavenCoordinates = computeWellKnownTargetKeyByMavenCoordinates()

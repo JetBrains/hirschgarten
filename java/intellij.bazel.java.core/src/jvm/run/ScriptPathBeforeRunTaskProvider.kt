@@ -11,6 +11,7 @@ import com.intellij.openapi.util.Ref
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.bazelHost
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.jvm.run.ScriptPathBeforeRunTaskProvider.Task
@@ -60,7 +61,7 @@ class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     val runConfiguration = BazelRunConfiguration.get(environment)
     val isDebug = environment.executor is DefaultDebugExecutor
     val project = environment.project
-    val scriptPath = scriptPathRef?.let { ScriptPathBuildTargetTask.createTempScriptFile() }
+    val scriptPath = scriptPathRef?.let { ScriptPathBuildTargetTask.createTempScriptFile(project.bazelHost) }
     val status =
       try {
         val buildTargetTask = if (scriptPath != null) {

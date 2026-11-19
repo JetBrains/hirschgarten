@@ -3,6 +3,7 @@ package org.jetbrains.bazel.debug.platform
 import com.intellij.util.containers.toArray
 import com.intellij.xdebugger.frame.XExecutionStack
 import com.intellij.xdebugger.frame.XSuspendContext
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
@@ -11,8 +12,9 @@ internal class StarlarkSuspendContext(
   private val valueComputer: StarlarkValueComputer,
   private val evaluatorProvider: StarlarkDebuggerEvaluator.Provider,
   primaryThreadId: Long? = null,
+  host: BazelHost = BazelHost.LOCAL,
 ) : XSuspendContext() {
-  private val executionStacks = threads.map { StarlarkExecutionStack(it, valueComputer, evaluatorProvider) }
+  private val executionStacks = threads.map { StarlarkExecutionStack(it, valueComputer, evaluatorProvider, host) }
   private val activeExecutionStack =
     primaryThreadId?.let { primary ->
       val index = threads.indexOfFirst { it.id == primary }

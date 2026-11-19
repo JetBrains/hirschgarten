@@ -39,7 +39,9 @@ import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.commons.ExecUtils
+import org.jetbrains.bazel.commons.BazelHost
+import org.jetbrains.bazel.commons.bazelHost
+import org.jetbrains.bazel.commons.onBazelHost
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -167,7 +169,11 @@ internal object FastBuildUtils {
 
             indicator.checkCanceled()
 
-            val tempDir = Files.createTempDirectory("cdb-fast-compile")
+            // The compiler runs in the environment of Bazel, for example in WSL, so its files are in a directory of that environment.
+            val host = project.bazelHost
+            val tempDir =
+              if (host.isLocal) Files.createTempDirectory("cdb-fast-compile")
+              else Files.createTempDirectory(host.tempDirectory(), "cdb-fast-compile")
             logger.debug("Using '$tempDir' for fast compile")
             val outputJar = tempDir.resolve("output.jar")
 
@@ -179,6 +185,7 @@ internal object FastBuildUtils {
                 Path(canonicalFilePath),
                 Path(workspaceRoot.toCanonicalPath()),
                 targetJar,
+                host,
               )
             val paramsFile1 =
               updateAndWriteCompile1Params(
@@ -200,12 +207,12 @@ internal object FastBuildUtils {
 
             val arguments =
               buildList {
-                add(toolchainInfo.java_home + File.separator + "bin" + File.separator + ExecUtils.calculateExecutableName("java"))
+                add(toolchainInfo.java_home + host.fileSeparator + "bin" + host.fileSeparator + host.executableName("java"))
                 toolchainInfo.jvm_opts.forEach { add(it) }
                 add("-jar")
                 add(toolchainInfo.toolchain_path)
-                add("@${paramsFile0.pathString}")
-                add("@${paramsFile1.pathString}")
+                add("@${host.toHostPath(paramsFile0)}")
+                add("@${host.toHostPath(paramsFile1)}")
               }
 
             val command =
@@ -214,6 +221,7 @@ internal object FastBuildUtils {
                   project.workspaceSnapshotOrNull?.bazelInfo?.execRoot
                   ?: throw ExecutionException(BazelPluginBundle.message("widget.fastbuild.error.null.bazel.exec.path")),
                 )
+                onBazelHost(host)
               }
             val handler = OSProcessHandler(command)
             handler.addProcessListener(
@@ -342,6 +350,7 @@ internal object FastBuildUtils {
     inputFile: Path,
     workspaceRoot: Path,
     targetJar: Path,
+    host: BazelHost = BazelHost.LOCAL,
   ): Path =
     updateAndWriteCompileParams("compile.jar-0.params", originalParams, tempDir) { ips: BufferedReader, os: OutputStreamWriter ->
       var line = ips.readLine()
@@ -352,38 +361,38 @@ internal object FastBuildUtils {
         when (line) {
           "--output" -> {
             os.writeLn(line)
-            os.writeLn(outputJar.pathString)
+            os.writeLn(host.toHostPath(outputJar))
             ips.readLine()
           }
 
           "--native_header_output" -> {
             os.writeLn(line)
-            os.writeLn(tempDir.resolve("output-native-header.jar").pathString)
+            os.writeLn(host.toHostPath(tempDir.resolve("output-native-header.jar")))
             ips.readLine()
           }
 
           "--generated_sources_output" -> {
             os.writeLn(line)
-            os.writeLn(tempDir.resolve("output-generated-sources.jar").pathString)
+            os.writeLn(host.toHostPath(tempDir.resolve("output-generated-sources.jar")))
             ips.readLine()
           }
 
           "--output_manifest_proto" -> {
             os.writeLn(line)
-            os.writeLn(tempDir.resolve("output.jar_manifest_proto").pathString)
+            os.writeLn(host.toHostPath(tempDir.resolve("output.jar_manifest_proto")))
             ips.readLine()
           }
 
           "--output_deps_proto" -> {
             os.writeLn(line)
-            os.writeLn(tempDir.resolve("output.jdeps").pathString)
+            os.writeLn(host.toHostPath(tempDir.resolve("output.jdeps")))
             ips.readLine()
           }
 
           "--sources" -> {
             os.writeLn(line)
             line = ips.readLine()
-            os.writeLn(sourceFile.pathString)
+            os.writeLn(host.toHostPath(sourceFile))
             while (line?.startsWith("--") == false) {
               line = ips.readLine()
             }
@@ -419,7 +428,7 @@ internal object FastBuildUtils {
       if (targetJar.notExists()) {
         logger.error("Bazel module jar not found: $targetJar")
       }
-      os.writeLn(targetJar.pathString)
+      os.writeLn(host.toHostPath(targetJar))
     }
 
   fun updateAndWriteCompile1Params(originalParams: Path, tempDir: Path): Path =

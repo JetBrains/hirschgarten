@@ -7,9 +7,9 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator
 import com.intellij.xdebugger.frame.XCompositeNode
 import com.intellij.xdebugger.frame.XStackFrame
 import com.intellij.xdebugger.frame.XValueChildrenList
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
-import kotlin.io.path.Path
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
 internal class StarlarkStackFrame(
@@ -17,6 +17,8 @@ internal class StarlarkStackFrame(
   val threadId: Long,
   private val valueComputer: StarlarkValueComputer,
   evaluatorProvider: StarlarkDebuggerEvaluator.Provider,
+  /** The environment where Bazel runs. Bazel reports the path of a frame in the form of this host. */
+  private val host: BazelHost = BazelHost.LOCAL,
 ) : XStackFrame() {
   var isTopFrame: Boolean = false
 
@@ -38,7 +40,7 @@ internal class StarlarkStackFrame(
 
   override fun getSourcePosition(): XSourcePosition? {
     val path = frame.location.path
-    val vFile = VirtualFileManager.getInstance().findFileByNioPath(Path(path))
+    val vFile = VirtualFileManager.getInstance().findFileByNioPath(host.toIdePathAllowingRelative(path))
     val line = frame.location.lineNumber - 1 // convert from 1-indexed to 0-indexed
     return XDebuggerUtil.getInstance().createPosition(vFile, line)
   }

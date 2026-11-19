@@ -27,6 +27,8 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiEditorUtil
 import com.intellij.ui.LightweightHint
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
+import org.jetbrains.bazel.commons.onBazelHost
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
@@ -34,6 +36,8 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.environment.BazelProjectInfoService
 import java.io.File
+import java.nio.file.InvalidPathException
+import java.nio.file.Path
 
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
@@ -95,10 +99,17 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
     // Formatter can be called for non-Bazel projects as well (if they contain some Starlark).
     // Don't use project.rootDir as it will throw.
     val rootDir = project.service<BazelProjectInfoService>().projectRootDir ?: project.guessProjectDir() ?: return null
+    // Buildifier of a project in another environment, for example in WSL, is a program of that environment and runs there.
+    val buildifierHost = try {
+      BazelHost.of(Path.of(buildifierPath))
+    }
+    catch (_: InvalidPathException) {
+      BazelHost.LOCAL
+    }
     val commandLine =
       GeneralCommandLine()
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-        .withExePath(buildifierPath)
+        .withExePath(if (buildifierHost.isLocal) buildifierPath else buildifierHost.toHostPath(Path.of(buildifierPath)))
         .withInput(ioFile)
         .apply {
           // Because we pass the input file's text into stdin, buildifier doesn't know the original filename.
@@ -107,6 +118,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
         }
         // Set the work directory to workspace root so that Buildifier can read .buildifier-tables.json
         .withWorkingDirectory(rootDir.toNioPath())
+        .onBazelHost(buildifierHost, inheritHostEnvironment = true)
 
     return CapturingProcessHandler(commandLine)
   }

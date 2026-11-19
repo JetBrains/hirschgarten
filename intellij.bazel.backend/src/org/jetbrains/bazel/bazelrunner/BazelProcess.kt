@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.util.Format
 import org.jetbrains.bazel.util.Stopwatch
@@ -13,6 +14,7 @@ class BazelProcess internal constructor(
   private val showStdout: Boolean,
   private val logger: BazelTaskLogger? = null,
   private val finishCallback: () -> Unit = {},
+  private val host: BazelHost = BazelHost.LOCAL,
 ) {
   val pid: Long get() = process.pid()
 
@@ -24,6 +26,7 @@ class BazelProcess internal constructor(
           process = process,
           showStdout = showStdout,
           handler = if (logger != null) logger::message else null,
+          host = host,
         )
 
       val exitCode = outputProcessor.waitForExit(killProcessTreeOnCancel = BazelFeatureFlags.killClientTreeOnCancel)

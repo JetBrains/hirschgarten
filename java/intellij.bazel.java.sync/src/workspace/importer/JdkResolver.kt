@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.workspace.importer
 
 import  com.intellij.openapi.projectRoots.impl.JavaHomeFinder
+import com.intellij.platform.eel.EelDescriptor
 import com.intellij.platform.eel.provider.LocalEelDescriptor
 import org.jetbrains.bazel.sync.workspace.languages.java.Jdk
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
@@ -16,6 +17,7 @@ import kotlin.io.path.exists
 internal class JdkResolver(
   private val allTargets: Map<WorkspaceTargetKey, BuildTarget>,
   private val resolveExecrootLocation: (OutputLocation) -> Path?,
+  private val eelDescriptor: EelDescriptor = LocalEelDescriptor,
 ) {
   fun resolve(): Jdk? {
     val allCandidates = allTargets.values.mapNotNull { resolveJdkData(it) }.toList()
@@ -64,7 +66,7 @@ internal class JdkResolver(
      * From: [JavaHomeFinder.JdkEntry.compareTo] docs:
      * "An entry should appear before another one if it has a **more recent** version or a shorter path."
      */
-    val jdkWithNewestVersion = JavaHomeFinder.findJdks(LocalEelDescriptor, false)
+    val jdkWithNewestVersion = JavaHomeFinder.findJdks(eelDescriptor, false)
       .minOrNull() ?: return null
     return Jdk(Path(jdkWithNewestVersion.path))
   }

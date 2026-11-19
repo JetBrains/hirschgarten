@@ -3,6 +3,7 @@
   <dependencies>
     <module name="intellij.bazel.commons"/>
     <module name="intellij.platform.core"/>
+    <module name="intellij.platform.eel.provider"/>
     <module name="intellij.platform.ide"/>
     <module name="intellij.platform.ide.core"/>
     <module name="intellij.platform.ide.progress"/>

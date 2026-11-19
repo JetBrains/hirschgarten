@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.orFallbackVersion
@@ -10,7 +11,6 @@ import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.server.sync.isConfigurationSupportEnabled
 import org.jetbrains.bsp.protocol.TaskId
 import java.nio.file.Path
-import java.nio.file.Paths
 
 private const val RELEASE = "release"
 private const val EXECUTION_ROOT = "execution_root"
@@ -59,7 +59,9 @@ class BazelInfoResolver(val workspaceRoot: Path) {
       .orFromBazelVersionFile(workspaceRoot)
       .orFallbackVersion()
 
-    val reportedWorkspaceRoot = Paths.get(extract(WORKSPACE))
+    // Bazel prints the paths of its own environment, which is not the machine of the IDE for a WSL project.
+    val host = BazelHost.of(workspaceRoot)
+    val reportedWorkspaceRoot = host.toIdePath(extract(WORKSPACE))
     if (reportedWorkspaceRoot != workspaceRoot) {
       log.error("Workspace path mismatch: given $workspaceRoot, Bazel reported $reportedWorkspaceRoot")
     }
@@ -67,10 +69,10 @@ class BazelInfoResolver(val workspaceRoot: Path) {
     val starlarkSemantics = parseStarlarkSemantics(extract(STARLARK_SEMANTICS), bazelReleaseVersion)
 
     return BazelInfo(
-      execRoot = Paths.get(extract(EXECUTION_ROOT)),
-      outputBase = Paths.get(extract(OUTPUT_BASE)),
+      execRoot = host.toIdePath(extract(EXECUTION_ROOT)),
+      outputBase = host.toIdePath(extract(OUTPUT_BASE)),
       workspaceRoot = workspaceRoot,
-      bazelBin = Paths.get(extract(BAZEL_BIN)),
+      bazelBin = host.toIdePath(extract(BAZEL_BIN)),
       release = bazelReleaseVersion,
       isBzlModEnabled = starlarkSemantics.isBzlModEnabled,
       isWorkspaceEnabled = starlarkSemantics.isWorkspaceEnabled,

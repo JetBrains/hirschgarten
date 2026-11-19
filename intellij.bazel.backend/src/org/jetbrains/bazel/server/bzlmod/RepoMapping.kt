@@ -4,6 +4,7 @@ import kotlinx.coroutines.CancellationException
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
 import org.jetbrains.bazel.commons.RepoMapping
@@ -105,7 +106,7 @@ internal suspend fun extendRepoMappingByPathInfo(
   resolvedModules.forEach { externalRepo, showRepoResult ->
     try {
       when (showRepoResult) {
-        is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
+        is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = bazelRunner.host.toIdePathAllowingRelative(showRepoResult.path)
         else -> {
           taskLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
           knownNonLocalRepoNames.add(externalRepo)
@@ -185,7 +186,7 @@ internal suspend fun extendRepoMapping(
         server.showRepos(needsPath, taskId).result
       val extraPaths = extraRepositoryDescriptions.map { (name, description) ->
         when (description) {
-          is ShowRepoResult.LocalRepository -> mapOf(description.name to Path(description.path))
+          is ShowRepoResult.LocalRepository -> mapOf(description.name to BazelHost.of(server.bazelInfo.workspaceRoot).toIdePathAllowingRelative(description.path))
           else -> mapOf()
         }
       }.reduceOrNull { acc, map -> acc + map }

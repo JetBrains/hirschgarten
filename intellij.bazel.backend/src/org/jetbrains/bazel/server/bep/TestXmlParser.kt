@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bazel.util.BspClientTestNotifier
@@ -17,6 +18,7 @@ import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestStatus
 import java.nio.file.Path
+import kotlin.io.path.invariantSeparatorsPathString
 import java.util.UUID
 import kotlin.io.path.readText
 
@@ -102,6 +104,21 @@ internal class TestResultDetail {
 class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   private val fallbackTestXmlParser = FallbackTestXmlParser(bspClientTestNotifier)
 
+  /** The environment where the test ran. The test names its source files with the paths of this host. */
+  private var host: BazelHost = BazelHost.LOCAL
+
+  /**
+   * Converts the path of a source file from a test report to the path that the IDE uses for the file.
+   * A test in another environment than the IDE, for example in WSL, reports `/home/user/A.java`.
+   */
+  private fun toIdeFilePath(file: String?): String? =
+    if (file != null && !host.isLocal && host.isAbsoluteHostPath(file)) {
+      host.toIdePathOrNull(file)?.invariantSeparatorsPathString ?: file
+    }
+    else {
+      file
+    }
+
   /**
    * Processes a test result xml file, reporting suite and test case results as task start and finish notifications.
    * Parent-child relationship is identified within each suite based on the TaskId.
@@ -112,6 +129,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * the file could not be read/parsed — so the caller may report a target-level result instead.
    */
   fun parseAndReport(parentId: TaskId, testXml: Path, targetKind: TargetKind?): Int {
+    host = BazelHost.of(testXml)
     val testSuites = parseTestXml(testXml, TestSuites::class.java)
     if (testSuites != null) {
       return testSuites.testsuite.sumOf { processSuite(parentId, it, targetKind) }
@@ -243,7 +261,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
         .testCase(testCase.name)
         .withClassname(testCase.classname)
         .withParentSuite(parentSuiteName)
-        .withFileAndZeroBasedLine(testCase.file, testCase.line)
+        .withFileAndZeroBasedLine(toIdeFilePath(testCase.file), testCase.line)
         .build()
     bspClientTestNotifier.startAndFinishTest(
       testDetails,

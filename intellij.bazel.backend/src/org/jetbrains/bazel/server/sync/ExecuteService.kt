@@ -1,11 +1,12 @@
 package org.jetbrains.bazel.server.sync
 
-import com.intellij.execution.process.OSProcessUtil.killProcess
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelCommand
 import org.jetbrains.bazel.bazelrunner.BazelLog
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.killProcess
 import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
@@ -64,8 +66,13 @@ class ExecuteService(
     pidDeferred: CompletableDeferred<Long?>? = null,
   ): BepBuildResult = rawProgressReporterProvider { rawProgressReporter ->
     coroutineScope {
+      // Bazel writes this file and the IDE reads it, so the file is in a directory that both can reach.
       val eventFile: Path =
-        Files.createTempFile("bazel-bep-output", null).toAbsolutePath()
+        withContext(Dispatchers.IO) {
+          val host = bazelRunner.host
+          val file = if (host.isLocal) Files.createTempFile("bazel-bep-output", null) else host.createTempFile("bazel-bep-output")
+          file.toAbsolutePath()
+        }
 
       var bepReader: BepReader? = null
       try {
@@ -82,7 +89,9 @@ class ExecuteService(
           executionDescriptor,
           taskId = taskId,
         )
-        pidDeferred?.complete(bazelProcess.pid)
+        // The ID of a process in another environment, for example in WSL, means nothing on the machine of the IDE,
+        // where the tools that take this ID (attach a debugger, a profiler) look for the process.
+        pidDeferred?.complete(if (bazelRunner.host.isLocal) bazelProcess.pid else null)
         val processResult = bazelProcess.waitAndGetResult()
 
         bepReader.bazelBuildFinished()
@@ -104,7 +113,8 @@ class ExecuteService(
         if (BazelFeatureFlags.killServerOnCancel) {
           val serverPid = bepReader?.serverPid?.get() ?: 0
           if (serverPid > 0) {
-            killProcess(serverPid.toInt())
+            // The ID is a process ID of the environment where Bazel runs.
+            withContext(NonCancellable) { bazelRunner.host.killProcess(serverPid) }
           }
         }
         throw e

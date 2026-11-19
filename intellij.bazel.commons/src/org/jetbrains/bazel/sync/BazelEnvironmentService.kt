@@ -1,25 +1,33 @@
 package org.jetbrains.bazel.sync
 
-import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.platform.eel.EelDescriptor
 import com.intellij.platform.eel.channels.EelDelicateApi
 import com.intellij.platform.eel.environmentVariables
+import com.intellij.platform.eel.isWindows
+import com.intellij.platform.eel.path.EelPath
+import com.intellij.platform.eel.path.EelPathException
+import com.intellij.platform.eel.pathSeparator
+import com.intellij.platform.eel.provider.LocalEelDescriptor
+import com.intellij.platform.eel.provider.asNioPath
 import com.intellij.platform.eel.provider.getEelDescriptor
 import com.intellij.platform.eel.provider.toEelApi
 import com.intellij.util.ShellEnvironmentReader
-import com.intellij.util.system.OS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.config.isBazelProject
+import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
 private val LOG = logger<BazelEnvironmentService>()
@@ -33,7 +41,7 @@ private val LOG = logger<BazelEnvironmentService>()
  */
 @ApiStatus.Internal
 @Service(Service.Level.PROJECT)
-class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
+class BazelEnvironmentService(private val project: Project, scope: CoroutineScope) {
   @OptIn(EelDelicateApi::class)
   private val environmentDeferred: Deferred<Map<String, String>> = scope.async(Dispatchers.IO) {
     try {
@@ -45,8 +53,38 @@ class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
     }
     catch (e: Throwable) {
       LOG.warn(e)
-      System.getenv()
+      fallbackEnvironment()
     }
+  }
+
+  /**
+   * The environment to use when the interactive login shell fails or is too slow.
+   *
+   * The environment of the IDE fits only a project on the machine of the IDE.
+   * For a project in WSL, it holds a Windows `PATH`, and a process in WSL cannot find even `bash` with it.
+   * So for another host, ask it again with cheaper means, and prefer no environment at all over the one of the IDE.
+   */
+  private suspend fun fallbackEnvironment(): Map<String, String> {
+    val descriptor = project.getEelDescriptor()
+    if (descriptor === LocalEelDescriptor) return System.getenv()
+    val exec = descriptor.toEelApi().exec
+    val attempts: List<Pair<String, suspend () -> Map<String, String>>> = listOf(
+      "login shell" to { exec.environmentVariables().loginNonInteractive().eelIt().await() },
+      "process" to { exec.environmentVariables().minimal().eelIt().await() },
+    )
+    for ((name, fetch) in attempts) {
+      try {
+        return withTimeout(10.seconds) { fetch() }
+      }
+      catch (e: CancellationException) {
+        if (e !is TimeoutCancellationException) throw e
+        LOG.warn("Cannot read the $name environment of $descriptor", e)
+      }
+      catch (e: Exception) {
+        LOG.warn("Cannot read the $name environment of $descriptor", e)
+      }
+    }
+    return emptyMap()
   }
 
   suspend fun getEnvironment(): Map<String, String> =
@@ -54,7 +92,7 @@ class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
 
   suspend fun findInPath(vararg executableNames: String): Path? {
     val pathValue = getEnvironment()["PATH"] ?: return null
-    return findExecutableInPath(pathValue, *executableNames)
+    return findExecutableInPath(pathValue, project.getEelDescriptor(), *executableNames)
   }
 
   internal class StartupActivity : ProjectActivity {
@@ -76,13 +114,22 @@ class BazelEnvironmentService(project: Project, scope: CoroutineScope) {
  * The directory order comes first, as in a shell: the first directory with any of the names wins.
  * In one directory, the order of [executableNames] decides.
  * The search skips a directory with a matching name, and an empty or a relative entry of [pathValue].
- * On Windows, the search accepts only `<name>.exe`.
+ * In a Windows environment, the search accepts only `<name>.exe`.
  * A Windows process cannot run a file without an extension, and every file on Windows is executable.
  */
 @ApiStatus.Internal
-fun findExecutableInPath(pathValue: String, vararg executableNames: String): Path? {
-  val fileNames = if (OS.CURRENT == OS.Windows) executableNames.map { "$it.exe" } else executableNames.asList()
-  return PathEnvironmentVariableUtil.getPathDirs(pathValue).firstNotNullOfOrNull { dir ->
-    fileNames.firstNotNullOfOrNull { name -> PathEnvironmentVariableUtil.findFirst(name, dir) }
+fun findExecutableInPath(pathValue: String, descriptor: EelDescriptor, vararg executableNames: String): Path? {
+  val fileNames = if (descriptor.osFamily.isWindows) executableNames.map { "$it.exe" } else executableNames.asList()
+  return pathValue.split(descriptor.osFamily.pathSeparator).firstNotNullOfOrNull { dir ->
+    val eelDir = try {
+      EelPath.parse(dir, descriptor)
+    }
+    catch (_: EelPathException) {
+      return@firstNotNullOfOrNull null
+    }
+    fileNames.firstNotNullOfOrNull { name ->
+      val path = eelDir.resolve(name).asNioPath()
+      path.takeIf { Files.isRegularFile(it) && Files.isExecutable(it) }
+    }
   }
 }

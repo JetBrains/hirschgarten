@@ -15,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.scriptPathCommandLine
 import org.jetbrains.bazel.server.bep.TestXmlParser
@@ -95,12 +96,15 @@ suspend fun runJvmCommandLine(
 
   scriptHandler.startNotify()
 
-  val pid: Long = scriptHandler.process.pid()
+  // The ID of a process in another environment, for example in WSL, means nothing on the machine of the IDE.
+  // The IDE would attach to an unrelated local process with it, so the IDE gets no ID then.
+  val isLocalProcess = !commandLine.isProcessCreatorSet
+  val pid: Long? = if (isLocalProcess) scriptHandler.process.pid() else null
   // We run the bash script generated via --script_path, which then starts the JVM via Unix's exec: https://en.wikipedia.org/wiki/Exec_(system_call)
   // Since the PID of the bash process is the same as that of the JVM, we wait for bash script completion before returning the pid to IDEA
   withTimeoutOrNull(5.seconds) {
     while (scriptHandler.process.isAlive) {
-      if (JavaDebuggerAttachUtil.isAttachable(pid.toString())) break
+      if (pid == null || JavaDebuggerAttachUtil.isAttachable(pid.toString())) break
       delay(50.milliseconds)
     }
   }
@@ -114,7 +118,7 @@ suspend fun runJvmCommandLine(
 private fun findXmlOutputAndReport(taskId: TaskId, scriptPath: Path, project: Project) {
   val scriptContent = scriptPath.readText()
   val executableInfo = try {
-    ExecutableInfo.fromBazelRunScript(scriptContent)
+    ExecutableInfo.fromBazelRunScript(scriptContent, BazelHost.of(scriptPath))
   }
   catch (e: UnexpectedScriptContentException) {
     LOG.warn(e)

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.server.bsp.utils.awaitDelimitedMessageBytes
 import java.io.BufferedInputStream
 import java.nio.file.Path
@@ -51,6 +52,9 @@ internal class BepReader(val bepServer: BepServer, val eventFile: Path) {
     private val Timeout = 30.seconds
 
     private fun Path.setFilePermissions() {
+      // A file of another environment than the IDE, for example of WSL, has no java.io.File.
+      // The plugin creates the file as the user that runs Bazel there, so that user can read and write it already.
+      if (!BazelHost.of(this).isLocal) return
       with(toFile()) {
         setReadable(true, true)
         setWritable(true, true)

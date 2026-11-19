@@ -7,8 +7,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.commons.bazelHost
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import kotlin.io.path.invariantSeparatorsPathString
 
 private const val PATH_GROUP_ID = "path"
 private const val LINE_GROUP_ID = "line"
@@ -72,7 +74,15 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
   private fun String.toVirtualFileInTheProject(): VirtualFile? {
     if ('/' !in this && '\\' !in this) return null
     val path = toAbsolutePath()
-    val virtualFile = LocalFileSystem.getInstance().findFileByPathWithoutCaching(path) ?: return null
+    // Bazel prints a path of its own environment. For a project in WSL, `/home/user/A.java` is a file in WSL, not on the machine of the IDE.
+    val host = project.bazelHost
+    val idePath = if (!host.isLocal && host.isAbsoluteHostPath(path)) {
+      host.toIdePathOrNull(path)?.invariantSeparatorsPathString ?: return null
+    }
+    else {
+      path
+    }
+    val virtualFile = LocalFileSystem.getInstance().findFileByPathWithoutCaching(idePath) ?: return null
     return virtualFile.takeIf { it.exists() }
   }
 

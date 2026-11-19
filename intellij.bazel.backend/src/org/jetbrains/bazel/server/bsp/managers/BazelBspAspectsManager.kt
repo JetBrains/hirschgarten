@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.bsp.managers
 import com.intellij.aspect.lib.AspectConfig
 import com.intellij.aspect.lib.Rules
 import com.intellij.aspect.lib.deployAspectZip
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
@@ -12,6 +13,7 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.noRunValidations
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.remoteDownloadOutputsTopLevel
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.skipIncompatibleExplicitTargets
+import org.jetbrains.bazel.commons.BazelHost
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.BzlmodRepoMapping
@@ -29,7 +31,15 @@ import org.jetbrains.bazel.util.BazelRuleSet
 import org.jetbrains.bazel.util.BazelRuleSetProvider
 import org.jetbrains.bazel.util.isBundledFor
 import org.jetbrains.bsp.protocol.TaskId
+import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
+
+private val log = logger<BazelBspAspectsManager>()
+
+// The line `os = "<name>",` of the generated config.bzl
+private val ASPECT_CONFIG_OS_REGEX = Regex("""(\bos\s*=\s*)"[^"]*"""")
 
 @ApiStatus.Internal
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
@@ -158,6 +168,32 @@ class BazelBspAspectsManager(
         dropNoIde = dropNoIde,
       ),
     )
+    setOperatingSystemOfBazelInAspectConfig()
+  }
+
+  /**
+   * The aspect library writes the operating system of the JVM of the IDE to its configuration,
+   * and the aspect chooses the shell of its actions by that value: `cmd.exe` on Windows.
+   * Bazel can run in another environment than the IDE, for example in WSL, where its actions need the shell of that system.
+   * So this function writes the operating system of the environment of Bazel to the configuration.
+   */
+  private fun setOperatingSystemOfBazelInAspectConfig() {
+    val host = BazelHost.of(workspaceRoot)
+    if (host.isLocal) return
+    val configFile = workspaceRoot.resolve(Constants.DOT_BAZELBSP_DIR_NAME).resolve("config").resolve("config.bzl")
+    val content = try {
+      configFile.readText()
+    }
+    catch (e: IOException) {
+      log.warn("Cannot read the aspect configuration $configFile", e)
+      return
+    }
+    val newContent = ASPECT_CONFIG_OS_REGEX.replace(content) { "${it.groupValues[1]}\"${host.osNameLowercase()}\"" }
+    if (newContent == content) {
+      if (!ASPECT_CONFIG_OS_REGEX.containsMatchIn(content)) log.warn("The aspect configuration $configFile has no `os` value")
+      return
+    }
+    configFile.writeText(newContent)
   }
 
   private fun RulesetInstance.calculateCanonicalName(repoMapping: RepoMapping): String? =
