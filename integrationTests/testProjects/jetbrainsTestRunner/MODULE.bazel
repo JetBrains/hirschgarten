@@ -21,7 +21,7 @@ maven.install(
     lock_file = "//:maven_install.json",
     repositories = [
         "https://cache-redirector.jetbrains.com/maven-central",
-        "https://cache-redirector.jetbrains.com/intellij-dependencies",
+        "https://cache-redirector.jetbrains.com/maven/ultimate-public",
         "https://www.jetbrains.com/intellij-repository/releases",
         "https://www.jetbrains.com/intellij-repository/snapshots",
     ],
