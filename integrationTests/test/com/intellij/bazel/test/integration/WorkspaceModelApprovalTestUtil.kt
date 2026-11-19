@@ -19,6 +19,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -30,6 +31,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceEnvironmentCapabilit
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
+import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
@@ -151,8 +153,10 @@ internal suspend fun doWorkspaceModelTest(
       outputResolver = DefaultOutputLocationResolver.createHardlinkResolving(bazelInfo),
       outputParser = OutputLocationParser(BazelPathsResolver(bazelInfo), BazelOutFileHardLinks.NONE),
       outFileHardLinks = BazelOutFileHardLinks.NONE,
-      bazelInfo = bazelInfo,
-      WorkspaceEnvironmentCapabilities(supportSdkTable = true)
+      WorkspaceEnvironmentCapabilities(supportSdkTable = true),
+      server = object : BuildServerMock() {
+          override val bazelInfo: BazelInfo = bazelInfo
+      },
     )
 
     helper.invoke(reporter, workspaceSnapshot, taskId)

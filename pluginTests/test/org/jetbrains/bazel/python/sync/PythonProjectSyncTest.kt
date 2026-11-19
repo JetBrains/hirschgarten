@@ -1061,8 +1061,8 @@ class PythonProjectSyncTest {
         outputResolver = buildServerMock.outputResolver,
         outputParser = buildServerMock.outputParser,
         outFileHardLinks = buildServerMock.outFileHardLinks,
-        bazelInfo = buildServerMock.bazelInfo,
-        WorkspaceEnvironmentCapabilities(supportSdkTable = true)
+        WorkspaceEnvironmentCapabilities(supportSdkTable = true),
+        server = buildServerMock,
       )
       helper.invoke(reporter, snapshot, TaskGroupId.EMPTY.task("test"))
       if (runPostProcessing) {

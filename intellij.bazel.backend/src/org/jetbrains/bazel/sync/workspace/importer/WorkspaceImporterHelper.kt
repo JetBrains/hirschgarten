@@ -1,16 +1,21 @@
 package org.jetbrains.bazel.sync.workspace.importer
 
+import com.intellij.aspect.lib.INTELLIJ_ASPECT
+import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.externalSystem.autolink.mapExtensionSafe
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.commons.BazelInfo
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.config.BazelBackendBundle
+import org.jetbrains.bazel.languages.projectview.projectView
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.isolateSubtaskFailure
 import org.jetbrains.bazel.progress.withSubtask
+import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
@@ -27,9 +32,10 @@ class WorkspaceImporterHelper(
   private val outputResolver: OutputLocationResolver,
   private val outputParser: OutputLocationParser,
   private val outFileHardLinks: BazelOutFileHardLinks,
-  private val bazelInfo: BazelInfo,
-  private val capabilities: WorkspaceEnvironmentCapabilities
+  private val capabilities: WorkspaceEnvironmentCapabilities,
+  private val server: BazelServerFacade,
 ) {
+  private val bazelInfo = server.bazelInfo
   private val workspaceModel = WorkspaceModel.getInstance(project)
   private val toSkip = mutableSetOf<BazelWorkspaceImporter>()
   private lateinit var importers: List<BazelWorkspaceImporter>
@@ -55,8 +61,10 @@ class WorkspaceImporterHelper(
       bazelInfo = bazelInfo,
       capabilities = capabilities,
     )
+    val rootTargets = snapshot.targetGraph.rootTargets
     importers = BazelWorkspaceImporterFactory.EP_NAME.mapExtensionSafe { it.createWorkspaceImporter(context) }
     val namingBuilder = GlobalNamingContextBuilder.create(snapshot.repoMapping)
+    val toolOutputRequests = ToolOutputRequestsCollector()
 
     taskConsole.withSubtask(
       reporter, taskId.subTask("workspace-importers"),
@@ -67,9 +75,23 @@ class WorkspaceImporterHelper(
         message = BazelBackendBundle.message("workspace.importer.phase.initialization.progress"),
       ) { taskId ->
         importers.forEach { importer ->
-          val result = importer.runContextual(taskId, WorkspaceImporterPhase.Initialize(namingBuilder), snapshot)
+          val result = importer.runContextual(taskId, WorkspaceImporterPhase.Initialize(namingBuilder, toolOutputRequests), snapshot)
           if (result != WorkspaceImporterResult.Success) toSkip += importer
         }
+      }
+
+      val neededToolOutputs = toolOutputRequests.getOutputGroupRequests()
+      val neededOutputFiles = toolOutputRequests.getOutputRequests()
+
+      if (neededToolOutputs.isNotEmpty()) {
+       taskConsole.withSubtask(
+         subtaskId = taskId.subTask("workspace-importers-materialize-tools"),
+         message = BazelBackendBundle.message("build.workspace.tools", neededToolOutputs.map { it.toString() }.joinToString(", "))
+       )  {
+         taskId ->
+         val targetsSpec = TargetCollection(rootTargets.map {it.label}.distinct().toList())
+         server.materializeExtraSyncOutputs(taskId, targetsSpec, neededToolOutputs.toList(), neededOutputFiles.toList())
+       }
       }
 
       val naming = namingBuilder.build()
