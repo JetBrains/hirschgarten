@@ -42,18 +42,18 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     if (!BazelCLionFeatureFlags.isCLionEnabled) return WorkspaceImporterResult.Abort
 
     return when (phase) {
-      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, taskId)
+      is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase, taskId)
       is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
       is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
       else -> WorkspaceImporterResult.Success
     }
   }
 
-  private suspend fun onInitialize(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
+  private suspend fun onInitialize(snapshot: WorkspaceSnapshot, phase: WorkspaceImporterPhase.Initialize, taskId: TaskId): WorkspaceImporterResult {
     val target2Toolchain = subtask(snapshot, "cc.import.task.toolchain.map", taskId) { buildToolchainMap() }
     if (target2Toolchain.isEmpty()) return WorkspaceImporterResult.Abort
 
-    val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings() }
+    val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings(phase.toolOutputRequests) }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
 
     this.configurations = subtask(snapshot, "cc.import.task.equivalence.classes", taskId) { buildEquivalenceClasses(target2Compiler) }

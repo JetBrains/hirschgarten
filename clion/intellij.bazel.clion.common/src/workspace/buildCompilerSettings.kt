@@ -1,17 +1,20 @@
 package org.jetbrains.bazel.clion.workspace
 
+import com.intellij.aspect.lib.OutputGroups
 import com.jetbrains.cidr.lang.toolchains.CidrToolEnvironment
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.clion.workspace.environment.createToolEnvironment
+import org.jetbrains.bazel.sync.workspace.importer.ToolOutputRequests
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.extractData
 import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 private const val PROC_SELF_CWD = "/proc/self/cwd"
 
@@ -38,7 +41,7 @@ data class CcCompilerInfo(
 
 @ApiStatus.Internal
 context(ctx: CcImportContext)
-suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = coroutineScope {
+suspend fun buildCompilerSettings(outputRequests: ToolOutputRequests): Map<WorkspaceTargetKey, CcCompilerInfo> = coroutineScope {
   val result = mutableMapOf<WorkspaceTargetKey, CcCompilerInfo>()
 
   val compilerResolver = CcCompilerResolver(ctx)
@@ -58,6 +61,10 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = c
 
     val cCompiler = compilerResolver.resolve(toolchainInfo.cCompiler, toolEnvironment) ?: continue
     val cppCompiler = compilerResolver.resolve(toolchainInfo.cppCompiler, toolEnvironment) ?: continue
+
+    if ((!cCompiler.path.exists()) || (!cppCompiler.path.exists())) {
+      outputRequests.request(OutputGroups.CC_TOOLS, listOf(toolchainInfo.cppCompiler, toolchainInfo.cppCompiler))
+    }
 
     val compilerInfo = CcCompilerInfo(
       cCompiler = cCompiler.path,
