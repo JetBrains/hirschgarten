@@ -9,6 +9,7 @@ import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
+import org.jetbrains.bazel.sync.workspace.importer.ToolOutputRequestsCollector
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 
@@ -140,8 +141,9 @@ class CcCompilerSettingsTest {
   }
 
   private fun resolve(declare: CcProjectBuilder.() -> Unit): CcCompilerInfo = timeoutRunBlocking {
+    val outputRequest = ToolOutputRequestsCollector()
     val (ctx, compilers) = withTestImportContext(ccProject(declare = declare), project = project) {
-      buildCompilerSettings()
+      buildCompilerSettings(outputRequest)
     }
 
     assertThat(ctx.events).isEmpty()
