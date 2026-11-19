@@ -407,8 +407,8 @@ class ProjectSyncTask(
             outputResolver = server.outputResolver,
             outputParser = server.outputParser,
             outFileHardLinks = server.outFileHardLinks,
-            bazelInfo = server.bazelInfo,
-            WorkspaceEnvironmentCapabilities(supportSdkTable = true)
+            WorkspaceEnvironmentCapabilities(supportSdkTable = true),
+            server = server,
           )
           importerHelper.invoke(progressReporter, workspaceSnapshot, taskId)
 

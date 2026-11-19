@@ -132,7 +132,7 @@ sealed interface WorkspaceImporterPhase {
    *
    * @property naming The only phase where names can be declared, see [GlobalNamingContextBuilder]
    */
-  data class Initialize(val naming: GlobalNamingContextBuilder) : WorkspaceImporterPhase
+  data class Initialize(val naming: GlobalNamingContextBuilder, val toolOutputRequests: ToolOutputRequests) : WorkspaceImporterPhase
 
   /**
    * Apply changes to shared [MutableEntityStorage], remember that [builder] is shared among all [BazelWorkspaceImporter] instances,
