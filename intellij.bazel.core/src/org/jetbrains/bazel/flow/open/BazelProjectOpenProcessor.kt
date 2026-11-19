@@ -32,10 +32,10 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
 
     // The user (or another part of the plugin) may try to open the project by pointing to:
     // BUILD files, MODULE.bazel, project view file, etc. so we need to do normalization here
-    val (projectRootDir, fileBeingOpen) = ResolvedProjectRoot.from(openedFile = openedFile) ?: return null
-    log.trace { "Found project root directory: $projectRootDir" }
+    val (rootDir, projectIdentityFile) = ResolvedProjectRoot.from(openedFile = openedFile) ?: return null
+    log.trace { "Found project root directory: $rootDir, project identity file: $projectIdentityFile" }
 
-    val projectViewFile = pickProjectViewFileForProject(fileBeingOpen, projectRootDir)
+    val projectViewFile = pickProjectViewFileForProject(projectIdentityFile, rootDir)
     log.trace { "Using project view file: $projectViewFile" }
 
     val openProjectTask = projectOpenOptions.toOpenProjectTask().copy(
@@ -44,7 +44,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
       isNewProject = false,
       runConfigurators = true,
 
-      projectRootDir = projectRootDir,
+      projectRootDir = rootDir,
       createModule = false,
 
       callback = { project, _ ->
@@ -64,7 +64,7 @@ internal class BazelProjectOpenProcessor : ProjectOpenProcessor() {
 
     return ProjectManagerEx
       .getInstanceEx()
-      .openProjectAsync(projectViewFile, openProjectTask)
+      .openProjectAsync(projectIdentityFile, openProjectTask)
   }
 
   override val icon: Icon

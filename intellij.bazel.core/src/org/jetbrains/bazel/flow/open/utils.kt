@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.coroutines.BazelApplicationCoroutineScopeService
+import org.jetbrains.bazel.languages.projectview.project.ProjectViewFileLocalizer.isDefaultProjectViewFile
 import org.jetbrains.bazel.utils.rebase
 import org.jetbrains.bazel.utils.toRealPathOrNull
 import org.jetbrains.bazel.utils.toRealPathOrSelf
@@ -35,7 +36,6 @@ internal tailrec fun findProjectFolderFromFile(path: Path?): Path? = when {
   path == null || path.shouldStopTraversal() -> null
   path.workspaceFile != null -> path
   // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
-  // TODO(Son): figure out how to write a test for it to avoid regression later
   isRegularFile(path) &&
   !path.hasNameOf(*Constants.WORKSPACE_FILE_NAMES + Constants.BUILD_FILE_NAMES + Constants.MODULE_BAZEL_LOCK_FILE_NAME) &&
   !path.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) -> null
@@ -60,25 +60,37 @@ private val rejectedDirectories: Set<Path> by lazy {
 }
 
 /**
- * The real path of a project root, and a file under it.
+ * Normalized project root and project identity file.
+ * Create it from the opened file with [ResolvedProjectRoot.from].
+ *
+ * It does 2 things:
+ * * The root is the resolved path of the project directory.
+ *   Bazel resolves the symlinks of the workspace root, so we need to do the same.
+ *   Otherwise, the paths from Bazel do not match the paths of the project files.
+ * * The project identity file is the workspace file for a default project view, and the selected `.bazelproject` for a non-default one.
+ *   A default project view opens through many files, such as `MODULE.bazel`, `.bazelproject` or a `BUILD` file, so we normalize them.
+ *   Otherwise, each of these files gets its own caches, and a reopen through another file builds them again.
  */
 @ConsistentCopyVisibility
-internal data class ResolvedProjectRoot private constructor(val rootDir: Path, val openedFile: Path) {
+internal data class ResolvedProjectRoot private constructor(val rootDir: Path, val projectIdentityFile: Path) {
   companion object {
     /**
-     * Finds the project root of [openedFile] with [findProjectFolderFromFile], changes it to its real path,
-     * and moves [openedFile] onto it. Only the root is resolved.
      * Returns `null` when [openedFile] is not in a Bazel project.
      */
     @RequiresBackgroundThread(generateAssertion = false)
     fun from(openedFile: Path): ResolvedProjectRoot? {
       val projectRoot = findProjectFolderFromFile(openedFile) ?: return null
       val realProjectRoot = projectRoot.toRealPathOrSelf()
-      return ResolvedProjectRoot(
-        rootDir = realProjectRoot,
-        openedFile = openedFile.rebase(from = projectRoot, to = realProjectRoot),
-      )
+      val realOpenedFile = openedFile.rebase(from = projectRoot, to = realProjectRoot)
+      val projectIdentityFile = when {
+        isNonDefaultProjectViewFile(realOpenedFile, realProjectRoot) -> realOpenedFile
+        else -> realProjectRoot.workspaceFile ?: return null
+      }
+      return ResolvedProjectRoot(rootDir = realProjectRoot, projectIdentityFile = projectIdentityFile)
     }
+
+    private fun isNonDefaultProjectViewFile(file: Path, rootDir: Path): Boolean =
+      file.hasExtensionOf(Constants.PROJECT_VIEW_FILE_EXTENSION) && !isDefaultProjectViewFile(file, rootDir)
   }
 }
 
