@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.golang.sync
 
 import com.intellij.build.events.MessageEvent
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.golang.resolve.BazelGoBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.gazelleTarget
 import org.jetbrains.bazel.languages.projectview.projectView
@@ -37,7 +36,7 @@ internal class RunGazelleTargetPreSyncHook : ProjectPreSyncHook {
         if (buildTargetRun.statusCode == BazelStatus.BUILD_ERROR) {
           project.syncConsole.addDiagnosticMessage(
             taskId = taskId,
-            message = "Specify the correct gazelle_target: in your selected .bazelproject",
+            message = BazelGoBundle.message("progress.text.specify.gazelle.target.in.selected.bazelproject"),
             severity = MessageEvent.Kind.WARNING,
           )
         }
