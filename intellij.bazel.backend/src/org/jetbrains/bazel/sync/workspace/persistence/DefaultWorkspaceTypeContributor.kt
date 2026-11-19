@@ -14,6 +14,7 @@ import org.jetbrains.bazel.sync.workspace.persistence.mvstore.PartialWorkspaceTa
 import org.jetbrains.bazel.sync.workspace.persistence.mvstore.WorkspaceTargetContent
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.LabelConfigKey
+import org.jetbrains.bazel.sync.workspace.snapshot.MissingGeneratedSources
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
@@ -46,6 +47,7 @@ internal class DefaultWorkspaceTypeContributor : WorkspaceTypeContributor {
     type<WorkspaceTargetKey>()
     type<WorkspaceSnapshotMetadata>()
     type<CommonWorkspaceSyncConfig>()
+    type<MissingGeneratedSources>()
     type<TargetKind>()
     type<RuleType>()
     type<LanguageClass>()

@@ -34,6 +34,7 @@
     <module name="intellij.platform.core.ui"/>
     <module name="intellij.platform.debugger"/>
     <module name="intellij.platform.debugger.impl"/>
+    <module name="intellij.platform.editor.ex"/>
     <module name="intellij.platform.editor.ui"/>
     <module name="intellij.platform.execution"/>
     <module name="intellij.platform.execution.impl"/>
@@ -63,6 +64,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <unresolvedImportChecker implementation="org.jetbrains.bazel.clion.ui.notifications.CcUnresolvedImportChecker"/>
     <runHandlerProvider implementation="org.jetbrains.bazel.clion.run.CcRunHandler$Provider"/>
     <runHandlerProvider implementation="org.jetbrains.bazel.clion.run.CcTestHandler$Provider"/>
     <testLocationHintProvider implementation="org.jetbrains.bazel.clion.run.BazelCcTestLocationHintProvider"/>

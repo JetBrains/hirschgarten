@@ -69,6 +69,11 @@ class WorkspaceTargetMerger(val mergeFunctions: MergeFunctionMap) {
       .map { (type, data) ->
         when {
           data.size == 1 -> data.single()
+          type == MissingGeneratedSources::class -> MissingGeneratedSources(
+            data.filterIsInstance<MissingGeneratedSources>()
+              .map { it.sources }
+              .reduce { left, right -> mergeLocationCollections(left, right) },
+          )
           else -> {
             @Suppress("UNCHECKED_CAST")
             val fn = mergeFunctions[type] as? MergeFunction<BuildTargetData>?

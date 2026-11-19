@@ -24,6 +24,7 @@ import org.jetbrains.bazel.performance.measure
 import org.jetbrains.bazel.server.BazelServerFacade
 import org.jetbrains.bazel.sync.workspace.languages.LanguagePlugin
 import org.jetbrains.bazel.sync.workspace.languages.createLanguageProjectMappers
+import org.jetbrains.bazel.sync.workspace.snapshot.MissingGeneratedSources
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.toWorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.targetKind.TargetKindService
@@ -66,7 +67,8 @@ class AspectBazelProjectMapper(
     }
   }
 
-  private suspend fun createWorkspaceTarget(
+  @ApiStatus.Internal
+  suspend fun createWorkspaceTarget(
     target: TargetIdeInfo,
     build: Boolean,
     taskId: TaskId,
@@ -83,21 +85,31 @@ class AspectBazelProjectMapper(
     }
 
     val missingFilesReporter = MissingFilesReporter(project, taskId, label, build)
+    val missingGeneratedSources = ArrayList<ArtifactLocation>()
 
     suspend fun resolveSourceSet(
       srcs: List<ArtifactLocation>,
+      missingGenerated: MutableList<ArtifactLocation>? = null,
       category: (ArtifactLocation) -> MissingFileCategory,
     ): OutputLocationCollection {
       val existing = srcs.filter { src ->
         val path = bazelPathsResolver.resolve(src, NoLocalRepositories)
         if (!path.exists()) {
           missingFilesReporter.add(category(src), src, path)
+          if (!src.isSource) missingGenerated?.add(src)
           return@filter false
         }
         true
       }
       return OutputLocationCollectionBuilder.build(existing, server.outputParser)
     }
+
+    val sources = resolveSourceSet(target.srcsList, missingGeneratedSources) { src ->
+      if (src.isSource) MissingFileCategory.SOURCES else MissingFileCategory.GENERATED_SOURCES
+    }
+    val generatedSourcesData = if (missingGeneratedSources.isEmpty()) emptyList() else listOf(
+      MissingGeneratedSources(OutputLocationCollectionBuilder.build(missingGeneratedSources, server.outputParser)),
+    )
 
     return BuildTarget(
       info = BuildTargetInfo(
@@ -109,9 +121,9 @@ class AspectBazelProjectMapper(
         workspaceName = target.workspaceName,
       ),
       dependencies = target.depsList.map { it.toDependencyLabel() },
-      sources = resolveSourceSet(target.srcsList) { src -> if (src.isSource) MissingFileCategory.SOURCES else MissingFileCategory.GENERATED_SOURCES },
+      sources = sources,
       resources = resolveSourceSet(target.jvmTargetInfo.resourcesList) { MissingFileCategory.RESOURCES },
-      data = buildData,
+      data = buildData + generatedSourcesData,
     ).also {
       missingFilesReporter.report()
     }

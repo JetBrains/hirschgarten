@@ -91,4 +91,7 @@ val BuildTarget.isManual: Boolean
   get() = info.isManual
 
 @ApiStatus.Internal
+fun BuildTarget.generatedSources(): Sequence<OutputLocation> = sources.getOutputLocations().filter { it.isGenerated }
+
+@ApiStatus.Internal
 fun BuildTarget.nonGeneratedSources(): Sequence<OutputLocation> = sources.getOutputLocations().filter { it.isSource }

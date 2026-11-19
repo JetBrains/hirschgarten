@@ -60,11 +60,9 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
-import org.jetbrains.bsp.protocol.relativeNioPath
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.io.path.extension
 import com.intellij.platform.workspace.jps.entities.DependencyScope as EntitiesDependencyScope
 
 /**
@@ -311,9 +309,11 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
     val scalaSdkDep = plan.scalaTarget?.takeIf { scalaSdkExtensionExists() }
       ?.let { toLibraryDependency(libraryName = it.scalaVersion.scalaVersionToScalaSdkName(), exported = false) }
     val associatesDeps = plan.associates.map { moduleDependency(it, exported = true) }
-    val deps = baseDependencies(plan.jdkName) +
-               dependenciesAsItems(plan.moduleName, plan.resolvedDeps, scalaSdkDep) +
-               associatesDeps
+    val deps = buildList {
+      addAll(this@JvmTargetEntitiesBuilder.baseDependencies(plan.jdkName))
+      addAll(this@JvmTargetEntitiesBuilder.dependenciesAsItems(plan.moduleName, plan.resolvedDeps, scalaSdkDep))
+      addAll(associatesDeps)
+    }
 
     val defaultRootTypeId = if (target.kind.ruleType == RuleType.TEST) JAVA_TEST_SOURCE_ROOT_TYPE else JAVA_SOURCE_ROOT_TYPE
     val moduleEntity = addModuleEntity(target, plan.moduleName, plan.resolvedDeps, defaultRootTypeId, deps, storage)
@@ -489,10 +489,6 @@ class JvmTargetEntitiesBuilder(private val ctx: ImportContext) {
 // RC: naming helpers duplicated from ModuleDetailsToJavaModuleTransformer.kt so this file is independent of MMM.
 @ApiStatus.Internal
 fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
-
-private val JVM_SOURCE_EXTENSIONS = setOf("java", "kt", "scala")
-
-internal fun OutputLocation.hasJvmSourceExtension(): Boolean = relativeNioPath.extension in JVM_SOURCE_EXTENSIONS
 
 @ApiStatus.Internal
 fun OutputLocationCollection.resolvePaths(resolve: (OutputLocation) -> Path?): List<Path> =

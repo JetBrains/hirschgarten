@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.workspace.persistence.mvstore
 
+import com.intellij.testFramework.common.timeoutRunBlocking
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.junit5.fixture.projectFixture
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
@@ -23,16 +24,20 @@ import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JvmBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
+import org.jetbrains.bazel.sync.workspace.snapshot.MissingGeneratedSources
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotMetadata
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetGraph
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.sync.workspace.snapshot.findBuildData
 import org.jetbrains.bazel.test.framework.target.TestBuildTarget
 import org.jetbrains.bazel.test.framework.testBazelInfo
+import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StringsCollection
+import org.jetbrains.bsp.protocol.copy
 import org.junit.jupiter.api.Test
 import java.lang.ref.Reference
 import java.nio.file.Path
@@ -171,6 +176,37 @@ class SnapshotStorageTest {
       labelId2Label = labelId2Label,
     )
     return SavedState(targets, partial)
+  }
+
+  @Test
+  fun `missing generated sources survive reopening the snapshot`(): Unit = timeoutRunBlocking {
+    val dbFile = tempDir.resolve("snapshot_db.data")
+    val missingSources = OutputLocationCollectionBuilder.ofLocations(
+      listOf(OutputLocation.Output(TEST_OUTPUT_ROOT, "Generated.java")),
+    )
+    val storage = SnapshotStorage(dbFile, buildKryo())
+    val state: SavedState
+    val expected: BuildTarget
+    try {
+      val generation = storage.createGeneration(1)
+      state = saveAll(generation, count = 1)
+      val target = state.targets.values.single()
+      expected = target.copy(data = target.data + MissingGeneratedSources(missingSources))
+      generation.saveTarget(WorkspaceTargetToSave(keyId = 1, target = expected))
+      storage.commit()
+    } finally {
+      storage.close()
+    }
+
+    val reopenedStorage = SnapshotStorage(dbFile, buildKryo())
+    try {
+      val reopened = reopenedStorage.openGeneration(1).shouldNotBeNull()
+      val restored = reopened.findOrLoadTarget(state.partial, expected.key).shouldNotBeNull()
+      restored.findBuildData<MissingGeneratedSources>()?.sources shouldBe missingSources
+      restored.sources shouldBe expected.sources
+    } finally {
+      reopenedStorage.close()
+    }
   }
 
   @Test

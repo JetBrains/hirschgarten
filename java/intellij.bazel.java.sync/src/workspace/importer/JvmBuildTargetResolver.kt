@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.label.DependencyLabel
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass.hasJvmSourceExtension
 import org.jetbrains.bazel.sync.workspace.languages.java.JavaWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaProviderData
 import org.jetbrains.bazel.sync.workspace.languages.jvm.JavaToolchainData

@@ -74,6 +74,7 @@ jvm_library(
         "@community//libraries/kotlinx/coroutines/core",
         "@community//platform/consoleView/impl",
         "@community//platform/execution-impl",
+        "@community//platform/editor-ui-ex:editor-ex",
     ],
 )
 
@@ -138,6 +139,7 @@ jvm_library(
         "@community//libraries/kotlinx/coroutines/core:core_test_lib",
         "@community//platform/consoleView/impl:impl_test_lib",
         "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/editor-ui-ex:editor-ex_test_lib",
     ],
 )
 ### auto-generated section `build intellij.bazel.clion.core` end

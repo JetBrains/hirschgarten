@@ -28,6 +28,7 @@ import org.jetbrains.bazel.sync.workspace.languages.jvm.ScalaBuildTarget
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeContributor
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTypeEntry
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
+import org.jetbrains.bazel.sync.workspace.snapshot.MissingGeneratedSources
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceAspectIds
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
@@ -335,6 +336,7 @@ class SnapshotKryoSerializationTest {
   @Test
   fun `every build target data implementation`() {
     val samples: List<BuildTargetData> = listOf(
+      MissingGeneratedSources(locations(generatedTestLocation("Generated.java"))),
       jvmBuildTarget(),
       KotlinBuildTarget(
         languageVersion = "2.1",

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.JavaLanguageClass.hasJvmSourceExtension
 import org.jetbrains.bazel.sync.isJvmTarget
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameProducer
 import org.jetbrains.bazel.sync.workspace.importer.GlobalNamingContext.NameSpace
