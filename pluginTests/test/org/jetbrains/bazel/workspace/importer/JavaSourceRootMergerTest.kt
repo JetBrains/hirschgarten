@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspace.importer
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.testFramework.junit5.TestDisposable
 import com.intellij.testFramework.junit5.fixture.tempPathFixture
@@ -19,6 +20,8 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
+import kotlin.io.path.createSymbolicLinkPointingTo
+import kotlin.io.path.deleteExisting
 
 @BazelTestApplication
 internal class JavaSourceRootMergerTest {
@@ -43,20 +46,20 @@ internal class JavaSourceRootMergerTest {
   }
 
   @Test
-  fun `should merge a single source into its parent directory`() {
-    val file = file("pkg/src/main/java/com/example/File1.java")
+  fun `should merge a single source without a conventional root into its parent directory`() {
+    val file = file("pkg/a/b/File1.java")
 
     merge(sourceRoot(file))
-      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("src/main/java/com/example")))
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("a/b")))
   }
 
   @Test
   fun `should merge nested sources into the directory of the outer one`() {
-    val file1 = file("pkg/src/a/File1.java")
-    val file2 = file("pkg/src/a/b/File2.java")
+    val file1 = file("pkg/a/File1.java")
+    val file2 = file("pkg/a/b/File2.java")
 
     merge(sourceRoot(file1), sourceRoot(file2))
-      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("src/a")))
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("a")))
   }
 
   @Test
@@ -176,12 +179,12 @@ internal class JavaSourceRootMergerTest {
 
   @Test
   fun `should ignore foreign non-JVM files`() {
-    val file = file("pkg/src/File1.java")
-    file("pkg/src/BUILD")
-    file("pkg/src/README.md")
+    val file = file("pkg/a/File1.java")
+    file("pkg/a/BUILD")
+    file("pkg/a/README.md")
 
     merge(sourceRoot(file))
-      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("src")))
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("a")))
   }
 
   @Test
@@ -302,6 +305,131 @@ internal class JavaSourceRootMergerTest {
 
     merge(sourceRoot(file1), sourceRoot(genFile, generated = true))
       .shouldContainExactlyInAnyOrder(sourceRoot(file1), sourceRoot(genFile, generated = true))
+  }
+
+  @Test
+  fun `should merge sources into their conventional root`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+
+    merge(sourceRoot(file))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot))
+  }
+
+  @Test
+  fun `should not find a conventional root in the path of the package root`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+
+    merge(sourceRoot(file), baseDirectory = javaRoot)
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot.resolve("com/example")))
+  }
+
+  @Test
+  fun `should not merge sources into a conventional root with a foreign source`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+    file("pkg/src/main/java/com/other/Foreign.java")
+
+    merge(sourceRoot(file))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot.resolve("com/example")))
+  }
+
+  @Test
+  fun `should not merge sources into a conventional root with a resource of the target`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+    val resource = file("pkg/src/main/java/messages/Bundle.properties")
+
+    merge(sourceRoot(file), resources = listOf(resource))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot.resolve("com/example")))
+  }
+
+  @Test
+  fun `should not merge sources into a conventional root with a BUILD file`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+    file("pkg/src/main/java/com/other/BUILD")
+
+    merge(sourceRoot(file))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot.resolve("com/example")))
+  }
+
+  @Test
+  fun `should ignore a foreign source which the VFS still lists after its deletion`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+    val deleted = file("pkg/src/main/java/com/other/File2.java")
+    checkNotNull(LocalFileSystem.getInstance().refreshAndFindFileByNioFile(deleted))
+    deleted.deleteExisting()
+    checkNotNull(LocalFileSystem.getInstance().findFileByNioFile(deleted)) { "the VFS must still list the deleted file" }
+
+    merge(sourceRoot(file))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot))
+  }
+
+  @Test
+  fun `should not merge sources into a conventional root with a linked BUILD file`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+    val build = file("defs/nested.BUILD")
+    javaRoot.resolve("tools").createDirectories().resolve("BUILD.bazel").createSymbolicLinkPointingTo(build)
+
+    merge(sourceRoot(file))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot.resolve("com/example")))
+  }
+
+  @Test
+  fun `should not merge sources into a conventional root with a non-JVM source of another target`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file = file("pkg/src/main/java/com/example/File1.java")
+    val script = file("pkg/src/main/java/tools/script.py")
+    val fileToTargets = File2TargetMapBuilder.build(mapOf(script to listOf(targetKey("//pkg:tools"))))
+
+    merge(sourceRoot(file), fileToTargets = fileToTargets)
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot.resolve("com/example")))
+  }
+
+  @Test
+  fun `should not consider the own sources of the target foreign in a conventional root`() {
+    val javaRoot = packageRoot.resolve("src/main/java")
+    val file1 = file("pkg/src/main/java/com/example/File1.java")
+    val file2 = file("pkg/src/main/java/org/example/File2.java")
+    val fileToTargets = File2TargetMapBuilder.build(mapOf(file1 to listOf(targetKey("//pkg:t1")), file2 to listOf(targetKey("//pkg:t1"))))
+
+    merge(sourceRoot(file1), sourceRoot(file2), fileToTargets = fileToTargets)
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot))
+  }
+
+  @Test
+  fun `should merge sources under an outer conventional root into it`() {
+    val outerRoot = packageRoot.resolve("src")
+    val file1 = file("pkg/src/foo/File1.java")
+    val file2 = file("pkg/src/java/com/example/File2.java")
+
+    merge(sourceRoot(file1), sourceRoot(file2))
+      .shouldContainExactlyInAnyOrder(sourceRoot(outerRoot))
+  }
+
+  @Test
+  fun `should not merge other sources into a directory which contains a conventional root`() {
+    val javaRoot = packageRoot.resolve("x/java")
+    val file1 = file("pkg/x/java/com/example/File1.java")
+    val file2 = file("pkg/x/File2.java")
+    val file3 = file("pkg/y/File3.java")
+
+    merge(sourceRoot(file1), sourceRoot(file2), sourceRoot(file3))
+      .shouldContainExactlyInAnyOrder(sourceRoot(javaRoot), sourceRoot(file2), sourceRoot(packageRoot.resolve("y")))
+  }
+
+  @Test
+  fun `should never merge sources above a conventional root which can't be used`() {
+    val file1 = file("pkg/x/java/com/example/File1.java")
+    val file2 = file("pkg/x/File2.java")
+    file("pkg/x/java/other/BUILD")
+
+    merge(sourceRoot(file1), sourceRoot(file2))
+      .shouldContainExactlyInAnyOrder(sourceRoot(packageRoot.resolve("x/java/com/example")), sourceRoot(file2))
   }
 
   private fun merge(

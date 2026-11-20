@@ -31,7 +31,11 @@ private val BAZEL_PROJECT_TREE_APPEARANCE_PROJECT = simpleBazelProject(
 )
 
 private const val COMMON_COLLAPSED = "src/main/java/com/example/common"
+private const val COMMON_COLLAPSED_ROOT = "src/main/java"
+private const val COMMON_COLLAPSED_PACKAGE = "com/example/common"
 private val COMMON_NESTED = arrayOf("src", "main", "java", "com", "example", "common")
+private val COMMON_NESTED_ROOT = arrayOf("src", "main", "java")
+private val COMMON_FLAT_PACKAGES = listOf("com", "com.example", "com.example.common")
 
 class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
@@ -49,8 +53,9 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
           projectView {
             // Compact middle packages: true (default)
-            step("Under common a collapsed node 'src/main/java/com/example/common' exists") {
-              projectViewTree.expandNodeChain("common", COMMON_COLLAPSED)
+            // the directories above the source root collapse into it, and the packages in the source root collapse too
+            step("Under common the collapsed nodes 'src/main/java' and 'com/example/common' exist") {
+              projectViewTree.expandNodeChain("common", COMMON_COLLAPSED_ROOT, COMMON_COLLAPSED_PACKAGE)
             }
           }
 
@@ -64,7 +69,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
             step("Under common separate nodes 'src', 'main', 'java', 'com', 'example', 'common' exist (no collapsing)") {
               projectViewTree.expandNodeChain("common", *COMMON_NESTED)
               projectViewTree.should("no collapsed node under common") {
-                collectExpandedPaths().none { COMMON_COLLAPSED in it.path }
+                collectExpandedPaths().none { COMMON_COLLAPSED_ROOT in it.path || COMMON_COLLAPSED_PACKAGE in it.path }
               }
             }
           }
@@ -88,11 +93,11 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           projectView {
             // Compact middle packages: true (default)
             // 'src' has two children, so it does not collapse, but each of its children collapses into a source root
-            step("Under app/src a collapsed node 'main/java/com/example/app' exists") {
-              projectViewTree.expandNodeChain("app", "src", "main/java/com/example/app")
+            step("Under app/src the collapsed nodes 'main/java' and 'com/example/app' exist") {
+              projectViewTree.expandNodeChain("app", "src", "main/java", "com/example/app")
             }
-            step("Under app/src a collapsed node 'other/java/com/example/other' exists") {
-              projectViewTree.expandNodeChain("app", "src", "other/java/com/example/other")
+            step("Under app/src the collapsed nodes 'other/java' and 'com/example/other' exist") {
+              projectViewTree.expandNodeChain("app", "src", "other/java", "com/example/other")
             }
           }
 
@@ -115,7 +120,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun `flatten packages does not change directories outside source roots in Bazel project tree`() {
+  fun `flatten packages flattens only the packages in source roots in Bazel project tree`() {
     createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -137,11 +142,14 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
           }
 
           projectView {
-            // Flatten packages: true. The source root is the deepest directory, so the directories above it stay nested.
-            step("Under common separate nodes 'src', 'main', 'java', 'com', 'example', 'common' exist") {
-              projectViewTree.expandNodeChain("common", *COMMON_NESTED)
-              projectViewTree.should("no flattened package nodes under common") {
-                collectExpandedPaths().none { info -> info.path.any { it == "com.example" || it == "com.example.common" } }
+            // Flatten packages: true. The directories above the source root stay nested, and the packages in it are flat.
+            step("Under common/src/main/java the package nodes 'com', 'com.example' and 'com.example.common' exist") {
+              projectViewTree.expandNodeChain("common", *COMMON_NESTED_ROOT, "com.example.common")
+              projectViewTree.should("all packages under common/src/main/java are flat") {
+                val packages = collectExpandedPaths()
+                  .filter { info -> info.path.size >= 2 && info.path[info.path.size - 2] == "java" }
+                  .map { info -> info.path.last() }
+                packages.containsAll(COMMON_FLAT_PACKAGES)
               }
             }
           }
@@ -150,7 +158,7 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
   }
 
   @Test
-  fun `hide empty middle packages does not change directories outside source roots in Bazel project tree`() {
+  fun `hide empty middle packages hides only the empty packages in source roots in Bazel project tree`() {
     createContext("bazelProjectTreeAppearance", IdeaBazelCases.withProject(BAZEL_PROJECT_TREE_APPEARANCE_PROJECT))
       .runIdeWithDriver(runTimeout = timeout)
       .useDriverAndCloseIde {
@@ -178,11 +186,11 @@ class BazelProjectTreeAppearanceTest : IdeStarterBaseProjectTest() {
 
           projectView {
             // Flatten packages and hide empty middle packages: true. Directories outside source roots collapse only in compact mode.
-            step("Under common separate nodes 'src', 'main', 'java', 'com', 'example', 'common' exist") {
-              projectViewTree.expandNodeChain("common", *COMMON_NESTED)
-              projectViewTree.should("no collapsed or flattened nodes under common") {
+            step("Under common separate nodes 'src', 'main', 'java' and the package node 'com.example.common' exist") {
+              projectViewTree.expandNodeChain("common", *COMMON_NESTED_ROOT, "com.example.common")
+              projectViewTree.should("no collapsed directory and no empty package under common") {
                 collectExpandedPaths().none { info ->
-                  info.path.any { it == COMMON_COLLAPSED || it == "com.example" || it == "com.example.common" }
+                  info.path.any { it == COMMON_COLLAPSED_ROOT || it == "com" || it == "com.example" }
                 }
               }
             }

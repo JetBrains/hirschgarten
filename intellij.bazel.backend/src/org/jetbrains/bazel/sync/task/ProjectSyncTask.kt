@@ -16,12 +16,18 @@ import com.intellij.openapi.project.IncompleteDependenciesService.IncompleteDepe
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.openapi.vfs.findDirectory
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.commons.constants.Constants
@@ -30,6 +36,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.fus.BazelSyncCollector
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.progress.isolateSubtaskFailure
@@ -55,6 +62,7 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
+import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.TaskGroupId
@@ -379,6 +387,17 @@ class ProjectSyncTask(
             knownRepoMapping = workspaceSnapshot.repoMapping
           }
 
+          // Brings the VFS of the project root up to date with the disk, so the importers read the current file tree.
+          // The recursive refresh visits only the dirty files, which are the changes the file watcher reports and the refresh has not applied yet.
+          // The file watcher can miss a local repository outside the project root, so the refresh visits all of its files.
+          project.syncConsole.withSubtask(
+            reporter = progressReporter,
+            subtaskId = taskId.subTask("refresh-vfs"),
+            text = BazelBackendBundle.message("console.task.refresh.vfs"),
+          ) {
+            refreshVFS(workspaceSnapshot)
+          }
+
           val importerHelper = WorkspaceImporterHelper(
             project = project,
             taskConsole = project.syncConsole,
@@ -444,6 +463,22 @@ class ProjectSyncTask(
         projectModelUpdated = shouldUpdateProjectModel,
       )
     }
+  }
+
+
+  private suspend fun refreshVFS(snapshot: WorkspaceSnapshot) {
+    val projectRoot = project.rootDir.toNioPath()
+    val paths = snapshot.repoMapping.getLocalRepositories().localRepositories.values
+      .map { projectRoot.resolve(it).normalize() }
+      .filterNot { it.startsWith(projectRoot) }
+      .distinct()
+    // the directories of the local repositories, such as a `local_path_override`, which are outside the project root.
+    val outerRepositories = withContext(Dispatchers.IO) {
+      paths.mapNotNull { VirtualFileManager.getInstance().refreshAndFindFileByNioPath(it) }
+    }
+
+    VfsUtil.markDirty(/* recursive = */ true, /* reloadChildren = */ false, *outerRepositories.toTypedArray())
+    RefreshQueue.getInstance().refresh(recursive = true, listOf(project.rootDir) + outerRepositories)
   }
 
   private suspend fun <T> BazelServerFacade.withOutFileHardLinksSync(
