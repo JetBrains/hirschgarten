@@ -62,6 +62,9 @@
     <module name="intellij.bazel.golang.backend"/>
     <module name="intellij.bazel.golang.core"/>
 
+    <!-- javascript modules -->
+    <module name="intellij.bazel.javascript.common"/>
+
     <!-- python modules -->
     <module name="intellij.bazel.python.common"/>
     <module name="intellij.bazel.python.common.performancePlugin"/>
