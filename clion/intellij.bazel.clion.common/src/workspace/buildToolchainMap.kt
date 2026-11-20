@@ -25,7 +25,7 @@ fun buildToolchainMap(): Map<WorkspaceTargetKey, WorkspaceTargetKey> {
   val problems = mutableMapOf<WorkspaceTargetKey, List<WorkspaceTargetKey>>()
   val result = mutableMapOf<WorkspaceTargetKey, WorkspaceTargetKey>()
 
-  for (target in ctx.snapshot.targets.allTargets()) {
+  for (target in ctx.importedTargets()) {
     if (!target.hasBuildData<CcBuildTarget>()) continue
     val candidates = findTargetToolchain(target, toolchains)
 
