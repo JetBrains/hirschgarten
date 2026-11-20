@@ -10,7 +10,7 @@ load(":test_defs.bzl", "CC_TEST_DEPS", "CC_TEST_RUNTIME_DEPS", "clion_plugin_tes
 jvm_library(
     name = "pluginTests.clion_test_lib",
     testonly = True,
-    srcs = glob(["framework/*.kt"]),
+    srcs = glob(["framework/**/*.kt"]),
     module_name = "intellij.bazel.pluginTests.clion",
     resource_strip_prefix = "testResources",
     resources = glob(["testResources/**/*"]),

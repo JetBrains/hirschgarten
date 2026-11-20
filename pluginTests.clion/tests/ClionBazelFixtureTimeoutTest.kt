@@ -1,9 +1,11 @@
-package org.jetbrains.bazel.fixtures
+package org.jetbrains.bazel.clion
 
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
+import org.jetbrains.bazel.fixtures.setUpClionBazelProject
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds

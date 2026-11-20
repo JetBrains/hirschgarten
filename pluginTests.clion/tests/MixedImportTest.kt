@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.import
+package org.jetbrains.bazel.clion
 
 import com.intellij.testFramework.common.timeoutRunBlocking
 import org.jetbrains.bazel.assertions.assertVfsLoads
