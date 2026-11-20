@@ -77,8 +77,8 @@ private fun gitHasCommit(repoDir: Path, sha: String): Boolean =
   ProcessBuilder("git", "cat-file", "-e", "$sha^{commit}")
     .directory(repoDir.toFile())
     .redirectErrorStream(true)
-    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
     .start()
+    .also { it.inputStream.readBytes() }
     .waitFor() == 0
 
 fun bazeliskBuild(repoDir: Path, vararg args: String) {
