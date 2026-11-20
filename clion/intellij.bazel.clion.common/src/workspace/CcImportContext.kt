@@ -7,6 +7,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterContext
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
+import org.jetbrains.bazel.target.isWorkspace
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.TaskId
@@ -38,6 +40,15 @@ interface CcImportContext {
     }
   }
 }
+
+/**
+ * The targets that get a resolve configuration: those of the main repository and of the local repositories.
+ * External and toolchain targets get none, because their configurations would be many times more than those of the
+ * project, and a configuration makes its files project code.
+ */
+@ApiStatus.Internal
+fun CcImportContext.importedTargets(): Sequence<BuildTarget> =
+  snapshot.targets.allTargets().filter { it.isWorkspace(snapshot.repoMapping) }
 
 private class CcImportContextImpl(
   private val ctx: WorkspaceImporterContext,

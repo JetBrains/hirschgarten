@@ -20,6 +20,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
+import org.jetbrains.bazel.test.framework.testproject.TestRepositoriesBuilder
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bazel.workspace.model.test.framework.TEST_OUTPUT_ROOT
 import org.junit.jupiter.api.Test
@@ -515,6 +516,43 @@ class CcEquivalenceClassesTest {
   }
 
   @Test
+  fun testTargetOfExternalRepositoryHasNoConfiguration() {
+    val configurations = resolve(repositories = { external("googletest+") }) {
+      val gtest = ccLibrary {
+        label("@@googletest+//:gtest")
+        repository("googletest+")
+        srcs("googletest/src/gtest.cc", "googletest/src/gtest-internal-inl.h")
+        hdrs("googletest/include/gtest/gtest.h")
+      }
+
+      ccTest {
+        label("//main:test")
+        srcs("main/test.cc")
+        deps(gtest)
+      }
+    }
+
+    assertThat(configurations.forLabel("@@googletest+//:gtest")).isEmpty()
+    assertThat(configurations.forLabel("//main:test")).hasSize(1)
+  }
+
+  @Test
+  fun testHeadersOfLocalRepositoryBecomeHeaders() {
+    val configurations = resolve(repositories = { local("mylib+", "third_party/mylib") }) {
+      ccLibrary {
+        label("@@mylib+//:mylib")
+        repository("mylib+")
+        srcs("mylib.cc", "private.h")
+        hdrs("mylib.h")
+      }
+    }
+
+    assertThat(configurations).hasSize(1)
+    assertThat(configurations.single().sources.map { it.fileName }).containsExactly("mylib.cc")
+    assertThat(configurations.single().headers.map { it.fileName }).containsExactlyInAnyOrder("mylib.h", "private.h")
+  }
+
+  @Test
   fun testPrebuiltLibrariesAreNotSources() {
     val configurations = resolve {
       ccLibrary {
@@ -530,9 +568,10 @@ class CcEquivalenceClassesTest {
   private fun resolve(
     configurations: Map<WorkspaceConfigurationId, WorkspaceConfiguration> = emptyMap(),
     bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO,
+    repositories: TestRepositoriesBuilder.() -> Unit = {},
     declare: CcProjectBuilder.() -> Unit,
   ): List<CcResolveConfiguration> = timeoutRunBlocking {
-    val snapshot = ccProject(bazelInfo = bazelInfo, declare = declare).copy(configurations = configurations)
+    val snapshot = ccProject(bazelInfo = bazelInfo, repositories = repositories, declare = declare).copy(configurations = configurations)
     val (ctx, result) = withTestImportContext(snapshot, project = project) {
       val target2Toolchain = buildToolchainMap()
       val toolchain2Compiler = buildCompilerSettings()

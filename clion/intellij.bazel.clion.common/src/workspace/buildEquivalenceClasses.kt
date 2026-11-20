@@ -66,7 +66,7 @@ context(ctx: CcImportContext)
 fun buildEquivalenceClasses(target2Compiler: Map<WorkspaceTargetKey, CcCompilerInfo?>): List<CcResolveConfiguration> {
   val equivalenceClasses = MultiMap<CcResolveConfiguration.EquivalenceClass, WorkspaceTargetKey>()
 
-  for (target in ctx.snapshot.targets.allTargets()) {
+  for (target in ctx.importedTargets()) {
     val info = target.extractData<CcBuildTarget>() ?: continue
 
     val configuration = CcResolveConfiguration.EquivalenceClass(

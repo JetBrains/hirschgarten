@@ -18,6 +18,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bazel.sync.workspace.snapshot.hasBuildData
+import org.jetbrains.bazel.test.framework.testproject.TestRepositoriesBuilder
 import org.jetbrains.bazel.test.framework.testproject.TestSnapshotBuilder
 import org.jetbrains.bazel.test.framework.testproject.testProjectBazelInfo
 import org.jetbrains.bazel.test.framework.testproject.testWorkspaceSnapshot
@@ -51,8 +52,15 @@ import java.nio.file.Path
  * }
  * ```
  */
-internal fun ccProject(bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO, declare: CcProjectBuilder.() -> Unit): WorkspaceSnapshot {
-  return testWorkspaceSnapshot(bazelInfo) { ccTargets(declare) }
+internal fun ccProject(
+  bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO,
+  repositories: TestRepositoriesBuilder.() -> Unit = {},
+  declare: CcProjectBuilder.() -> Unit,
+): WorkspaceSnapshot {
+  return testWorkspaceSnapshot(bazelInfo) {
+    repositories(repositories)
+    ccTargets(declare)
+  }
 }
 
 /** Adds the targets of a [CcProjectBuilder] declaration to the snapshot. */
@@ -92,6 +100,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
 
   private var label: String? = null
   private var configurationId: String? = null
+  private var repository: String? = null
   private val aspectIds = mutableListOf<String>()
 
   private val srcs = mutableListOf<OutputLocation>()
@@ -115,6 +124,11 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
 
   fun configurationId(configurationId: String) {
     this.configurationId = configurationId
+  }
+
+  /** Puts the files of the target, except the generated ones, into the external repository [canonicalName]. */
+  fun repository(canonicalName: String) {
+    repository = canonicalName
   }
 
   /** Marks the target as a target that an aspect created. */
@@ -192,7 +206,9 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       deps(DependencyLabelKind.TOOLCHAIN, defaultToolchain())
     }
 
-    val directHeaders = hdrs + textualHdrs + privateHdrs
+    val hdrs = hdrs.map(::sourceOfRepository)
+    val textualHdrs = textualHdrs.map(::sourceOfRepository)
+    val directHeaders = hdrs + textualHdrs + privateHdrs.map(::sourceOfRepository)
     val allHeaders = (hdrs + textualHdrs).toMutableList()
     val allIncludes = includes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
     val allQuoteIncludes = quoteIncludes.map(OutputLocationParserWithoutHardlink::parseExecrootPath).toMutableList()
@@ -216,7 +232,7 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
       key = targetKey(label, configurationId, aspectIds),
       kind = TargetKind(kind = kind, languageClasses = setOf(CC_LANGUAGE_CLASS), ruleType = ruleType),
       dependencies = deps.entrySet().flatMap { it.value.map { target -> DependencyLabel(target.key, it.key) } },
-      sources = locations(srcs),
+      sources = locations(srcs.map(::sourceOfRepository)),
       data = listOf(
         CcBuildTarget(
           ruleContext = if (!useRuleContext) null else CcBuildTarget.RuleContext(
@@ -240,6 +256,12 @@ internal class CcTargetBuilder(private val kind: String, private val ruleType: R
         ),
       ),
     )
+  }
+
+  /** Turns a location of the main repository into a source file of [repository], when the target has one. */
+  private fun sourceOfRepository(location: OutputLocation): OutputLocation {
+    val repository = repository
+    return if (repository != null && location is OutputLocation.Workspace) OutputLocation.External(repository, location.relativePath) else location
   }
 }
 
