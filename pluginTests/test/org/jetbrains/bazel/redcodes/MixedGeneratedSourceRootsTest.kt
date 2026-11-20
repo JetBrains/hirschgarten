@@ -6,8 +6,8 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.testFramework.common.timeoutRunBlocking
-import com.intellij.workspaceModel.ide.toPath
 import io.kotest.matchers.collections.shouldBeSingleton
+import io.kotest.matchers.string.shouldEndWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -17,7 +17,6 @@ import org.jetbrains.bazel.test.framework.checkHighlighting
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
-import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 @BazelTestApplication
@@ -41,8 +40,8 @@ class MixedGeneratedSourceRootsTest {
         .single()
       val sourceRoots = moduleEntity.contentRoots.flatMap { it.sourceRoots }
       val (generatedRoots, realRoots) = sourceRoots.partition { it.isGenerated() }
-      realRoots.shouldBeSingleton { it.url.toPath().endsWith(Path("module/src/main/java")) }
-      generatedRoots.shouldBeSingleton { it.url.toPath().endsWith(Path("bin/module/com/example")) }
+      realRoots.shouldBeSingleton { it.url.url shouldEndWith "/module/src/main/java" }
+      generatedRoots.shouldBeSingleton { it.url.url shouldEndWith "/bin/module/com/example/gen" }
       fixture.checkHighlighting("module/src/main/java/com/example/App.java")
     }
   }

@@ -57,6 +57,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 
 private val FOO_BAR: Label = Label.parse("//foo:bar")
@@ -103,6 +104,23 @@ internal class JvmTargetEntitiesBuilderTest {
     check(modules.size == 1) { "expected 1 module, got ${modules.size}" }
     val sourceRoots = storage.entities<SourceRootEntity>().toList()
     check(sourceRoots.isNotEmpty()) { "expected at least one source root" }
+  }
+
+  @Test
+  fun `merges a source into its conventional root`(): Unit = timeoutRunBlocking {
+    val javaRoot = testBazel.workspaceRoot.resolve("svc/src/main/java")
+    val sourcePath = javaRoot.resolve("com/acme").createDirectories().resolve("Foo.java")
+    sourcePath.writeText("package com.acme; class Foo {}")
+    val target = createTestBuildTarget(
+      id = Label.parse("//svc"),
+      kind = TargetKind(kind = "java_library", ruleType = RuleType.LIBRARY, languageClasses = setOf(JavaLanguageClass.JAVA)),
+      sources = listOf(sourcePath),
+    )
+
+    runImport(targets = listOf(target))
+
+    storage.entities<SourceRootEntity>().map { it.url }.toList()
+      .shouldContainExactlyInAnyOrder(javaRoot.toVirtualFileUrl(testBazel.virtualFileUrlManager))
   }
 
   @Test
