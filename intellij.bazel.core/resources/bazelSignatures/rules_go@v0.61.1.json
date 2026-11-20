@@ -12,7 +12,8 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "srcs",
@@ -20,7 +21,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "data",
@@ -28,7 +30,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deps",
@@ -36,7 +39,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embed",
@@ -44,7 +48,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embedsrcs",
@@ -52,7 +57,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "env",
@@ -60,7 +66,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "importpath",
@@ -68,7 +75,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gc_goopts",
@@ -76,7 +84,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gc_linkopts",
@@ -84,7 +93,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "x_defs",
@@ -92,7 +102,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "basename",
@@ -100,7 +111,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "out",
@@ -108,7 +120,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cgo",
@@ -116,7 +129,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cdeps",
@@ -124,7 +138,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cppopts",
@@ -132,7 +147,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "copts",
@@ -140,7 +156,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cxxopts",
@@ -148,7 +165,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "clinkopts",
@@ -156,7 +174,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "pure",
@@ -164,7 +183,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "static",
@@ -172,7 +192,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "race",
@@ -180,7 +201,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "msan",
@@ -188,7 +210,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gotags",
@@ -196,7 +219,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "goos",
@@ -204,7 +228,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "goarch",
@@ -212,7 +237,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "linkmode",
@@ -220,7 +246,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "pgoprofile",
@@ -228,7 +255,8 @@
         "defaultValue": "\"//go/config:empty\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -236,7 +264,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -244,7 +273,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -252,7 +282,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -260,7 +291,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -268,7 +300,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -276,7 +309,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -284,14 +318,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -299,7 +337,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -307,7 +346,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -315,7 +355,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -323,7 +364,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -331,14 +373,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "args",
@@ -346,7 +390,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "output_licenses",
@@ -354,7 +399,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   },
@@ -371,14 +417,16 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "target",
         "doc": "Go binary target to transition to the given platform and/or sdk_version.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "platform",
@@ -386,7 +434,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "sdk_version",
@@ -394,7 +443,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compilation_mode",
@@ -402,7 +452,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -410,7 +461,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -418,7 +470,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -426,7 +479,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -434,7 +488,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -442,7 +497,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -450,7 +506,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -458,14 +515,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -473,7 +534,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -481,7 +543,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -489,7 +552,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -497,7 +561,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -505,14 +570,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "args",
@@ -520,7 +587,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "env",
@@ -528,7 +596,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "output_licenses",
@@ -536,7 +605,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   },
@@ -553,7 +623,8 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "data",
@@ -561,7 +632,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "srcs",
@@ -569,7 +641,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deps",
@@ -577,7 +650,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "importpath",
@@ -585,7 +659,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "importmap",
@@ -593,14 +668,16 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "importpath_aliases",
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embed",
@@ -608,7 +685,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embedsrcs",
@@ -616,7 +694,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gc_goopts",
@@ -624,7 +703,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "x_defs",
@@ -632,7 +712,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cgo",
@@ -640,7 +721,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cdeps",
@@ -648,7 +730,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cppopts",
@@ -656,7 +739,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "copts",
@@ -664,7 +748,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cxxopts",
@@ -672,7 +757,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "clinkopts",
@@ -680,7 +766,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -688,7 +775,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -696,7 +784,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -704,7 +793,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -712,7 +802,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -720,7 +811,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -728,7 +820,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -736,14 +829,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -751,7 +848,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -759,7 +857,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -767,7 +866,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -775,7 +875,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -783,14 +884,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   },
@@ -807,7 +910,8 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "deps",
@@ -815,7 +919,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "data",
@@ -823,7 +928,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "mode",
@@ -831,7 +937,8 @@
         "defaultValue": "\"copy\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "include_data",
@@ -839,7 +946,8 @@
         "defaultValue": "True",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "include_pkg",
@@ -847,7 +955,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "include_transitive",
@@ -855,7 +964,8 @@
         "defaultValue": "True",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -863,7 +973,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -871,7 +982,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -879,7 +991,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -887,7 +1000,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -895,7 +1009,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -903,7 +1018,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -911,14 +1027,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -926,7 +1046,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -934,7 +1055,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -942,7 +1064,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -950,7 +1073,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -958,14 +1082,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   },
@@ -982,14 +1108,16 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "dep",
         "doc": "The target to forward providers from and apply go_tool_transition to.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -997,7 +1125,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -1005,7 +1134,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -1013,7 +1143,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -1021,7 +1152,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -1029,7 +1161,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -1037,7 +1170,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -1045,14 +1179,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -1060,7 +1198,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -1068,7 +1207,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -1076,7 +1216,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -1084,7 +1225,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -1092,14 +1234,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   },
@@ -1116,7 +1260,8 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "data",
@@ -1124,7 +1269,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "srcs",
@@ -1132,7 +1278,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deps",
@@ -1140,7 +1287,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embed",
@@ -1148,7 +1296,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gc_goopts",
@@ -1156,7 +1305,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -1164,7 +1314,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -1172,7 +1323,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -1180,7 +1332,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -1188,7 +1341,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -1196,7 +1350,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -1204,7 +1359,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -1212,14 +1368,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -1227,7 +1387,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -1235,7 +1396,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -1243,7 +1405,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -1251,7 +1414,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -1259,14 +1423,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   },
@@ -1283,7 +1449,8 @@
         "doc": "A unique name for this target.",
         "named": true,
         "positional": false,
-        "required": true
+        "required": true,
+        "aliases": []
       },
       {
         "name": "data",
@@ -1291,7 +1458,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "srcs",
@@ -1299,7 +1467,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deps",
@@ -1307,7 +1476,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embed",
@@ -1315,7 +1485,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "embedsrcs",
@@ -1323,7 +1494,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "env",
@@ -1331,7 +1503,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "env_inherit",
@@ -1339,7 +1512,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "importpath",
@@ -1347,7 +1521,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gc_goopts",
@@ -1355,7 +1530,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gc_linkopts",
@@ -1363,7 +1539,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "rundir",
@@ -1371,7 +1548,8 @@
         "defaultValue": "\"\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "x_defs",
@@ -1379,7 +1557,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "linkmode",
@@ -1387,7 +1566,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cgo",
@@ -1395,7 +1575,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cdeps",
@@ -1403,7 +1584,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cppopts",
@@ -1411,7 +1593,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "copts",
@@ -1419,7 +1602,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "cxxopts",
@@ -1427,7 +1611,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "clinkopts",
@@ -1435,7 +1620,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "pure",
@@ -1443,7 +1629,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "static",
@@ -1451,7 +1638,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "race",
@@ -1459,7 +1647,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "msan",
@@ -1467,7 +1656,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "gotags",
@@ -1475,7 +1665,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "goos",
@@ -1483,7 +1674,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "goarch",
@@ -1491,7 +1683,8 @@
         "defaultValue": "\"auto\"",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "aspect_hints",
@@ -1499,7 +1692,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "compatible_with",
@@ -1507,7 +1701,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "deprecation",
@@ -1515,7 +1710,8 @@
         "defaultValue": "None",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_compatible_with",
@@ -1523,7 +1719,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_group_compatible_with",
@@ -1531,7 +1728,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "exec_properties",
@@ -1539,7 +1737,8 @@
         "defaultValue": "{}",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "features",
@@ -1547,14 +1746,18 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "package_metadata",
         "doc": "<p>List of labels;\n  nonconfigurable; default is the package's\n  <code translate=\"no\" dir=\"ltr\">default_package_metadata</code>\n</p>\n\n<p>\nA list of labels that are associated metadata about this target.\nTypically, the labels are simple rules that return a provider of\nconstant values. Rules and aspects may use these labels to perform some\nadditional analysis on the build graph.\n</p>\n\n<p>\nThe canonical use case is that of\n<a href=\"https://github.com/bazelbuild/rules_license\">rules_license</a>.\nFor that use case, <code translate=\"no\" dir=\"ltr\">package_metadata</code> and\n<code translate=\"no\" dir=\"ltr\">default_package_metadata</code> is used to attach information\nabout a package's licence or version to targets. An aspect applied\nto a top-level binary can be used to gather those and produce\ncompliance reports.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": [
+          "applicable_licenses"
+        ]
       },
       {
         "name": "restricted_to",
@@ -1562,7 +1765,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "tags",
@@ -1570,7 +1774,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "target_compatible_with",
@@ -1578,7 +1783,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "testonly",
@@ -1586,7 +1792,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "toolchains",
@@ -1594,14 +1801,16 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "visibility",
         "doc": "<p>List of labels;\n  nonconfigurable;\n  default varies\n</p>\n\n<p>\n  The <code translate=\"no\" dir=\"ltr\">visibility</code> attribute controls whether the target can be\n  depended on by targets in other locations. See the documentation for\n  visibility.\n</p>\n\n<p>\n  For targets declared directly in a BUILD file or in legacy macros called from\n  a BUILD file, the default value is the package's\n  <code translate=\"no\" dir=\"ltr\">default_visibility</code>\n  if specified, or else <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code>. For targets\n  declared in one or more symbolic macros, the default value is always just\n  <code translate=\"no\" dir=\"ltr\">[\"//visibility:private\"]</code> (which makes it useable only within the\n  package containing the macro's code).\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "args",
@@ -1609,7 +1818,8 @@
         "defaultValue": "[]",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "size",
@@ -1617,14 +1827,16 @@
         "defaultValue": "medium",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "timeout",
         "doc": "<p>String <code translate=\"no\" dir=\"ltr\">\"short\"</code>, <code translate=\"no\" dir=\"ltr\">\"moderate\"</code>, <code translate=\"no\" dir=\"ltr\">\"long\"</code>, or\n  <code translate=\"no\" dir=\"ltr\">\"eternal\"</code>; nonconfigurable; default is derived\n  from the test's <code translate=\"no\" dir=\"ltr\">size</code> attribute</p>\n\n<p>\nHow long the test is expected to run before returning.\n</p>\n\n<p>\nWhile a test's size attribute controls resource estimation, a test's\ntimeout may be set independently.  If not explicitly specified, the\ntimeout is based on the test's size. The test\ntimeout can be overridden with the <code translate=\"no\" dir=\"ltr\">--test_timeout</code> flag, e.g. for\nrunning under certain conditions which are known to be slow. Test timeout values\ncorrespond to the following time periods:\n</p>\n\n<div class=\"devsite-table-wrapper\"><table style=\"width: 100%\">\n  <tbody><tr>\n    <th>Timeout Value</th>\n    <th>Time Period</th>\n  </tr>\n  <tr>\n    <td>short</td>\n    <td>1 minute</td>\n  </tr>\n  <tr>\n    <td>moderate</td>\n    <td>5 minutes</td>\n  </tr>\n  <tr>\n    <td>long</td>\n    <td>15 minutes</td>\n  </tr>\n  <tr>\n    <td>eternal</td>\n    <td>60 minutes</td>\n  </tr>\n</tbody></table></div>\n\n<p>\nFor times other than the above, the test timeout can be overridden with the\n<code translate=\"no\" dir=\"ltr\">--test_timeout</code> bazel flag, e.g. for manually running under\nconditions which are known to be slow. The <code translate=\"no\" dir=\"ltr\">--test_timeout</code> values\nare in seconds. For example <code translate=\"no\" dir=\"ltr\">--test_timeout=120</code> will set the test\ntimeout to two minutes.\n</p>\n\n<p>\n  The environment variable\n  <code translate=\"no\" dir=\"ltr\">TEST_TIMEOUT</code> will be set\n  to the test timeout (in seconds) when spawning the test.\n</p>",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "flaky",
@@ -1632,7 +1844,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "shard_count",
@@ -1640,7 +1853,8 @@
         "defaultValue": "-1",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       },
       {
         "name": "local",
@@ -1648,7 +1862,8 @@
         "defaultValue": "False",
         "named": true,
         "positional": false,
-        "required": false
+        "required": false,
+        "aliases": []
       }
     ]
   }

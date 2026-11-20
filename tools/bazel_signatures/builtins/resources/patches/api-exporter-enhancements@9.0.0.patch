@@ -174,6 +174,36 @@ index 1e50b5a60d..4d4be3ad9d 100644
          "//src/main/java/com/google/devtools/build/lib/cmdline",
          "//src/main/java/com/google/devtools/build/lib/collect/nestedset",
          "//src/main/java/com/google/devtools/build/lib/concurrent:thread_safety",
+diff --git a/src/main/java/com/google/devtools/build/docgen/BuildDocCollector.java b/src/main/java/com/google/devtools/build/docgen/BuildDocCollector.java
+index f41f0bf4..bbe2d86a 100644
+--- a/src/main/java/com/google/devtools/build/docgen/BuildDocCollector.java
++++ b/src/main/java/com/google/devtools/build/docgen/BuildDocCollector.java
+@@ -204,7 +204,9 @@ public class BuildDocCollector {
+     for (RuleDocumentation ruleDoc : ruleDocEntries) {
+       RuleClass ruleClass = ruleClassProvider.getRuleClassMap().get(ruleDoc.getRuleName());
+       if (ruleClass != null) {
+-        if (ruleClass.isDocumented()) {
++        if (ruleClass.isDocumented()
++            // IntelliJ: these rules are undocumented in Bazel, but BUILD files can call them.
++            || java.util.Set.of("environment", "config_feature_flag").contains(ruleDoc.getRuleName())) {
+           Class<? extends RuleDefinition> ruleDefinition =
+               ruleClassProvider.getRuleClassDefinition(ruleDoc.getRuleName()).getClass();
+           for (Attribute attribute : ruleClass.getAttributeProvider().getAttributes()) {
+diff --git a/src/main/java/com/google/devtools/build/docgen/BuildEncyclopediaProcessor.java b/src/main/java/com/google/devtools/build/docgen/BuildEncyclopediaProcessor.java
+index d4e311f3..a3c70bed 100644
+--- a/src/main/java/com/google/devtools/build/docgen/BuildEncyclopediaProcessor.java
++++ b/src/main/java/com/google/devtools/build/docgen/BuildEncyclopediaProcessor.java
+@@ -157,7 +157,9 @@ public abstract class BuildEncyclopediaProcessor {
+         if (!ruleMapping.containsKey(ruleFamily)) {
+           ruleMapping.put(ruleFamily, LinkedListMultimap.<RuleType, RuleDocumentation>create());
+         }
+-        if (ruleClass.isDocumented()) {
++        if (ruleClass.isDocumented()
++            // IntelliJ: these rules are undocumented in Bazel, but BUILD files can call them.
++            || java.util.Set.of("environment", "config_feature_flag").contains(ruleDoc.getRuleName())) {
+           ruleMapping.get(ruleFamily).put(ruleDoc.getRuleType(), ruleDoc);
+         }
+       } else {
 diff --git a/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java b/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java
 index de07f09d62..220e230d99 100644
 --- a/src/main/java/com/google/devtools/build/docgen/RuleDocumentationAttribute.java
@@ -303,6 +333,56 @@ index e69063c032..531b5684a1 100644
    /*
     * Collects a list of native rules that are available in BUILD files as top level functions
     * and in BZL files as methods of the native package.
+diff --git a/src/main/java/com/google/devtools/build/lib/rules/intellijdocs/IntellijRuleDocs.java b/src/main/java/com/google/devtools/build/lib/rules/intellijdocs/IntellijRuleDocs.java
+new file mode 100644
+index 0000000..4b4da9d
+--- /dev/null
++++ b/src/main/java/com/google/devtools/build/lib/rules/intellijdocs/IntellijRuleDocs.java
+@@ -0,0 +1,44 @@
++// Copyright 2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
++
++// Empty doc blocks for native rules that Bazel registers without a #BLAZE_RULE doc block.
++// The API exporter exports only rules with a doc block, and only attributes that an ATTRIBUTE
++// block names. The Bazel rule reference has no entry for these rules, so the blocks have no text.
++
++/*<!-- #BLAZE_RULE (NAME = label_setting, FAMILY = General)[GENERIC_RULE] -->
++<!-- #END_BLAZE_RULE -->*/
++
++/* <!-- #BLAZE_RULE(label_setting).ATTRIBUTE(build_setting_default) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/* <!-- #BLAZE_RULE(label_setting).ATTRIBUTE(scope) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/* <!-- #BLAZE_RULE(label_setting).ATTRIBUTE(on_leave_scope) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/*<!-- #BLAZE_RULE (NAME = label_flag, FAMILY = General)[GENERIC_RULE] -->
++<!-- #END_BLAZE_RULE -->*/
++
++/* <!-- #BLAZE_RULE(label_flag).ATTRIBUTE(build_setting_default) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/* <!-- #BLAZE_RULE(label_flag).ATTRIBUTE(scope) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/* <!-- #BLAZE_RULE(label_flag).ATTRIBUTE(on_leave_scope) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/*<!-- #BLAZE_RULE (NAME = environment, FAMILY = General)[GENERIC_RULE] -->
++<!-- #END_BLAZE_RULE -->*/
++
++/*<!-- #BLAZE_RULE (NAME = config_feature_flag, FAMILY = General)[GENERIC_RULE] -->
++<!-- #END_BLAZE_RULE -->*/
++
++/* <!-- #BLAZE_RULE(config_feature_flag).ATTRIBUTE(allowed_values) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/* <!-- #BLAZE_RULE(config_feature_flag).ATTRIBUTE(default_value) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
++
++/* <!-- #BLAZE_RULE(config_feature_flag).ATTRIBUTE(scope) -->
++<!-- #END_BLAZE_RULE.ATTRIBUTE --> */
 diff --git a/src/main/protobuf/builtin.proto b/src/main/protobuf/builtin.proto
 index 9e9fe1977a..6bf61d1124 100644
 --- a/src/main/protobuf/builtin.proto

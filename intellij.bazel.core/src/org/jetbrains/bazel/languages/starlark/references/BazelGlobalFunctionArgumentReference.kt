@@ -6,6 +6,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.startOffset
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
+import org.jetbrains.bazel.languages.starlark.bazel.hasNameOrAlias
 import org.jetbrains.bazel.languages.starlark.documentation.BazelGlobalFunctionArgumentDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -24,7 +25,7 @@ internal class BazelGlobalFunctionArgumentReference(val element: StarlarkNamedAr
     val argumentName = element.getName() ?: return emptyList()
     val functionName = callExpression.getCalledFunctionName() ?: return emptyList()
     val function = BazelGlobalFunctions.getFunctionByName(functionName, element.project) ?: return emptyList()
-    val arg = function.params.find { it.name == argumentName } ?: return emptyList()
+    val arg = function.params.find { it.hasNameOrAlias(argumentName) } ?: return emptyList()
     return listOf(BazelGlobalFunctionArgumentDocumentationSymbol(arg, element.project))
   }
 }

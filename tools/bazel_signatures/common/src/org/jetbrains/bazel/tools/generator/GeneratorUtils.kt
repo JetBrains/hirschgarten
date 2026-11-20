@@ -60,6 +60,27 @@ fun gitApplyPatch(repoDir: Path, patchResourcePath: String) {
   }
 }
 
+/**
+ * Applies the commit [sha] to the working tree and the index, without a commit.
+ * When the clone does not have the commit, it fetches the commit and its parent from `origin` first.
+ * [sha] must be a full SHA, because GitHub fetches a commit only by its full SHA.
+ */
+fun gitCherryPickNoCommit(repoDir: Path, sha: String) {
+  println("# Cherry-picking $sha")
+  if (!gitHasCommit(repoDir, sha)) {
+    runCommand(repoDir, "git", "fetch", "--depth=2", "origin", sha)
+  }
+  runCommand(repoDir, "git", "cherry-pick", "--no-commit", sha)
+}
+
+private fun gitHasCommit(repoDir: Path, sha: String): Boolean =
+  ProcessBuilder("git", "cat-file", "-e", "$sha^{commit}")
+    .directory(repoDir.toFile())
+    .redirectErrorStream(true)
+    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+    .start()
+    .waitFor() == 0
+
 fun bazeliskBuild(repoDir: Path, vararg args: String) {
   println()
   println("# Building ${args.filterNot { it.startsWith("--") }.joinToString(", ")}")

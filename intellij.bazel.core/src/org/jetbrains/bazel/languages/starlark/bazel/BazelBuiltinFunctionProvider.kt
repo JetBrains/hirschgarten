@@ -29,9 +29,11 @@ import kotlin.io.path.Path
  * ### Updating
  * Run given command with wanted version
  * ```bash
- * # Last generated version: 9.1.1
+ * # Last generated version: 10.0.0 (from the tag 10.0.0rc4)
  * bazel run //plugins/bazel/tools/bazel_signatures/builtins:generator -- --version $version
  * ```
+ * The generator names the JSON file after `--version`. For a release candidate, add a local tag
+ * with the release version on the candidate commit and pass the release version.
  * If the version introduces any changes in the doc, comparing with the last generated version, the new JSON file will be generated.
  * Update [BUILTIN_AVAILABLE_VERSIONS] list, when new JSON is added.
  */
@@ -90,6 +92,9 @@ private val BUILTIN_AVAILABLE_VERSIONS: List<SemVer> = listOf(
   semVer(9),
   semVer(9, 0, 1),
   semVer(9, 1),
+  semVer(9, 2),
+  semVer(9, 3),
+  semVer(10),
 )
 
 private fun semVer(
