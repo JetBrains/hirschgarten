@@ -19,6 +19,7 @@ import org.jetbrains.bazel.languages.starlark.utils.StarlarkCallableFunctionInfo
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkFunctionInfoProvider
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkGlobalFunctionInfoProvider
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkFuncParam
+import org.jetbrains.bazel.languages.starlark.utils.hasNameOrAlias
 
 
 @ApiStatus.Internal
@@ -119,14 +120,15 @@ class StarlarkFunctionCallValidationInspection : LocalInspectionTool() {
       var kwArgsFound = false
 
       val matchedArguments = linkedSetOf<String>()
-      val matchedByPositional = mutableSetOf<String>()
+      val namedArguments = mutableSetOf<String>()
       val acceptsKwArgs = params.any { it.isKwArgs }
 
       for (arg in arguments) {
         when (arg) {
           is StarlarkNamedArgumentExpression -> {
             val argName = arg.name ?: continue
-            val matched = params.firstOrNull { it.name == argName }
+            val matched = params.firstOrNull { it.hasNameOrAlias(argName) }
+            val paramName = matched?.name ?: argName
 
             when {
               matched == null && !acceptsKwArgs ->
@@ -135,24 +137,22 @@ class StarlarkFunctionCallValidationInspection : LocalInspectionTool() {
                   StarlarkBundle.message("inspection.description.call.named.parameter.not.found", argName)
                 )
 
-              argName in matchedArguments ->
+              paramName in matchedArguments ->
                 holder.registerProblem(
                   arg,
-                  StarlarkBundle.message(
-                    if (argName in matchedByPositional) {
-                      "inspection.description.call.multiple.values.for.parameter"
-                    } else {
-                      "inspection.description.call.duplicate.named.argument"
-                    },
-                    argName,
-                  ),
+                  if (argName in namedArguments) {
+                    StarlarkBundle.message("inspection.description.call.duplicate.named.argument", argName)
+                  } else {
+                    StarlarkBundle.message("inspection.description.call.multiple.values.for.parameter", paramName)
+                  },
                 )
 
               matched != null && !matched.named ->
                 holder.registerProblem(arg, StarlarkBundle.message("inspection.description.call.unnamed.arg.with.name", argName))
 
               else -> {
-                matchedArguments.add(argName)
+                matchedArguments.add(paramName)
+                namedArguments.add(argName)
                 if (matched == null) kwArgsFound = true
               }
             }
@@ -168,10 +168,7 @@ class StarlarkFunctionCallValidationInspection : LocalInspectionTool() {
               continue
             }
 
-            if (expectedParam.name !in matchedArguments) {
-              matchedArguments.add(expectedParam.name)
-              matchedByPositional.add(expectedParam.name)
-            }
+            matchedArguments.add(expectedParam.name)
             if (!expectedParam.isVarArgs) expectedParam = expectedParamIter.nextOrNull()
           }
 

@@ -35,6 +35,7 @@ import com.intellij.openapi.project.Project
  *     --bzl-file //go/private/rules:cross.bzl --dep //go:def \
  *     --bzl-file //go/private/rules:transition.bzl --dep //go:def \
  *     --bzl-file //go/private/tools:path.bzl --dep //go:def \
+ *     --exclude go_non_executable_binary --exclude go_tool_binary --exclude non_go_reset_target \
  *     --output rules_go
  * ```
  */

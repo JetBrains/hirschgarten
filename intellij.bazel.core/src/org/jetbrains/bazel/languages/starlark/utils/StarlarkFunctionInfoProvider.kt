@@ -38,8 +38,11 @@ data class StarlarkFuncParam(
   val required: Boolean,
   val isVarArgs: Boolean,
   val isKwArgs: Boolean,
+  /** Same as [org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter.aliases]. */
+  val aliases: List<String> = emptyList(),
 )
 
+internal fun StarlarkFuncParam.hasNameOrAlias(name: String): Boolean = this.name == name || name in aliases
 
 @ApiStatus.Internal
 class StarlarkGlobalFunctionInfoProvider : StarlarkFunctionInfoProvider {
@@ -49,7 +52,9 @@ class StarlarkGlobalFunctionInfoProvider : StarlarkFunctionInfoProvider {
 
     val functionName = call.firstChild?.text ?: return null
     val function = BazelGlobalFunctions.getFunctionByName(functionName, call.project) ?: return null
-    val params = function.params.map { StarlarkFuncParam(it.name, it.positional, it.named, it.required, it.isVarArgs(), it.isKwArgs()) }
+    val params = function.params.map {
+      StarlarkFuncParam(it.name, it.positional, it.named, it.required, it.isVarArgs(), it.isKwArgs(), it.aliases)
+    }
     val environment = function.environment.toSet()
 
     return StarlarkFunctionInfo(params, environment)

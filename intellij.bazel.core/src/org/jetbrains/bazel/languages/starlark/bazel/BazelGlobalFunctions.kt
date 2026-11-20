@@ -22,11 +22,18 @@ data class BazelGlobalFunctionParameter(
   val named: Boolean,
   val positional: Boolean,
   val required: Boolean,
+  /**
+   * Other names that a call can use for this parameter.
+   * The signature generators set the aliases from `RuleParamAliases`.
+   */
+  val aliases: List<String>,
 )
 
 internal fun BazelGlobalFunctionParameter.isKwArgs() = name.startsWith("**")
 
 internal fun BazelGlobalFunctionParameter.isVarArgs() = name.startsWith("*")
+
+internal fun BazelGlobalFunctionParameter.hasNameOrAlias(name: String): Boolean = this.name == name || name in aliases
 
 @ApiStatus.Internal
 data class BazelGlobalFunction(

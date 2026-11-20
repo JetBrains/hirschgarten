@@ -335,6 +335,78 @@ class StarlarkFunctionCallValidationInspectionTest {
   }
 
   @Test
+  fun `required parameter passed by its alias in global function call should not be highlighted`() {
+    myFixture.configureByText(
+      "MODULE.bazel",
+      """
+      withAlias(argOneAlias = "val1")
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
+  fun `alias of a parameter without aliases in global function call should be highlighted`() {
+    val errorMessage = StarlarkBundle.message("inspection.description.call.named.parameter.not.found", "argOneAlias")
+    myFixture.configureByText(
+      "MODULE.bazel",
+      """
+      simpleWithoutKwArgs(
+        "val1",
+        "val2",
+        <error descr="$errorMessage">argOneAlias</error> = "val3"
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
+  fun `parameter and its alias in global function call should be highlighted`() {
+    val errorMessage = StarlarkBundle.message("inspection.description.call.multiple.values.for.parameter", "argOne")
+    myFixture.configureByText(
+      "MODULE.bazel",
+      """
+      withAlias(
+        argOne = "val1",
+        <error descr="$errorMessage">argOneAlias = "val2"</error>,
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
+  fun `the same alias twice in global function call should be highlighted`() {
+    val errorMessage = StarlarkBundle.message("inspection.description.call.duplicate.named.argument", "argOneAlias")
+    myFixture.configureByText(
+      "MODULE.bazel",
+      """
+      withAlias(
+        argOneAlias = "val1",
+        <error descr="$errorMessage">argOneAlias = "val2"</error>,
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
+  fun `positional argument and alias of the same parameter in global function call should be highlighted`() {
+    val errorMessage = StarlarkBundle.message("inspection.description.call.multiple.values.for.parameter", "argOne")
+    myFixture.configureByText(
+      "MODULE.bazel",
+      """
+      withAlias(
+        "val1",
+        <error descr="$errorMessage">argOneAlias = "val2"</error>,
+      )
+      """.trimIndent(),
+    )
+    myFixture.checkHighlighting()
+  }
+
+  @Test
   fun `kwargs in global function call should not be highlighted`() {
     myFixture.configureByText(
       "MODULE.bazel",
@@ -566,6 +638,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = true,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "argTwo",
@@ -574,6 +647,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = true,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "*args",
@@ -582,6 +656,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = false,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "**kwargs",
@@ -590,6 +665,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = false,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
           ),
       ),
@@ -606,6 +682,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = true,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "argTwo",
@@ -614,6 +691,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = true,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
           ),
       ),
@@ -630,6 +708,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = true,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "argTwo",
@@ -638,6 +717,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = true,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
           ),
       ),
@@ -654,6 +734,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = false,
               doc = null,
               defaultValue = "default",
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "*args",
@@ -662,6 +743,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = false,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "argTwo",
@@ -670,6 +752,7 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = false,
               doc = null,
               defaultValue = "default",
+              aliases = emptyList(),
             ),
             BazelGlobalFunctionParameter(
               name = "**kwargs",
@@ -678,6 +761,33 @@ private class TestStarlarkGlobalFunctionProvider : StarlarkGlobalFunctionProvide
               required = false,
               doc = null,
               defaultValue = null,
+              aliases = emptyList(),
+            ),
+          ),
+      ),
+      BazelGlobalFunction(
+        name = "withAlias",
+        doc = null,
+        environment = Environment.entries,
+        params =
+          listOf(
+            BazelGlobalFunctionParameter(
+              name = "argOne",
+              positional = true,
+              named = true,
+              required = true,
+              doc = null,
+              defaultValue = null,
+              aliases = listOf("argOneAlias"),
+            ),
+            BazelGlobalFunctionParameter(
+              name = "**kwargs",
+              positional = false,
+              named = true,
+              required = false,
+              doc = null,
+              defaultValue = null,
+              aliases = emptyList(),
             ),
           ),
       ),

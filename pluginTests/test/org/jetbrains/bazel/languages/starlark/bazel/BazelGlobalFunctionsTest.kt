@@ -1,8 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -69,6 +73,16 @@ class BazelGlobalFunctionsTest {
   }
 
   @TestFactory
+  fun `native rules without a Bazel doc block should be present in every version`(): List<DynamicTest> =
+    nativeRulesWithoutBazelDoc.flatMap { (name, ruleSpecificParam) ->
+      builtinVersions.map { version ->
+        dynamicTest("$version: $name") {
+          paramNamesOf(name, version.toBazelRelease()).shouldContain(ruleSpecificParam)
+        }
+      }
+    }
+
+  @TestFactory
   fun `each version should provide its version-specific builtin functions`(): List<DynamicTest> =
     versionSpecificFunctions.flatMap { func ->
       buildList {
@@ -80,8 +94,71 @@ class BazelGlobalFunctionsTest {
           addPresenceTest(func.name, backportVersion)
           addAbsenceTest(func.name, backportVersion)
         }
+        func.removedIn?.let { removedVersion ->
+          addPresenceTest(func.name, builtinVersions[builtinVersions.indexOf(removedVersion) - 1])
+          add(
+            dynamicTest("$removedVersion: ${func.name} is absent") {
+              setBazelReleaseVersion(removedVersion.toBazelRelease())
+              BazelGlobalFunctions.getFunctionByName(func.name, testBazel.project)
+                ?.let { error("Function '${func.name}' should not exist for Bazel $removedVersion") }
+            },
+          )
+        }
       }
     }
+
+  @TestFactory
+  fun `each version should provide its version-specific builtin params`(): List<DynamicTest> =
+    versionSpecificParams.flatMap { param ->
+      val previousVersion = builtinVersions[builtinVersions.indexOf(param.introducedIn) - 1]
+      listOf(
+        dynamicTest("${param.introducedIn}: ${param.function}.${param.name} is present") {
+          paramNamesOf(param.function, param.introducedIn.toBazelRelease()).shouldContain(param.name)
+        },
+        dynamicTest("$previousVersion: ${param.function}.${param.name} is absent") {
+          paramNamesOf(param.function, previousVersion.toBazelRelease()).shouldNotContain(param.name)
+        },
+      )
+    }
+
+  @TestFactory
+  fun `applicable_licenses should be a parameter before Bazel 8 and an alias of package_metadata from Bazel 8`(): List<DynamicTest> =
+    builtinVersions.flatMap { version ->
+      listOf("filegroup", "label_flag", "label_setting").map { rule ->
+        dynamicTest("$version: $rule") {
+          val release = version.toBazelRelease()
+          if (builtinVersions.indexOf(version) < builtinVersions.indexOf("8.0.0")) {
+            paramNamesOf(rule, release) shouldContain "applicable_licenses"
+            getFunction(rule, release).params.flatMap { it.aliases }.shouldBeEmpty()
+          }
+          else {
+            aliasesOf(rule, "package_metadata", release) shouldBe listOf("applicable_licenses")
+          }
+        }
+      }
+    }
+
+  @TestFactory
+  fun `rules without package_metadata should have no alias`(): List<DynamicTest> =
+    builtinVersions.map { version ->
+      dynamicTest("$version: platform") {
+        getFunction("platform", version.toBazelRelease()).params.flatMap { it.aliases }.shouldBeEmpty()
+      }
+    }
+
+  @TestFactory
+  fun `stardoc rules should have the applicable_licenses alias`(): List<DynamicTest> =
+    listOf("go_library", "kt_jvm_library").map { rule ->
+      dynamicTest(rule) {
+        aliasesOf(rule, "package_metadata", latestRelease) shouldBe listOf("applicable_licenses")
+      }
+    }
+
+  private fun aliasesOf(function: String, param: String, release: BazelRelease): List<String> =
+    getFunction(function, release).params.first { it.name == param }.aliases
+
+  private fun paramNamesOf(function: String, release: BazelRelease): List<String> =
+    getFunction(function, release).params.map { it.name }
 
   @TestFactory
   fun `expected external kotlin functions should be present`(): List<DynamicTest> =
@@ -241,13 +318,14 @@ private fun String.toBazelRelease(): BazelRelease {
   return BazelRelease(major, minor, patch)
 }
 
-private val majorVersions = listOf(BazelRelease(7, 5), BazelRelease(8), BazelRelease(9))
+private val majorVersions = listOf(BazelRelease(7, 5), BazelRelease(8), BazelRelease(9), BazelRelease(10))
 
-private val latestRelease = BazelRelease(9, 1)
+private val latestRelease = BazelRelease(10)
 
 private val builtinVersions = listOf(
   "7.5.0", "7.6.0", "7.7.0", "8.0.0", "8.1.0", "8.2.0", "8.3.0",
-  "8.4.0", "8.4.1", "8.5.0", "8.6.0", "9.0.0", "9.0.1", "9.1.0",
+  "8.4.0", "8.4.1", "8.5.0", "8.6.0", "9.0.0", "9.0.1", "9.1.0", "9.2.0",
+  "9.3.0", "10.0.0",
 )
 
 private val expectedKotlinFunctions = listOf(
@@ -267,7 +345,7 @@ private val expectedBuiltinRules = listOf(
   "cc_shared_library", "cc_static_library", "cc_test", "cc_toolchain",
   "genrule",
   "java_binary", "java_import", "java_library", "java_lite_proto_library",
-  "java_plugin", "java_proto_library", "java_runtime", "java_single_jar",
+  "java_plugin", "java_proto_library", "java_runtime",
   "java_test", "java_toolchain",
   "objc_import", "objc_library",
   "proto_lang_toolchain", "proto_library", "proto_toolchain",
@@ -276,6 +354,13 @@ private val expectedBuiltinRules = listOf(
 )
 
 private val expectedRuleNames = expectedBuiltinRules + expectedKotlinFunctions + expectedGoFunctions
+
+private val nativeRulesWithoutBazelDoc = listOf(
+  "label_flag" to "build_setting_default",
+  "label_setting" to "build_setting_default",
+  "environment" to "fulfills",
+  "config_feature_flag" to "allowed_values",
+)
 
 private val commonParamNames = listOf(
   "aspect_hints", "compatible_with", "deprecation", "exec_compatible_with",
@@ -295,6 +380,7 @@ private data class VersionSpecificFunction(
   val name: String,
   val introducedIn: String,
   val backportedTo: List<String> = emptyList(),
+  val removedIn: String? = null,
 )
 
 private val versionSpecificFunctions = listOf(
@@ -308,8 +394,20 @@ private val versionSpecificFunctions = listOf(
   VersionSpecificFunction(name = "set", introducedIn = "8.1.0"),
   // Bazel 9.0
   VersionSpecificFunction(name = "MaterializedDepsInfo", introducedIn = "9.0.0"),
-  VersionSpecificFunction(name = "java_single_jar", introducedIn = "9.0.0"),
+  VersionSpecificFunction(name = "java_single_jar", introducedIn = "9.0.0", removedIn = "10.0.0"),
   VersionSpecificFunction(name = "materializer_rule", introducedIn = "9.0.0"),
   VersionSpecificFunction(name = "package_default_visibility", introducedIn = "9.0.0"),
   VersionSpecificFunction(name = "flag_alias", introducedIn = "9.0.0", backportedTo = listOf("7.7.0", "8.5.0")),
+)
+
+private data class VersionSpecificParam(
+  val function: String,
+  val name: String,
+  val introducedIn: String,
+)
+
+private val versionSpecificParams = listOf(
+  // Bazel 9.2
+  VersionSpecificParam(function = "constraint_setting", name = "refines_constraint_value", introducedIn = "9.2.0"),
+  VersionSpecificParam(function = "module_extension", name = "facts_version", introducedIn = "9.2.0"),
 )

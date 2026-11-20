@@ -111,7 +111,8 @@ fun main(args: Array<String>) {
     val signaturesDir = resolveBazelPluginSignaturesDir()
     val jsonFileName = "${arguments.output}@${arguments.ref}.json"
     val merged = mergedRules + mergedFunctions
-    writeSignaturesJson(merged.values.toList(), signaturesDir.resolve(jsonFileName))
+    val functions = merged.values.map { it.withParamAliases(version = null) }
+    writeSignaturesJson(functions, signaturesDir.resolve(jsonFileName))
 
     println()
     println("Done.")

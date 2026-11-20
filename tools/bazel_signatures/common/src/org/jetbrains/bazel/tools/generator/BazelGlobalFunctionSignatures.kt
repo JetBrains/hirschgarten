@@ -22,6 +22,7 @@ data class ParamSignature(
   val named: Boolean,
   val positional: Boolean,
   val required: Boolean,
+  val aliases: List<String> = emptyList(),
 )
 
 fun writeSignaturesJson(functions: List<FunctionSignature>, outputPath: Path) {

@@ -12,7 +12,20 @@ private const val BAZEL_BUILD_TARGET = "//src/main/java/com/google/devtools/buil
 private const val BINARY_PROTO_RELATIVE_PATH = "bazel-bin/src/main/java/com/google/devtools/build/lib/builtin.pb"
 private const val PATCH_PREFIX = "api-exporter-enhancements@"
 private const val PATCH_SUFFIX = ".patch"
-private val AVAILABLE_PATCH_VERSIONS = listOf("7.5.0", "8.0.0", "9.0.0")
+private val AVAILABLE_PATCH_VERSIONS = listOf("7.5.0", "8.0.0", "9.0.0", "10.0.0")
+
+/**
+ * A Bazel commit that the generator cherry-picks into the versions from [since] up to [until], exclusive.
+ * [until] is the first Bazel version that contains the commit. [sha] is the full SHA.
+ */
+private data class UpstreamCommit(val sha: String, val since: String, val until: String)
+
+private val UPSTREAM_COMMITS = listOf(
+  // Adds package_metadata to the exported common attributes.
+  UpstreamCommit(sha = "90cd5cce011a8b9d3815df798b7a2fa3f205664c", since = "8.0.0", until = "9.0.0"),
+)
+
+private const val FIRST_VERSION_WITHOUT_BUILD_FLAGS = "10.0.0"
 
 /**
  * Generates Bazel builtin function signature data for the Starlark plugin.
@@ -22,10 +35,15 @@ private val AVAILABLE_PATCH_VERSIONS = listOf("7.5.0", "8.0.0", "9.0.0")
  * 1. Clone (or reuse a local checkout of) the [Bazel repository](https://github.com/bazelbuild/bazel)
  *    at a chosen tag. When no `--repo-url` is given, the default
  *    repository URL is used and cloned into a temporary directory.
- * 2. Reset the working tree (`git reset --hard`) and apply the versioned
+ * 2. Reset the working tree (`git reset --hard`). Cherry-pick the Bazel commits of [UPSTREAM_COMMITS]
+ *    that the version does not contain. Then apply the versioned
  *    `api-exporter-enhancements@{version}.patch`. The patch extends the upstream `ApiExporter` and
  *    `builtin.proto` with extra `ApiContext` enum values (`MODULE`, `VENDOR`, `REPO`) and
- *    extra `Param` fields (`is_positional`, `is_named`).
+ *    extra `Param` fields (`is_positional`, `is_named`). The patch also adds empty doc blocks for
+ *    `label_flag`, `label_setting`, `environment` and `config_feature_flag`, because the exporter
+ *    skips a native rule with no doc block. It also exports `environment` and `config_feature_flag`,
+ *    which Bazel marks as undocumented. For 7.x, the patch adds an empty doc file for `applicable_licenses`,
+ *    because the exporter skips a common attribute with no doc file.
  * 3. Build the patched Bazel target `//src/main/java/com/google/devtools/build/lib:gen_api_proto`
  *    via `bazelisk`, which produces a binary proto (`builtin.pb`) containing all Starlark
  *    builtin signatures.
@@ -75,9 +93,14 @@ fun main(args: Array<String>) {
     gitResetHard(repoDir)
     gitCheckout(repoDir, "tags/${arguments.version}")
 
+    for (commit in resolveUpstreamCommitsForVersion(arguments.version)) {
+      gitCherryPickNoCommit(repoDir, commit.sha)
+    }
     val patchPath = resolvePatchForVersion(arguments.version)
     gitApplyPatch(repoDir, patchPath)
-    appendBuildFlags(repoDir)
+    if (arguments.version.compareAsVersions(FIRST_VERSION_WITHOUT_BUILD_FLAGS) < 0) {
+      appendBuildFlags(repoDir)
+    }
     bazeliskBuild(repoDir, BAZEL_BUILD_TARGET)
 
     val binaryProtoPath = repoDir.resolve(BINARY_PROTO_RELATIVE_PATH)
@@ -91,6 +114,7 @@ fun main(args: Array<String>) {
       .filter { it.hasCallable() }
       .mapNotNull { it.toFunctionSignature() }
       .plus(LOAD_FUNCTION)
+      .map { it.withParamAliases(arguments.version) }
     val builtinsDir = resolveBazelPluginSignaturesDir().resolve("builtins")
     builtinsDir.createDirectories()
     writeSignaturesJson(functions, builtinsDir.resolve("builtins@${arguments.version}.json"))
@@ -142,6 +166,9 @@ private fun resolvePatchForVersion(version: String): String {
   return path
 }
 
+private fun resolveUpstreamCommitsForVersion(version: String): List<UpstreamCommit> =
+  UPSTREAM_COMMITS.filter { version.compareAsVersions(it.since) >= 0 && version.compareAsVersions(it.until) < 0 }
+
 private fun appendBuildFlags(repoDir: java.nio.file.Path) {
   val bazelrc = repoDir.resolve(".bazelrc")
   val flags = """
@@ -150,7 +177,20 @@ private fun appendBuildFlags(repoDir: java.nio.file.Path) {
     build --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
     """.trimIndent()
   bazelrc.appendText(flags)
+  findMacosSdkIncludeFlag()?.let { bazelrc.appendText("\n$it") }
   println("# Appended build flags to .bazelrc")
+}
+
+/**
+ * Clang from Xcode 27 reports `SDKSettings.json` in the SDK root as an included file.
+ * The flag makes the SDK root a builtin include directory, so that Bazel accepts the file.
+ */
+private fun findMacosSdkIncludeFlag(): String? {
+  if (!System.getProperty("os.name").startsWith("Mac")) return null
+  val process = ProcessBuilder("xcrun", "--show-sdk-path").start()
+  val sdkPath = process.inputStream.bufferedReader().readText().trim()
+  check(process.waitFor() == 0) { "'xcrun --show-sdk-path' failed" }
+  return "build --repo_env=BAZEL_CONLYOPTS=-isystem$sdkPath"
 }
 
 private fun PatchedBuiltinProtos.Value.toFunctionSignature(): FunctionSignature? {
