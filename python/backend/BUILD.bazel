@@ -41,6 +41,7 @@ jvm_library(
         "@community//platform/workspace/jps",
         "@community//platform/workspace/storage",
         "@community//python:python-community-impl",
+        "@community//python/python-psi-impl:psi-impl",
         "//plugins/bazel/intellij.bazel.commons:commons",
         "//plugins/bazel/intellij.bazel.backend:backend",
         "@community//platform/backend/workspace",

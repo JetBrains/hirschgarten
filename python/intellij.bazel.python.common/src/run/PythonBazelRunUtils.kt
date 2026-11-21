@@ -7,6 +7,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parentOfType
 import com.jetbrains.python.PyTokenTypes
+import com.jetbrains.python.ast.impl.PyUtilCore
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFunction
@@ -157,5 +158,5 @@ private fun PsiElement.isIfNameMain(): Boolean {
     val ifStatement = PsiTreeUtil.getParentOfType(element, PyIfStatement::class.java) ?: break
     element = ifStatement
   }
-  return element is PyIfStatement && PyUtil.isIfNameEqualsMain(element)
+  return element is PyIfStatement && PyUtilCore.isIfNameEqualsMain(element)
 }

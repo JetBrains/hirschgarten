@@ -51,6 +51,7 @@ jvm_library(
         "@community//platform/execution-impl",
         "@community//platform/workspace/jps",
         "@community//python:python-community-impl",
+        "@community//python/classic",
         "@community//platform/projectModel-api:projectModel",
         "@community//platform/util/concurrency",
         "@community//python/python-sdk/backend",
