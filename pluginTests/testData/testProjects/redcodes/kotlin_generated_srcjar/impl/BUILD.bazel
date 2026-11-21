@@ -1,0 +1,15 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load(":generator.bzl", "bridge_impl_srcjar")
+
+bridge_impl_srcjar(
+    name = "impls",
+)
+
+kt_jvm_library(
+    name = "impl",
+    srcs = [
+        "Registry.kt",
+        ":impls",
+    ],
+    deps = ["//spec"],
+)
