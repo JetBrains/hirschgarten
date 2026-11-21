@@ -21,8 +21,10 @@ internal fun String.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileU
   return url
 }
 
+private val ARCHIVE_EXTENSIONS = arrayOf("jar", "srcjar")
+
 internal fun Path.toJarUrlString(): String =
-  if (extension == "jar") {
+  if (extension in ARCHIVE_EXTENSIONS) {
     "jar://$this!/"
   } else {
     // There can be other library roots except for jars, e.g., Android resources. Use the file:// scheme then.
