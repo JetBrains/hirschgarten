@@ -82,7 +82,7 @@ this label, and the check below refuses the content.""",
 )
 
 def _expected_zip_entries(label, implicit_library, content_info):
-    """Every file the plugin archive must hold, read off the plugin's dev-distribution content.
+    """Every file the plugin archive must hold, read off the plugin's distribution content.
 
     The content leaf is the plugin's checked-in record of what it is made of, generated from the project model. Each
     prepacked relation carries the `lib/`-relative path the plugin puts that jar at, so the leaf already names the
