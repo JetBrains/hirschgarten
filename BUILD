@@ -31,7 +31,7 @@ define_kt_toolchain(
 
 intellij_plugin_zip_and_debug_target(
     name = "plugin-bazel",
-    # Derived from the dev_dist_plugin statement in intellij.bazel.plugin/BUILD.bazel.
+    # Derived from the dist_plugin statement in intellij.bazel.plugin/BUILD.bazel.
     srcs = [
         "//intellij.bazel.plugin:bazel-plugin",
         "//protobuf:intellij.bazel.protobuf",

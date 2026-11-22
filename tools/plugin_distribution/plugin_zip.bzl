@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@community//platform/build-scripts/bazel-rules:dev_dist_content.bzl", "DevDistContentInfo")
+load("@community//platform/build-scripts/bazel-rules:dist_content.bzl", "DistContentInfo")
 
 def _bazel_plugin_zip_impl(ctx):
     output = ctx.actions.declare_file(ctx.attr.zip_filename)
@@ -74,7 +74,7 @@ def _plugin_directory_name(main_module):
 _IMPLICIT_LIBRARY_ATTR = attr.label(
     doc = """The library a content leaf carries whether or not the plugin declares it.
 
-`_collect_libraries` in `dev_dist_content.bzl` appends the Kotlin standard library to every plugin. The converter puts
+`_collect_libraries` in `dist_content.bzl` appends the Kotlin standard library to every plugin. The converter puts
 it into a module's `runtime_deps`, and no plugin says anything by naming it. The platform ships it, so a plugin archive
 holds no file for it. Named again here rather than read off the leaf. A different implicit library then stops matching
 this label, and the check below refuses the content.""",
@@ -133,7 +133,7 @@ def _bazel_plugin_layout_test_impl(ctx):
         content = "\n".join(_expected_zip_entries(
             label = ctx.label,
             implicit_library = ctx.attr._implicit_library,
-            content_info = ctx.attr.plugin_content[DevDistContentInfo],
+            content_info = ctx.attr.plugin_content[DistContentInfo],
         )) + "\n",
     )
 
@@ -176,9 +176,9 @@ bazel_plugin_layout_test = rule(
     test = True,
     attrs = {
         "plugin_content": attr.label(
-            doc = "The plugin's `dev_dist_plugin_content` target, which names the jars the archive must hold.",
+            doc = "The plugin's `dist_plugin_content` target, which names the jars the archive must hold.",
             mandatory = True,
-            providers = [DevDistContentInfo],
+            providers = [DistContentInfo],
         ),
         "plugin_zip": attr.label(mandatory = True, allow_single_file = True),
         "_implicit_library": _IMPLICIT_LIBRARY_ATTR,
