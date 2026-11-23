@@ -37,6 +37,7 @@ import org.jetbrains.bazel.sync.workspace.snapshot.InMemoryFileToTargetMap
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.declaredFiles
 import java.nio.ByteBuffer
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Path
@@ -263,7 +264,7 @@ class PersistentWorkspaceSnapshotService(
     val targetsToSave = ArrayList<WorkspaceTargetToSave>(allTargets.size)
     var nextKeyId = 1
     var nextLabelId = 1
-    // index only the sources of the local workspace
+    // index only the declared files of the local workspace
     val resolver = DefaultOutputLocationResolver.createLocalWorkspaceOnly(snapshot.bazelInfo, snapshot.repoMapping)
     val localRepositories = snapshot.repoMapping.getLocalRepositories()
     for (raw in allTargets) {
@@ -280,7 +281,7 @@ class PersistentWorkspaceSnapshotService(
       // prepare saved target
       targetsToSave += WorkspaceTargetToSave(keyId = keyId, target = raw)
 
-      raw.sources.getOutputLocations()
+      raw.declaredFiles()
         .mapNotNull { resolver.resolve(it, localRepositories) }
         .forEach { file -> hash2KeyIds.computeIfAbsent(hashFilePath(file)) { IntArrayList() }.add(keyId) }
     }

@@ -10,6 +10,7 @@ import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.getLocalRepositories
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.declaredFiles
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -86,7 +87,7 @@ class File2TargetMapBuilder(val bazelInfo: BazelInfo, val repoMapping: RepoMappi
     val hash2Targets = Long2ObjectOpenHashMap<ArrayList<WorkspaceTargetKey>>()
     val resolver = DefaultOutputLocationResolver.createLocalWorkspaceOnly(bazelInfo, repoMapping)
     for (target in targets) {
-      for (location in target.sources.getOutputLocations()) {
+      for (location in target.declaredFiles()) {
         val source = resolver.resolve(location, repoMapping.getLocalRepositories()) ?: continue
         hash2Targets.computeIfAbsent(hashFilePath(source)) { ArrayList() }
           .add(target.key)

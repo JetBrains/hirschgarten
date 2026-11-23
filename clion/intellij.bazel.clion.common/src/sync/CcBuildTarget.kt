@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.clion.sync
 
 import org.jetbrains.bsp.protocol.BuildTargetData
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.StringsCollection
 
 data class CcBuildTarget(val ruleContext: RuleContext?, val compilationContext: CompilationContext) : BuildTargetData {
+
+  /** The headers in `hdrs`, `textual_hdrs` and `srcs` of this target. The headers of its dependencies are not included. */
+  override fun additionalDeclaredFiles(): Sequence<OutputLocation> = compilationContext.directHeaders.getOutputLocations()
 
   /**
    * Information collected from rule attributes directly; may not be present
