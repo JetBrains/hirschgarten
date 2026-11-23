@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="//failing:failing_test" type="BazelRunConfigurationType">
+    <bsp-state handler-provider-id="BazelGoTestHandlerProvider" check-visibility="true">
+      <bsp-target>@//failing:failing_test</bsp-target>
+      <handler-state />
+    </bsp-state>
+    <method v="2" />
+  </configuration>
+</component>
