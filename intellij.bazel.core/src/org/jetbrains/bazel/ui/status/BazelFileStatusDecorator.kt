@@ -22,7 +22,9 @@ import com.intellij.ui.EditorNotifications
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.ProjectViewUpdateCause
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.registered.openProjectView
@@ -153,10 +155,8 @@ fun showAsUnsyncedSourceFile(project: Project, file: VirtualFile): Boolean {
   val isResource = projectFileIndex.isUnderSourceRootOfType(file, setOf(JavaResourceRootType.RESOURCE, JavaResourceRootType.TEST_RESOURCE))
   if (isResource) return false
 
-  val targetUtils = project.targetStorage
-  if (!targetUtils.isLoaded()) return false
-
-  return targetUtils.getTargetsForFile(file).isEmpty()
+  val targetStorage = project.targetStorage
+  return targetStorage.getTotalTargetCount() != 0 && targetStorage.getTargetsForFile(file).isEmpty()
 }
 
 @ApiStatus.Internal
@@ -167,10 +167,12 @@ fun showAsIgnoredSourceFile(project: Project, file: VirtualFile): Boolean {
 
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
-class BazelFileStatusRefresher(private val project: Project) {
+class BazelFileStatusRefresher(private val project: Project, coroutineScope: CoroutineScope) {
   init {
-    project.targetStorage.onLoaded {
-      refreshAllFilesPresentation()
+    coroutineScope.launch {
+      project.targetStorage.views.collect {
+        refreshAllFilesPresentation()
+      }
     }
 
     project.messageBus.connect().subscribe(

@@ -1,16 +1,26 @@
 package org.jetbrains.bazel.target
 
 import com.intellij.configurationStore.SettingsSavingComponent
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.fixture.disposableFixture
 import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import io.kotest.matchers.types.shouldNotBeSameInstanceAs
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -24,6 +34,8 @@ import org.jetbrains.bazel.sync.workspace.persistence.InMemoryWorkspaceTargetMap
 import org.jetbrains.bazel.sync.workspace.persistence.TargetLoadOptions
 import org.jetbrains.bazel.sync.workspace.persistence.TargetSection
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceTargetMap
+import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotUpdater
 import org.jetbrains.bazel.sync.workspace.snapshot.CommonWorkspaceSyncConfig
 import org.jetbrains.bazel.sync.workspace.snapshot.ExecutableTargetsIndexBuilder
 import org.jetbrains.bazel.sync.workspace.snapshot.File2TargetMapBuilder
@@ -43,19 +55,27 @@ import org.jetbrains.bsp.protocol.data
 import org.jetbrains.bsp.protocol.id
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.Path
+import kotlin.time.Duration.Companion.seconds
 
 @TestApplication
 class TargetStorageTest {
 
   private val projectFixture = projectFixture()
   private val project by projectFixture
+  private val disposable by disposableFixture()
 
   private suspend fun publish(project: Project, snapshot: WorkspaceSnapshot) {
     project.service<WorkspaceSnapshotService>().update { snapshot }
+    project.targetStorage.awaitLoaded() // views are derived asynchronously
   }
 
-  private suspend fun WorkspaceSnapshotService.save() = (this as SettingsSavingComponent).save()
+  private suspend fun WorkspaceSnapshotService.save() {
+    (this as SettingsSavingComponent).save()
+    project.targetStorage.awaitLoaded() // persisting publishes a store-backed twin snapshot
+  }
 
   private fun target(
     label: String,
@@ -305,5 +325,78 @@ class TargetStorageTest {
 
     val targetUtils = project.targetStorage
     targetUtils.getTargetsForPath(file) shouldBe listOf(label)
+  }
+
+  @Test
+  fun `readers do not wait for the initial snapshot load`(): Unit = runBlocking {
+    val lib = target("//lib:lib")
+    val barrier = CompletableDeferred<Unit>()
+    val state = MutableStateFlow(WorkspaceSnapshot.EMPTY)
+    val slowLoadingService = object : WorkspaceSnapshotService {
+      override val snapshot: StateFlow<WorkspaceSnapshot> = state
+
+      override suspend fun currentSnapshot(): WorkspaceSnapshot {
+        barrier.await()
+        return state.value
+      }
+
+      override suspend fun update(updater: WorkspaceSnapshotUpdater): WorkspaceSnapshot =
+        updater.update(state.value).also { state.value = it }
+    }
+    project.registerOrReplaceServiceInstance(WorkspaceSnapshotService::class.java, slowLoadingService, disposable)
+
+    val targetUtils = project.targetStorage
+
+    // BAZEL-3867: waiting for the load under the read lock blocks pending write actions and freezes UI
+    val underReadAction = async(Dispatchers.Default) { readAction { targetUtils.getTargetSummary(lib.key.label) } }
+    val completedWithoutLoad = withTimeoutOrNull(10.seconds) { underReadAction.await(); true } ?: false
+
+    state.value = snapshot(project, targets = listOf(lib))
+    barrier.complete(Unit) // also unblocks a hanging read action, so the test fails instead of hanging
+
+    completedWithoutLoad shouldBe true
+    underReadAction.await() shouldBe null
+
+    targetUtils.awaitLoaded()
+    readAction { targetUtils.getTargetSummary(lib.key.label) }.shouldNotBeNull()
+  }
+
+  @Test
+  fun `first target lookup can finish while a published snapshot is being indexed`(): Unit = runBlocking {
+    val lib = target("//lib:lib")
+    val loaded = snapshot(project, targets = listOf(lib))
+    val scanStarted = CompletableDeferred<Unit>()
+    val releaseScan = CountDownLatch(1)
+    val targetMap = object : WorkspaceTargetMap by loaded.targets {
+      override fun allTargets(options: TargetLoadOptions): Sequence<BuildTarget> {
+        scanStarted.complete(Unit)
+        check(releaseScan.await(30, TimeUnit.SECONDS))
+        return loaded.targets.allTargets(options)
+      }
+    }
+    val state = MutableStateFlow(loaded.copy(targets = targetMap))
+    val service = object : WorkspaceSnapshotService {
+      override val snapshot: StateFlow<WorkspaceSnapshot> = state
+      override suspend fun currentSnapshot(): WorkspaceSnapshot = state.value
+      override suspend fun update(updater: WorkspaceSnapshotUpdater): WorkspaceSnapshot =
+        updater.update(state.value).also { state.value = it }
+    }
+    project.registerOrReplaceServiceInstance(WorkspaceSnapshotService::class.java, service, disposable)
+
+    val reader = async(Dispatchers.Default) {
+      readAction { project.targetStorage.getTargetSummary(lib.key.label) }
+    }
+    val finishedBeforeScan = try {
+      withTimeout(10.seconds) { scanStarted.await() }
+      withTimeoutOrNull(3.seconds) { reader.await(); true } ?: false
+    }
+    finally {
+      releaseScan.countDown()
+    }
+    reader.await()
+    finishedBeforeScan shouldBe true
+
+    project.targetStorage.awaitLoaded()
+    readAction { project.targetStorage.getTargetSummary(lib.key.label) }.shouldNotBeNull()
   }
 }

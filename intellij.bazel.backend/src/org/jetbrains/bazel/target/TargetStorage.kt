@@ -9,14 +9,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.updateAndGet
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
@@ -47,7 +44,8 @@ import java.nio.file.Path
 
 private data object EmptyBuildTargetData : BuildTargetData
 
-private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val project: Project) {
+@ApiStatus.Internal
+class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val project: Project) {
   val importKeys: Set<WorkspaceTargetKey>
   val label2Key: Map<Label, WorkspaceTargetKey>
 
@@ -77,30 +75,15 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
     }
   }
 
-  private class TargetSummaryAggregate(val summaries: List<BuildTarget>, val byKey: Map<WorkspaceTargetKey, BuildTarget>)
-
-  private val aggregate: TargetSummaryAggregate by lazy {
-    // using cursor here is way faster than random per-key lookups
-    val importedSummaryTargets = snapshot.targets.allTargets(TargetLoadOptions.SUMMARY)
+  private val target2Summary: Map<WorkspaceTargetKey, BuildTarget> =
+    snapshot.targets.allTargets(TargetLoadOptions.SUMMARY)
       .filter { it.key in importKeys }
-      .toList()
-    TargetSummaryAggregate(
-      summaries = importedSummaryTargets,
-      byKey = importedSummaryTargets.associateBy { it.key },
-    )
-  }
+      .associateBy { it.key }
 
-  val summaries: List<BuildTarget>
-    get() = aggregate.summaries
+  val summaries: List<BuildTarget> = target2Summary.values.toList()
 
-  val label2Summary: Map<Label, BuildTarget> by lazy {
-    label2Key.mapNotNull { (label, key) -> aggregate.byKey[key]?.let { label to it } }.toMap()
-  }
-
-  fun warmUp() {
-    aggregate
-    label2Summary
-  }
+  val label2Summary: Map<Label, BuildTarget> =
+    label2Key.mapNotNull { (label, key) -> target2Summary[key]?.let { label to it } }.toMap()
 
   val shortLabels: List<String> by lazy {
     summaries.map { it.id.toShortString(project) }
@@ -149,51 +132,20 @@ private class CachedSnapshotView(val snapshot: WorkspaceSnapshot, private val pr
 
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
-class TargetStorage(private val project: Project, private val coroutineScope: CoroutineScope) {
-  private val service: WorkspaceSnapshotService
-    get() = project.service<WorkspaceSnapshotService>()
+class TargetStorage(private val project: Project, coroutineScope: CoroutineScope) {
+  private val snapshotService = project.service<WorkspaceSnapshotService>()
 
-  private val initialLoad: Job = coroutineScope.launch { service.currentSnapshot() }
-
-  private val mutableTargetListUpdated = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-  val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
-  private val views = MutableStateFlow(CachedSnapshotView(WorkspaceSnapshot.EMPTY, project))
-
-  init {
-    coroutineScope.launch {
-      service.snapshot.collect { snapshot ->
-        if (service.snapshot.value === snapshot) {
-          viewFor(snapshot).warmUp()
-        }
-        mutableTargetListUpdated.tryEmit(Unit)
-      }
-    }
-  }
-
-  fun isLoaded(): Boolean = initialLoad.isCompleted
+  val views: StateFlow<CachedSnapshotView> = snapshotService.snapshot
+    .map { CachedSnapshotView(it, project) }
+    .stateIn(coroutineScope, SharingStarted.Eagerly, CachedSnapshotView(WorkspaceSnapshot.EMPTY, project))
 
   suspend fun awaitLoaded() {
-    initialLoad.join()
+    snapshotService.currentSnapshot() // force load
+    // compare with the latest snapshot: `views` is conflated and can skip the one that `currentSnapshot()` returned
+    views.first { it.snapshot === snapshotService.snapshot.value }
   }
 
-  fun onLoaded(body: () -> Unit) {
-    coroutineScope.launch {
-      awaitLoaded()
-      body()
-    }
-  }
-
-  private fun currentSnapshot(): WorkspaceSnapshot {
-    if (!initialLoad.isCompleted) {
-      runBlocking { initialLoad.join() }
-    }
-    return service.snapshot.value
-  }
-
-  private fun view(): CachedSnapshotView = viewFor(currentSnapshot())
-
-  private fun viewFor(snapshot: WorkspaceSnapshot): CachedSnapshotView =
-    views.updateAndGet { current -> if (current.snapshot === snapshot) current else CachedSnapshotView(snapshot, project) }
+  private fun view(): CachedSnapshotView = views.value
 
   val allTargetShortLabels: List<String>
     get() = view().shortLabels
@@ -232,7 +184,10 @@ class TargetStorage(private val project: Project, private val coroutineScope: Co
       repoMapping = RepoMappingDisabled,
       metadata = WorkspaceSnapshotMetadata(version = 1),
     )
-    runBlocking { service.update { snapshot } }
+    runBlocking {
+      snapshotService.update { snapshot }
+      awaitLoaded()
+    }
   }
 
   fun allTargets(): Sequence<Label> = allTargetSummaries().asSequence().map { it.id }

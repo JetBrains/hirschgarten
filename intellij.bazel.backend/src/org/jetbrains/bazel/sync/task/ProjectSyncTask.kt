@@ -54,6 +54,7 @@ import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.BazelWorkspaceResolver
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshotBuilder
+import org.jetbrains.bazel.target.TargetStorage
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.TaskGroupId
 import org.jetbrains.bsp.protocol.TaskId
@@ -470,6 +471,7 @@ class ProjectSyncTask(
             deferredApplyActions = deferredApplyActions,
           )
         project.service<WorkspaceSnapshotService>().update { workspaceSnapshot }
+        project.service<TargetStorage>().awaitLoaded()
         // then sync hooks
         project.projectSyncHooks.forEachSubtask(subtaskId) {
           it.onSync(environment)
