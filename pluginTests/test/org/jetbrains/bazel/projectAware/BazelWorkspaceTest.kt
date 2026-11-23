@@ -24,13 +24,14 @@ import java.nio.file.Path
 
 @BazelTestApplication
 internal class BazelWorkspaceTest {
-  private val testBazel by testBazelProjectFixture()
+  private val testBazel by testBazelProjectFixture(openAfterCreation = false)
 
   @Test
   fun `initialize registers and activates the project aware`() {
     val workspace = BazelWorkspace(testBazel.project)
     Disposer.register(testBazel.disposable, workspace)
 
+    activatedProjectIds() shouldNotContain workspace.projectId
     runBlocking { workspace.initialize() }
 
     activatedProjectIds() shouldContain workspace.projectId
@@ -41,6 +42,7 @@ internal class BazelWorkspaceTest {
     val workspace = BazelWorkspace(testBazel.project)
     runBlocking { workspace.initialize() }
 
+    activatedProjectIds() shouldContain workspace.projectId
     Disposer.dispose(workspace)
 
     activatedProjectIds() shouldNotContain workspace.projectId
