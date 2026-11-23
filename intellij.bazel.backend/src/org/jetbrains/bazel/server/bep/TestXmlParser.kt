@@ -78,6 +78,10 @@ internal data class TestCase(
   val failure: TestResultDetail? = null,
   @JacksonXmlProperty(localName = "skipped")
   val skipped: TestResultDetail? = null,
+  @JacksonXmlProperty(localName = "system-out")
+  val systemOut: String? = null,
+  @JacksonXmlProperty(localName = "system-err")
+  val systemErr: String? = null,
 )
 
 // This is a regular class due to limitations deserializing plain xml tag contents.
@@ -205,13 +209,19 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
       }
 
     // Extract the full error message content.
-    val fullOutput =
+    val failureOutput =
       when {
         testCase.error != null -> testCase.error.content
         testCase.failure != null -> testCase.failure.content
         testCase.skipped != null -> testCase.skipped.content
         else -> ""
       }
+    val fullOutput =
+      listOfNotNull(
+        failureOutput?.takeIf { it.isNotEmpty() },
+        testCase.systemOut?.takeIf { it.isNotEmpty() }?.let { "stdout:\n$it" },
+        testCase.systemErr?.takeIf { it.isNotEmpty() }?.let { "stderr:\n$it" },
+      ).joinToString("\n")
 
     // Map the outcome into a TestStatus value.
     val testStatusOutcome =
