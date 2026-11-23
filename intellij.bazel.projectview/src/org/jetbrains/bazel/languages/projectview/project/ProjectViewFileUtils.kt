@@ -17,9 +17,6 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   derive_targets_from_directories: true
   directories: %s
   
-  # Uncomment this line to make indexing quicker:
-  # import_depth: 0
-  
   """.trimIndent()
 
 @ApiStatus.Internal
