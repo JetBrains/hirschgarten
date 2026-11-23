@@ -14,7 +14,9 @@ import org.junit.jupiter.api.Test
 @CcTestApplication
 class BazelCLionSmokeTest {
 
-  private val project by clionBazelProjectFixture("import/mixed", bazelVersion = BazelVersions.BAZEL_9)
+  private val project by clionBazelProjectFixture("clion/simple", bazelVersion = BazelVersions.BAZEL_9) {
+    addBuildFlags("--extra_toolchains=//toolchain:toolchain")
+  }
 
   @Test
   fun testCLionIsLoaded() {
