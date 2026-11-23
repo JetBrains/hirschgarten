@@ -26,7 +26,6 @@ import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.allJars
 import org.jetbrains.bsp.protocol.isGenerated
-import org.jetbrains.bsp.protocol.isSource
 import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.nonGeneratedSources
 import org.jetbrains.bsp.protocol.relativeNioPath
@@ -257,6 +256,7 @@ class JvmBuildTargetResolver(
     val importDependenciesAsLibraries: Map<WorkspaceTargetKey, List<LibraryItem>> =
       targetsToImport.mapValues { (_, target) ->
         target.dependencies()
+          .filter { !it.isRuntime }
           .mapNotNull { dependency ->
             val depKey = dependency.targetKey
             if (targetsToImport.containsKey(depKey))
