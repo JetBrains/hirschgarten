@@ -9,6 +9,7 @@ import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.removeAllBreakpoints
+import com.intellij.tools.ide.performanceTesting.commands.runConfiguration
 import com.intellij.tools.ide.performanceTesting.commands.setBreakpoint
 import org.jetbrains.bazel.base.execute
 import org.jetbrains.bazel.data.BazelProjectConfigurer
@@ -121,7 +122,7 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
   }
 
   @Test
-  @Order(3)
+  @Order(4)
   fun `debug gutters stop at breakpoints and debug only the selected tests`() {
     withDriver(bgRun) {
       ideFrame {
@@ -156,12 +157,16 @@ internal class GoRunConfigurationsTest : IdeStarterCombinedBaseTest() {
   }
 
   @Test
-  @Order(4)
+  @Order(3)
   fun `Rerun Failed Tests action works`() {
     withDriver(bgRun) {
       ideFrame {
-        execute { openFile("failing/failing_test.go") }
-        clickTestGutterOnLine(0)
+        step("Run all tests in //failing:failing_test") {
+          execute {
+            openFile("lib/lib_test.go")
+            runConfiguration("//failing:failing_test", failureExpected = true)
+          }
+        }
         verifyTestStatus(
           listOf("2 tests failed,", " 1 passed"),
           setOf("goruntest/failing", "TestPasses", "TestFails", "TestAnotherFails"),

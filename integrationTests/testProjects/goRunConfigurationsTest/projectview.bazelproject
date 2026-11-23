@@ -1,5 +1,6 @@
 import_run_configurations:
   tools/intellij/runConfigurations/main_binary.xml
+  tools/intellij/runConfigurations/failing_test.xml
 
 directories:
   .
