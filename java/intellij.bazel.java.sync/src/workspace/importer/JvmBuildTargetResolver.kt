@@ -25,13 +25,12 @@ import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.allJars
+import org.jetbrains.bsp.protocol.isSource
 import org.jetbrains.bsp.protocol.isGenerated
 import org.jetbrains.bsp.protocol.isUserCode
 import org.jetbrains.bsp.protocol.nonGeneratedSources
-import org.jetbrains.bsp.protocol.relativeNioPath
 import org.jetbrains.bsp.protocol.utils.StringUtils
 import java.nio.file.Path
-import kotlin.io.path.extension
 import kotlin.io.path.name
 
 private typealias DependencyLabelPatcher = (DependencyLabel) -> DependencyLabel
@@ -338,7 +337,6 @@ class JvmBuildTargetResolver(
       return false
     }
 
-    val hasGeneratedSrcJar = target.sources.getOutputLocations().any { it.isGenerated && it.relativeNioPath.extension == "srcjar" }
     val hasOnlyNonJvmSources = target.nonGeneratedSources().any() && !hasKnownJvmSources(target)
     val isUnknownTargetWithoutSources =
       target.nonGeneratedSources().none() && target.kind.kind !in wellKnownTargetKinds &&
@@ -349,8 +347,7 @@ class JvmBuildTargetResolver(
         allTargets[key]?.findBuildData<JavaProviderData>()?.hasApiGeneratingPlugins ?: false
       }
 
-    return hasGeneratedSrcJar ||
-           hasOnlyNonJvmSources ||
+    return hasOnlyNonJvmSources ||
            isUnknownTargetWithoutSources ||
            hasApiGeneratingPlugins ||
            dependsOnExportedApiGeneratingPlugins
