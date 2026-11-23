@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# Expected owner of each file in this package after a sync:
+#   lib.cc      //lib:lib  srcs only
+#   private.h   //lib:lib  srcs only
+#   lib.h       //lib:lib  hdrs only
+#   shared.h    //lib:lib  srcs and hdrs, one owner entry
+#   colors.inl  //lib:lib  textual_hdrs only
+#   orphan.h    no owner   in no target
+# //app:app sees lib.h, shared.h and colors.inl as transitive headers, but does not own them.
+cc_library(
+    name = "lib",
+    srcs = [
+        "lib.cc",
+        "private.h",
+        "shared.h",
+    ],
+    hdrs = [
+        "lib.h",
+        "shared.h",
+    ],
+    textual_hdrs = ["colors.inl"],
+    visibility = ["//visibility:public"],
+)

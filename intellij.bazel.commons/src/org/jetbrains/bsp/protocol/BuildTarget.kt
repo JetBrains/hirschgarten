@@ -78,7 +78,13 @@ fun <T : BuildTargetData> BuildTarget.data(type: Class<T>): T? =
   data.firstOrNull { type.isInstance(it) }?.let { type.cast(it) }
 
 @ApiStatus.Internal
-interface BuildTargetData
+interface BuildTargetData {
+  /**
+   * The files of the target that are not in [BuildTarget.sources], such as the headers of a C/C++ library.
+   * The file-to-target index maps them to the target.
+   */
+  fun additionalDeclaredFiles(): Sequence<OutputLocation> = emptySequence()
+}
 
 @ApiStatus.Internal
 enum class StrictDependencyCheckedType {
@@ -93,6 +99,10 @@ inline fun <reified Data> BuildTarget.extractData(): Data? = this.data.filterIsI
 @get:ApiStatus.Internal
 val BuildTarget.isManual: Boolean
   get() = info.isManual
+
+@ApiStatus.Internal
+fun BuildTarget.declaredFiles(): Sequence<OutputLocation> =
+  (sources.getOutputLocations() + data.asSequence().flatMap { it.additionalDeclaredFiles() }).distinct()
 
 @ApiStatus.Internal
 fun BuildTarget.generatedSources(): Sequence<OutputLocation> = sources.getOutputLocations().filter { it.isGenerated }
