@@ -1,12 +1,17 @@
 package org.jetbrains.bazel.tests.ui
 
+import com.intellij.driver.client.service
+import com.intellij.driver.model.OnDispatcher
+import com.intellij.driver.model.RemoteMouseButton
+import com.intellij.driver.sdk.FileEditorManager
+import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.driver.sdk.wait
+import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.execute
@@ -118,11 +123,30 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
           )
         }
 
-        step("Double-click result in test tree and check cursor position") {
+        step("Double-click the test result and check the file and caret") {
+          execute { openFile("custom/TestKotlin.kt") }
           val testTreeView = testTreeView()
-          testTreeView.doubleClickRow { it.startsWith("[1] myClass=class java.lang.String") }
-          execute { assertCaretPosition(18, 8) }
-          wait(3.seconds)
+          val row = testTreeView.waitOneText("[1] myClass=class java.lang.String")
+          testTreeView.robot.postGesture(testTreeView.component, row.point, RemoteMouseButton.LEFT, 2)
+
+          val editorManager = driver.service<FileEditorManager>(driver.singleProject())
+          waitFor(
+            message = "The test result opens TestJava.java at line 18, column 8",
+            timeout = 15.seconds,
+            errorMessage = { location ->
+              val selection = testTreeView.collectSelectedPaths().map { it.path }
+              "Double-click '${row.text}'. Selected rows: $selection. Editor: $location"
+            },
+            getter = {
+              driver.withContext(OnDispatcher.EDT) {
+                editorManager.getSelectedTextEditor()?.let { editor ->
+                  val caret = editor.getCaretModel().getLogicalPosition()
+                  EditorLocation(editor.getVirtualFile().getPath(), caret.getLine() + 1, caret.getColumn() + 1)
+                }
+              }
+            },
+            checker = { it != null && it.path.endsWith("/custom/TestJava.java") && it.line == 18 && it.column == 8 },
+          )
         }
 
         step("Disabled tests are shown in test tree") {
@@ -227,4 +251,6 @@ class JetBrainsTestRunnerTest : IdeStarterBaseProjectTest() {
         }
       }
   }
+
+  private data class EditorLocation(val path: String, val line: Int, val column: Int)
 }
