@@ -87,7 +87,8 @@ class PythonDebugCommandLineState(
         ?: getSdkForTarget(environment.project, target)
       it.envs = debugInfo.environmentVariables +
                 (PyDebugRunner.LIBRARY_ROOTS to PythonDebugUtils.buildPythonLibraryRoots(sdk, debugInfo.libraryRoots))
-      it.sdk = sdk
+      @Suppress("DEPRECATION") // The sync finds an SDK.
+      it.setSdk(sdk)
     }
   }
 }
