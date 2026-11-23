@@ -8,7 +8,6 @@ import com.intellij.driver.sdk.ui.components.common.GutterUiComponent
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
-import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.elements.ActionButtonUi
 import com.intellij.driver.sdk.ui.components.elements.JBTerminalPanelUiComponent
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
@@ -176,9 +175,6 @@ fun IdeaFrameUI.verifyAvailableRunGutterActions(texts: List<String>) {
   }
 }
 
-val IdeaFrameUI.debuggerFramesUi
-  get() = x("//div[@class='XDebuggerFramesList']")
-
 val IdeaFrameUI.consoleView
   get() = x("//div[@class='ConsoleViewImpl']")
 
@@ -229,6 +225,9 @@ private data class DebuggerPauseState(
 
 fun IdeaFrameUI.waitForDebuggerPausedAt(vararg expectedFrameTexts: String, timeout: Duration = 3.minutes) {
   require(expectedFrameTexts.isNotEmpty())
+  val toolWindows = xx {
+    componentWithChild(byJavaClass("com.intellij.toolWindow.InternalDecoratorImpl"), byAccessibleName("Threads & Variables"))
+  }
   step("Wait for debugger to pause at ${expectedFrameTexts.toList()}") {
     waitFor(
       message = "Debugger should pause at ${expectedFrameTexts.toList()}",
@@ -239,26 +238,22 @@ fun IdeaFrameUI.waitForDebuggerPausedAt(vararg expectedFrameTexts: String, timeo
           "Tool window present: ${state.toolWindowPresent}, resume enabled: ${state.resumeEnabled}, frames: ${state.frames}"
       },
       getter = {
-        val toolWindow = debugToolWindow()
-        if (!toolWindow.present()) {
-          DebuggerPauseState()
-        }
-        else {
-          val threadsAndVariablesTab = toolWindow.threadsAndVariablesTab
-          if (!threadsAndVariablesTab.present()) {
-            DebuggerPauseState(toolWindowPresent = true)
-          }
-          else {
-            threadsAndVariablesTab.click()
-            val resumeButton = toolWindow.resumeButton
-            val framesUi = debuggerFramesUi
-            DebuggerPauseState(
-              toolWindowPresent = true,
-              resumeEnabled = resumeButton.present() && resumeButton.isEnabled(),
-              frames = if (framesUi.present()) framesUi.getAllTexts().map { it.text } else emptyList(),
-            )
+        val toolWindow = toolWindows.list().singleOrNull() ?: return@waitFor DebuggerPauseState()
+        val resumeEnabled = toolWindow.xx { byAccessibleName("Resume Program") }.list().singleOrNull()?.isEnabled() == true
+        val frames = toolWindow.xx { byType("com.intellij.xdebugger.impl.frame.XDebuggerFramesList") }.list().singleOrNull()
+        if (resumeEnabled && frames == null) {
+          val threadsTab = toolWindow.xx {
+            byType("com.intellij.ui.SimpleColoredComponent") and byAccessibleName("Threads & Variables")
+          }.list().singleOrNull()
+          if (threadsTab?.component?.isShowing() == true) {
+            threadsTab.click()
           }
         }
+        DebuggerPauseState(
+          toolWindowPresent = true,
+          resumeEnabled = resumeEnabled,
+          frames = frames?.getAllTexts()?.map { it.text }.orEmpty(),
+        )
       },
       checker = { state ->
         state.resumeEnabled && expectedFrameTexts.any { expected -> state.frames.any { expected in it } }
