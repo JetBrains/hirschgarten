@@ -47,7 +47,7 @@ class OutputLocationParser(
     return parsed
   }
 
-  private suspend fun hardLinkOutputs(parsed: List<OutputLocation>) {
+  suspend fun hardLinkOutputs(parsed: List<OutputLocation>) {
     val outputArtifacts = parsed.filter { it.isGenerated }
       .map { output -> bazelPathsResolver.relativePathToExecRootAbsolute(Path(output.toExecrootPath())).normalize() }
     hardLinks.createOutputFileHardLinks(outputArtifacts)
