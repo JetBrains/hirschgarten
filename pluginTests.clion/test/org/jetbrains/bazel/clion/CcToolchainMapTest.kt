@@ -14,6 +14,7 @@ import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.jetbrains.bazel.label.DependencyLabelKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
+import org.jetbrains.bazel.test.framework.testproject.TestRepositoriesBuilder
 import org.junit.jupiter.api.Test
 
 @TestApplication
@@ -333,10 +334,28 @@ class CcToolchainMapTest {
     assertThat(toolchains).isEmpty()
   }
 
+  @Test
+  fun testTargetOfExternalRepositoryHasNoToolchain() {
+    val (events, toolchains) = resolve(repositories = { external("ext+") }) {
+      val toolchain = ccToolchain { label("//toolchain:only") }
+
+      ccLibrary {
+        label("@@ext+//:lib")
+        repository("ext+")
+        srcs("lib.cc")
+        deps(DependencyLabelKind.TOOLCHAIN, toolchain)
+      }
+    }
+
+    assertThat(events).isEmpty()
+    assertThat(toolchains).isEmpty()
+  }
+
   private fun resolve(
+    repositories: TestRepositoriesBuilder.() -> Unit = {},
     declare: CcProjectBuilder.() -> Unit,
   ): Pair<List<TestEvent>, Map<WorkspaceTargetKey, WorkspaceTargetKey>> = timeoutRunBlocking {
-    val (ctx, result) = withTestImportContext(ccProject(declare = declare), project) { buildToolchainMap() }
+    val (ctx, result) = withTestImportContext(ccProject(repositories = repositories, declare = declare), project) { buildToolchainMap() }
     ctx.events to result
   }
 }
