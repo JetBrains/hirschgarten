@@ -1,7 +1,7 @@
 """Rules for declaring IDE-Starter tests across explicit OS and Bazel-version variants."""
 
+load("@community//build:bazel_targets_json.bzl", "BAZEL_TARGETS_JSON_ULTIMATE")
 load("@community//build:tests-options.bzl", "jps_test")
-load("@jps_dynamic_deps_ultimate//:targets.bzl", "ALL_ULTIMATE_TARGETS", "BAZEL_TARGETS_JSON_ULTIMATE")
 
 _OS_CONSTRAINTS = {
     "linux": "@platforms//os:linux",
@@ -57,7 +57,7 @@ def ide_starter_e2e_matrix(
             name = "%s_bazel_%s" % (os, _version_suffix(version))
             jps_test(
                 name = name,
-                data = ALL_ULTIMATE_TARGETS + [BAZEL_TARGETS_JSON_ULTIMATE],
+                data = ["//build:all_ultimate_targets", BAZEL_TARGETS_JSON_ULTIMATE],
                 env = {
                     # Read natively by bazelisk inside the launched IDE; wins over .bazelversion.
                     "USE_BAZEL_VERSION": version,
@@ -102,7 +102,7 @@ def ide_starter_e2e_host_test(
             fail("Unsupported OS %r; expected one of %r" % (os, sorted(_OS_CONSTRAINTS.keys())))
         jps_test(
             name = os,
-            data = ALL_ULTIMATE_TARGETS + [BAZEL_TARGETS_JSON_ULTIMATE],
+            data = ["//build:all_ultimate_targets", BAZEL_TARGETS_JSON_ULTIMATE],
             env = {
                 "JB_TEST_FILTER": test_class,
             },
