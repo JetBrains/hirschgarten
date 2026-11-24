@@ -20,7 +20,6 @@ import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.buildToolWindow
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.mainToolbar
-import com.intellij.driver.sdk.ui.components.common.restartDebugButton
 import com.intellij.driver.sdk.ui.components.common.toolwindows.DebugToolWindowUi
 import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.elements.dialog
