@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.flow.modify
 
+import com.intellij.ide.IdeBundle
 import com.intellij.ide.IdeView
+import com.intellij.ide.actions.JavaCreateDirectoryOrPackageAction
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.LangDataKeys
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
@@ -16,6 +18,7 @@ import com.intellij.testFramework.common.timeoutRunBlocking
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.test.framework.BazelTestApplication
 import org.jetbrains.bazel.test.framework.bazelCodeInsightFixture
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -24,7 +27,7 @@ internal class BazelCreateJavaClassActionAvailabilityOverrideTest {
   private val fixture by bazelCodeInsightFixture()
 
   @Test
-  fun `creating java and kotlin classes should be available`() = timeoutRunBlocking {
+  fun `creating java and kotlin files and packages should be available`() = timeoutRunBlocking {
     val project = fixture.project
     val workspaceModel = project.workspaceModel
     writeAction {
@@ -41,17 +44,25 @@ internal class BazelCreateJavaClassActionAvailabilityOverrideTest {
         override fun getOrChooseDirectory(): PsiDirectory = psiDirectory
       },
     ).add(LangDataKeys.PROJECT, project).build()
-    val actionEvent = TestActionEvent.createTestEvent(context)
-
     val actionManager = ActionManager.getInstance()
     val actions = listOf(
       actionManager.getAction("NewClass")!!,
       actionManager.getAction("Kotlin.NewFile")!!,
+      actionManager.getAction("NewPackageInfo")!!,
+      actionManager.getAction("NewDir")!!,
     )
 
     for (action in actions) {
+      val actionEvent = TestActionEvent.createTestEvent(context)
       readAction { action.update(actionEvent) }
       assertTrue(actionEvent.presentation.isEnabledAndVisible, "Action ${action.templateText} should be available")
+    }
+
+    // Java's NewDir action is replaced by the Kotlin plugin normally, but it must work when the Kotlin plugin is disabled.
+    for (newDirAction in listOf(actionManager.getAction("NewDir")!!, JavaCreateDirectoryOrPackageAction())) {
+      val newDirEvent = TestActionEvent.createTestEvent(context)
+      readAction { newDirAction.update(newDirEvent) }
+      assertEquals(IdeBundle.message("action.package"), newDirEvent.presentation.text, "${newDirAction.javaClass.name} should show a package")
     }
   }
 }
