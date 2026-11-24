@@ -12,6 +12,7 @@ data class CcToolchainBuildTarget(
   val cOption: StringsCollection,
   val cCompiler: OutputLocation,
   val cppCompiler: OutputLocation,
+  val allFiles: List<OutputLocation>,
   val builtInIncludeDirectories: OutputLocationCollection,
   val sysroot: OutputLocation?,
   val cEnvironment: Map<String, String>,

@@ -316,6 +316,10 @@ internal class CcToolchainBuilder {
         cOption = StringsCollection.of(cOptions),
         cCompiler = OutputLocationParserWithoutHardlink.parseExecrootPath(cCompiler),
         cppCompiler = OutputLocationParserWithoutHardlink.parseExecrootPath(cppCompiler),
+        allFiles = listOf(
+          OutputLocationParserWithoutHardlink.parseExecrootPath(cCompiler),
+          OutputLocationParserWithoutHardlink.parseExecrootPath(cppCompiler),
+        ),
         builtInIncludeDirectories = locations(builtinIncludes.map(OutputLocation::Workspace)),
         sysroot = sysroot?.let(OutputLocationParserWithoutHardlink::parseExecrootPath),
         cEnvironment = env,

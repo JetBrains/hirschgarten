@@ -63,7 +63,7 @@ suspend fun buildCompilerSettings(outputRequests: ToolOutputRequests): Map<Works
     val cppCompiler = compilerResolver.resolve(toolchainInfo.cppCompiler, toolEnvironment) ?: continue
 
     if ((!cCompiler.path.exists()) || (!cppCompiler.path.exists())) {
-      outputRequests.request(OutputGroups.CC_TOOLS, listOf(toolchainInfo.cppCompiler, toolchainInfo.cppCompiler))
+      outputRequests.request(OutputGroups.CC_TOOLS, toolchainInfo.allFiles)
     }
 
     val compilerInfo = CcCompilerInfo(
