@@ -8,7 +8,6 @@ import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
-import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -29,7 +28,7 @@ internal class OpenProjectViewAction :
 internal suspend fun openProjectView(project: Project) {
   val configFile = project.projectViewFile
   withContext(Dispatchers.EDT) {
-    project.serviceAsync<ProjectView>().refresh(ProjectViewUpdateCause.ACTION)
+    project.serviceAsync<ProjectView>().refresh()
     project.serviceAsync<PsiManager>().findFile(configFile)?.navigate(true)
   }
 }

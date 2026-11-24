@@ -22,7 +22,6 @@ import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.ui.treeStructure.ProjectViewUpdateCause
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,10 +35,10 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.ignore.BazelIgnoreService
-import org.jetbrains.bazel.sync.status.SyncStatusListener
-import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.ProjectSyncScope
 import org.jetbrains.bazel.sync.ProjectSyncService
+import org.jetbrains.bazel.sync.status.SyncStatusListener
+import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.target.targetStorage
 import org.jetbrains.bazel.workspace.fileEvents.BazelFileEventProcessor
 import org.jetbrains.jps.model.java.JavaResourceRootType
@@ -205,7 +204,7 @@ class BazelFileStatusRefresher(private val project: Project, coroutineScope: Cor
   fun refreshAllFilesPresentation() {
     BazelCoroutineService.getInstance(project).start {
       withContext(Dispatchers.EDT) {
-        ProjectView.getInstance(project).refresh(ProjectViewUpdateCause.PLUGIN_BAZEL)
+        ProjectView.getInstance(project).refresh()
         EditorNotifications.getInstance(project).updateAllNotifications()
         with(FileEditorManager.getInstance(project)) {
           openFiles.forEach {
