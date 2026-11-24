@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.server.bsp
 
+import com.intellij.aspect.lib.INTELLIJ_ASPECT
+import com.intellij.aspect.lib.OutputGroups
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.BazelRunner
@@ -8,12 +10,14 @@ import org.jetbrains.bazel.bazelrunner.ResolvedModulesAndWarning
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.BazelQueryParams
 import org.jetbrains.bazel.server.BazelQueryResult
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.PhasedSyncProject
@@ -29,6 +33,7 @@ import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.RunParams
@@ -81,6 +86,18 @@ class BazelServerFacadeImpl(
 
   override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject {
     return firstPhaseProjectResolver.resolve(params.taskId)
+  }
+
+  override suspend fun materializeExtraSyncOutputs(taskId: TaskId, targetsSpec: TargetCollection, outputGroups: List<OutputGroups>, outputFiles: List<OutputLocation>) {
+    BazelBspAspectsManager(bazelInfo.workspaceRoot, executeService, bazelInfo.release)
+      .fetchFilesFromOutputGroups(
+        targetsSpec,
+        aspects = listOf(INTELLIJ_ASPECT.location.toString()),
+        outputGroups.map {it.groupName},
+        projectView,
+        taskId
+      )
+    outputParser.hardLinkOutputs(outputFiles)
   }
 
   override suspend fun buildTargetCompile(params: CompileParams): CompileResult = executeService.compile(params)
