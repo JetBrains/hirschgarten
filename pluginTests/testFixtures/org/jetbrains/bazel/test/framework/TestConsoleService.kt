@@ -6,6 +6,7 @@ import com.intellij.build.events.FailureResult
 import com.intellij.build.events.FinishEvent
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.OutputBuildEvent
+import com.intellij.build.events.StartBuildEvent
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.isControlFlowException
 import com.intellij.openapi.diagnostic.logger
@@ -57,6 +58,10 @@ internal class TestConsoleService(project: Project) : ConsoleService, Disposable
     this?.trimEnd { it.isWhitespace() || it == '\r' || it == '\n' }
 
   private fun storeEvent(event: BuildEvent) {
+    if (event is StartBuildEvent) {
+      syncDiagnostics.clear()
+    }
+
     if (event is MessageEvent && (event.kind == MessageEvent.Kind.WARNING || event.kind == MessageEvent.Kind.ERROR)) {
       val description = event.description.trimCrLf()?.takeIf { it.isNotBlank() && it != event.message.trimCrLf() }
       syncDiagnostics.add(listOfNotNull(event.message.trimCrLf(), description).joinToString("\n"))
