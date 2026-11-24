@@ -2504,7 +2504,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
+  // simple_statement (statement_separator simple_statement)* (statement_separator STATEMENT_BREAK?)?
   static boolean simple_line(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "simple_line")) return false;
     boolean r;
@@ -2516,7 +2516,7 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // (';' simple_statement)*
+  // (statement_separator simple_statement)*
   private static boolean simple_line_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "simple_line_1")) return false;
     while (true) {
@@ -2527,30 +2527,30 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // ';' simple_statement
+  // statement_separator simple_statement
   private static boolean simple_line_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "simple_line_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, SEMICOLON);
+    r = statement_separator(b, l + 1);
     r = r && simple_statement(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (';' STATEMENT_BREAK?)?
+  // (statement_separator STATEMENT_BREAK?)?
   private static boolean simple_line_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "simple_line_2")) return false;
     simple_line_2_0(b, l + 1);
     return true;
   }
 
-  // ';' STATEMENT_BREAK?
+  // statement_separator STATEMENT_BREAK?
   private static boolean simple_line_2_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "simple_line_2_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, SEMICOLON);
+    r = statement_separator(b, l + 1);
     r = r && simple_line_2_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
@@ -2780,6 +2780,18 @@ public class _StarlarkParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, STATEMENT_BREAK);
     if (!r) r = consumeToken(b, DEDENT);
     if (!r) r = consumeToken(b, SEMICOLON);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // <<atSameLine>> ';'
+  static boolean statement_separator(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "statement_separator")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = atSameLine(b, l + 1);
+    r = r && consumeToken(b, SEMICOLON);
     exit_section_(b, m, null, r);
     return r;
   }
