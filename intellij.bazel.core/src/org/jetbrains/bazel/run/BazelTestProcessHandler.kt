@@ -10,7 +10,8 @@ internal class BazelTestProcessHandler(
   runDeferred: Deferred<Int>,
   pidDeferred: Deferred<Long?>? = null,
   private val isIdBasedTestTree: Boolean = false,
-) : BazelProcessHandler(project, runDeferred, pidDeferred) {
+  usePty: Boolean,
+) : BazelProcessHandler(project, runDeferred, pidDeferred, usePty) {
   override fun destroyProcessImpl() {
     // send a fake terminated test to the test console - otherwise it will show "No tests were found" instead of "Terminated"
     val message = ServiceMessageBuilder.testSuiteStarted("Run cancelled")

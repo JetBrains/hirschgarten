@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.golang.sync
 
 import com.intellij.build.events.MessageEvent
+import com.intellij.ide.IdeCoreBundle
 import com.intellij.openapi.util.Key
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
@@ -33,13 +34,17 @@ internal class RunGazelleTargetPreSyncHook : ProjectPreSyncHook {
             checkVisibility = true,
           )
         val buildTargetRun = server.buildTargetRun(runParams)
-        if (buildTargetRun.statusCode == BazelStatus.BUILD_ERROR) {
-          project.syncConsole.addDiagnosticMessage(
-            taskId = taskId,
-            message = BazelGoBundle.message("progress.text.specify.gazelle.target.in.selected.bazelproject"),
-            severity = MessageEvent.Kind.WARNING,
-          )
-        }
+        val warningMessage =
+          when {
+            buildTargetRun.buildStatus == BazelStatus.BUILD_ERROR -> BazelGoBundle.message("progress.text.specify.gazelle.target.in.selected.bazelproject")
+            buildTargetRun.exitCode != 0 -> IdeCoreBundle.message("finished.with.exit.code.text.message", buildTargetRun.exitCode)
+            else -> return@runWithServer
+          }
+        project.syncConsole.addDiagnosticMessage(
+          taskId = taskId,
+          message = warningMessage,
+          severity = MessageEvent.Kind.WARNING,
+        )
       }
     }
   }

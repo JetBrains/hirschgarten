@@ -12,6 +12,9 @@ private const val OOM_EXIT_CODE = 33
 // specific code for bazel sync
 private const val PARTIALLY_SUCCESS_WITH_KEEP_GOING = 3
 
+// the build succeeded, but `bazel test` found no tests
+private const val NO_TESTS_FOUND_EXIT_CODE = 4
+
 @ApiStatus.Internal
 enum class BazelStatus {
   SUCCESS,
@@ -33,7 +36,7 @@ enum class BazelStatus {
   companion object {
     fun fromExitCode(exitCode: Int): BazelStatus =
       when (exitCode) {
-        SUCCESS_EXIT_CODE, PARTIALLY_SUCCESS_WITH_KEEP_GOING -> SUCCESS
+        SUCCESS_EXIT_CODE, PARTIALLY_SUCCESS_WITH_KEEP_GOING, NO_TESTS_FOUND_EXIT_CODE -> SUCCESS
         BAD_COMMAND_LINE_ARGUMENTS_EXIT_CODE -> BAD_COMMAND_LINE_ARGUMENTS
         BUILD_ERROR_EXIT_CODE -> BUILD_ERROR
         CANCEL_EXIT_CODE -> CANCEL

@@ -38,6 +38,8 @@ abstract class JvmDebuggableCommandLineState(
     )
   }
 
+  override val usePty: Boolean get() = false  // we run through --script_path, without calling Bazel
+
   override fun createConsole(executor: Executor): ConsoleView? {
     val console = super.createConsole(executor)
     return JavaRunConfigurationExtensionManager.instance.decorateExecutionConsole(

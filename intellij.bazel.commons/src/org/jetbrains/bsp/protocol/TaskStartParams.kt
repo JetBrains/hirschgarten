@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bazel.label.Label
 
 @ApiStatus.Internal
 data class TaskStartParams(
@@ -13,6 +12,3 @@ data class TaskStartParams(
 
 @ApiStatus.Internal
 sealed interface TaskStartData
-
-@ApiStatus.Internal
-data class CompileTask(val target: Label) : TaskStartData

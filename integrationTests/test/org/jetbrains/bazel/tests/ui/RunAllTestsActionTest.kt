@@ -2,10 +2,10 @@ package org.jetbrains.bazel.tests.ui
 
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
-import com.intellij.driver.sdk.ui.components.common.editor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.toolWindow
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
+import com.intellij.driver.sdk.ui.components.elements.JBTerminalPanelUiComponent
 import com.intellij.driver.sdk.ui.components.elements.popupMenu
 import com.intellij.driver.sdk.ui.components.elements.tree
 import com.intellij.driver.sdk.waitFor
@@ -110,12 +110,13 @@ class RunAllTestsActionTest : IdeStarterBaseProjectTest() {
     step("Verify stdout and stderr in the test results console") {
       testTreeView().clickRow { it.startsWith("Test Results") }
       val testResults = x { byType("com.intellij.execution.testframework.sm.runner.ui.SMTestRunnerResultsForm") }
-      val console = testResults.x { byType("com.intellij.execution.impl.ConsoleViewImpl") }
+      // a Bazel test with a PTY shows its output in a terminal
+      val terminal = testResults.x(JBTerminalPanelUiComponent::class.java) { byClass("JBTerminalPanel") }
       val expectedOutput = listOf("AdditionTest stdout", "AdditionTest stderr")
       waitFor(
         message = "The test results console contains stdout and stderr",
         timeout = 30.seconds,
-        getter = { console.editor().text },
+        getter = { terminal.text },
         checker = { text -> expectedOutput.all { it in text } },
       )
     }

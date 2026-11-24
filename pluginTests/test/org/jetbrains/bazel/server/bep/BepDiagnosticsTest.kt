@@ -159,6 +159,21 @@ src/build/NotCompiling.java:4: error: cannot find symbol
   }
 
   @Test
+  fun `compiler errors with color codes give diagnostics without them`() {
+    val client = MockBuildTaskEventsHandler()
+    val server = newBepServer(client)
+    val esc = 27.toChar()
+    val stderrContents = "$esc[1mmain/echo.cc:12:44: $esc[0m$esc[0;1;31merror: $esc[0m$esc[1muse of undeclared identifier 'x'$esc[0m\n"
+
+    server.handleBuildEventStreamProtosEvent(newBuildStartedEvent())
+    server.handleBuildEventStreamProtosEvent(newActionEvent(stderrContents))
+
+    val diagnostic = client.buildPublishDiagnostics.single()
+    assertEquals("echo.cc", diagnostic.textDocument?.path?.fileName?.toString())
+    assertEquals(listOf(false), diagnostic.diagnostics.map { esc in it.message })
+  }
+
+  @Test
   fun `unsuccessful compilation gives errors`() {
     val client = MockBuildTaskEventsHandler()
     val server = newBepServer(client)

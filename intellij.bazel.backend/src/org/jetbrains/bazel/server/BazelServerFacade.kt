@@ -21,7 +21,6 @@ import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
-import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -66,7 +65,7 @@ interface BazelServerFacade {
   suspend fun buildTargetRun(params: RunParams): RunResult
 
   @ApiStatus.Internal
-  suspend fun buildTargetTest(params: TestParams): TestResult
+  suspend fun buildTargetTest(params: TestParams): RunResult
 
   @ApiStatus.Internal
   suspend fun workspaceDirectories(repoMapping: RepoMapping, taskId: TaskId): WorkspaceDirectoriesResult

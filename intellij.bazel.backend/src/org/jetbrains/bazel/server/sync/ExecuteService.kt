@@ -41,7 +41,6 @@ import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
-import org.jetbrains.bsp.protocol.TestResult
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.coroutines.cancellation.CancellationException
@@ -98,7 +97,7 @@ class ExecuteService(
         reportInvocationMetrics(context, bepServer, processResult)
 
         val bepOutput = bepServer.bepOutput
-        BepBuildResult(processResult, bepOutput)
+        BepBuildResult(processResult, bepOutput, bepServer.buildStatus ?: processResult.bazelStatus)
       }
       catch (e: CancellationException) {
         if (BazelFeatureFlags.killServerOnCancel) {
@@ -176,26 +175,26 @@ class ExecuteService(
           environment.putAll(params.environmentVariables)
           programArguments.addAll(params.arguments)
           additionalBazelOptions.addAll(params.additionalBazelParams)
-          enablePty = !params.captureStdout // otherwise stderr is merged into stdout
+          enablePty = BazelFeatureFlags.usePty
         }
       }
     val result = runWithBepServer(command, params.taskId, BazelInvocationContext.RUN, pidDeferred = params.pidDeferred)
     return RunResult(
       exitCode = result.processResult.exitCode,
       taskId = params.taskId,
-      stdout = if (params.captureStdout) result.processResult.stdout.decodeToString() else null,
       infoFiles = result.bepOutput.filesByInfoOutputGroup(),
+      buildStatus = result.buildStatus,
     )
   }
 
-  suspend fun test(params: TestParams): TestResult {
+  suspend fun test(params: TestParams): RunResult {
     val targetsSpec = TargetCollection(params.targets, emptyList())
     val command =
       when {
-        params.useCoverage -> bazelRunner.buildBazelCommand(projectView) { coverage() }.also { command ->
-          command.options.add(BazelFlag.combinedReportLcov())
-        }
-        else -> bazelRunner.buildBazelCommand(projectView) { test() }
+        // buildBazelCommand chooses the curses flags by enablePty, so it must be set in the builder
+        params.useCoverage -> bazelRunner.buildBazelCommand(projectView) { coverage { enablePty = BazelFeatureFlags.usePty } }
+          .also { command -> command.options.add(BazelFlag.combinedReportLcov()) }
+        else -> bazelRunner.buildBazelCommand(projectView) { test { enablePty = BazelFeatureFlags.usePty } }
       }
 
     val instrumentationFilter = params.coverageInstrumentationFilter?.takeIf { params.useCoverage }
@@ -226,7 +225,7 @@ class ExecuteService(
 
     // TODO: handle multiple targets
     val result = runWithBepServer(command, params.taskId, BazelInvocationContext.TEST)
-    return TestResult(exitCode = result.processResult.exitCode)
+    return RunResult(taskId = params.taskId, exitCode = result.processResult.exitCode, buildStatus = result.buildStatus)
   }
 
   private suspend fun build(
@@ -240,7 +239,7 @@ class ExecuteService(
         build {
           additionalBazelOptions.addAll(additionalArguments)
           targets.addAll(allTargets)
-          enablePty = true
+          enablePty = BazelFeatureFlags.usePty
         }
       }
 
@@ -258,7 +257,7 @@ class ExecuteService(
           options.addAll(extraFlags)
           targets.addAll(targetsSpec.values)
           excludedTargets.addAll(targetsSpec.excludedValues)
-          enablePty = true
+          enablePty = BazelFeatureFlags.usePty
         }
       }
 

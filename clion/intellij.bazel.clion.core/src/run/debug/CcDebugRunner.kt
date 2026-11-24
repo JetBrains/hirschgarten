@@ -16,6 +16,7 @@ import com.intellij.util.asSafely
 import com.jetbrains.cidr.cpp.execution.DebugProfileErrorWithCustomNotification
 import com.jetbrains.cidr.cpp.execution.showMissingDebugProfileNotification
 import com.jetbrains.cidr.execution.CidrRunner
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.NonNls
@@ -27,7 +28,6 @@ import org.jetbrains.bazel.clion.workspace.CcDebugSessionConfigurations
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.progress.ConsoleService
-import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.progress.withSubtask
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -89,7 +89,6 @@ class CcDebugRunner : AsyncProgramRunner<RunnerSettings>() {
       title = BazelCLionCoreBundle.message("debug.task.title"),
       message = BazelCLionCoreBundle.message("debug.task.message", environment.runProfile.name),
       cancelAction = { deferred.cancel() },
-      showConsole = ShowConsole.ON_FAIL,
     )
 
     val promise = deferred.toPromiseWithoutLogError()
@@ -99,9 +98,13 @@ class CcDebugRunner : AsyncProgramRunner<RunnerSettings>() {
     }
     promise.onError {
       when {
-        // the user can cancel in the console or in the debug info dialog
-        deferred.isCancelled || it is RunCanceledByUserException -> {
+        // the user can cancel in the console or in the debug info dialog.
+        it is CancellationException || it is RunCanceledByUserException -> {
           console.finishTask(taskId, BazelCLionCoreBundle.message("debug.task.status.canceled"))
+        }
+        it is CcDebugBuildFailedException -> {
+          // The diagnostics are in the console, don't show the exception to the user
+          console.finishTask(taskId, BazelCLionCoreBundle.message("debug.task.status.failed"), FailureResultImpl())
         }
         else -> {
           console.finishTask(taskId, BazelCLionCoreBundle.message("debug.task.status.failed"), FailureResultImpl(it))

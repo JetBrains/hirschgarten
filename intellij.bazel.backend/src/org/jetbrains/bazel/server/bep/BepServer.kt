@@ -47,16 +47,14 @@ import org.jetbrains.bazel.testing.BazelTestDetails
 import org.jetbrains.bsp.protocol.AnalysisCacheInvalidation
 import org.jetbrains.bsp.protocol.BazelInvocationContext
 import org.jetbrains.bsp.protocol.BazelTaskEventsHandler
+import org.jetbrains.bsp.protocol.BuildFinished
 import org.jetbrains.bsp.protocol.CachedTestLog
-import org.jetbrains.bsp.protocol.CompileReport
-import org.jetbrains.bsp.protocol.CompileTask
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.Position
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
-import org.jetbrains.bsp.protocol.TaskStartParams
 import java.io.File
 import java.io.IOException
 import java.nio.file.FileSystemNotFoundException
@@ -77,12 +75,14 @@ class BepServer(
 
   private data class Abort(val reason: AbortReason, val label: Label)
 
-  private var startedEvent: TaskId? = null
+  private var testStartedEvent: TaskId? = null
   private var isTest = false
   private val bepOutputBuilder = BepOutputBuilder()
   private val buildProgressParser = BuildProgressParser()
   private val customBepEventHandlers: List<BepEventHandler>
-  private val otherErrors : MutableMap<Label, MutableSet<Abort>> = HashMap()
+  private val otherErrors: MutableMap<Label, MutableSet<Abort>> = HashMap()
+  var buildStatus: BazelStatus? = null
+    private set
 
   init {
     val bepEventHandlerContext = BepEventHandlerContext(project, parentId, taskEventsHandler, diagnosticsService, bazelPathsResolver)
@@ -151,7 +151,7 @@ class BepServer(
 
   private fun processTestResult(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasTestResult()) {
-      val taskId = startedEvent
+      val taskId = testStartedEvent
       if (taskId == null || !isTest) {
         return
       }
@@ -337,19 +337,11 @@ class BepServer(
       BazelRelease.fromReleaseString(event.started.buildToolVersion) ?: BazelRelease.FALLBACK_VERSION
 
     val taskId = parentId.subTask("started-" + event.started.uuid)
-    val startParams = TaskStartParams(taskId, eventTime = event.started.startTimeMillis)
     val target =
       event.id.testResult.label
         ?.let { Label.parse(it) }
 
-    if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
-      if (target != null) {
-        val task = CompileTask(target)
-        startParams.data = task
-      }
-      taskEventsHandler.onBuildTaskStart(startParams)
-    }
-    else if (event.started.command == Constants.BAZEL_TEST_COMMAND || event.started.command == Constants.BAZEL_COVERAGE_COMMAND) {
+    if (event.started.command == Constants.BAZEL_TEST_COMMAND || event.started.command == Constants.BAZEL_COVERAGE_COMMAND) {
       if (target == null) {
         return
       }
@@ -357,7 +349,7 @@ class BepServer(
       isTest = true
     }
 
-    startedEvent = taskId
+    testStartedEvent = taskId
   }
 
   private fun processFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
@@ -367,11 +359,8 @@ class BepServer(
   }
 
   private fun consumeFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val taskId = startedEvent
-    if (taskId == null) {
-      LOGGER.warn("No start event id was found. Origin id: ${parentId}")
-      return
-    }
+    val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code)
+    buildStatus = statusCode
 
     if (isTest) {
       isTest = false
@@ -386,23 +375,19 @@ class BepServer(
       taskEventsHandler.onBuildPublishDiagnostics(params)
     }
 
-    val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code)
     val isSuccess = statusCode == BazelStatus.SUCCESS
-    val errors = if (isSuccess) 0 else 1
     val buildReference = SyntheticLabel(AllRuleTargets)
     val message = ("Build result: ${event.finished.exitCode.name} (${event.finished.exitCode.code})"
                    + if (event.finished.failureDetail.message.isEmpty()) "" else "\n${event.finished.failureDetail.message}")
-    // Also report an overall build failure as diagnostic message
+    // Report an overall build failure as diagnostic message
     if (!isSuccess) {
       val diagnostic = Diagnostic(Position.NONE, message, null, buildReference,
                                   if (context == BazelInvocationContext.SYNC) DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR)
       val params = PublishDiagnosticsParams(parentId, null, buildReference, listOf(diagnostic), true)
       taskEventsHandler.onBuildPublishDiagnostics(params)
     }
-    val report = CompileReport(buildReference, errors, 0)
-    val finishParams =
-      TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis,
-                       message = message, data = report)
+    val finishParams = TaskFinishParams(parentId, status = statusCode, eventTime = event.finished.finishTimeMillis,
+                                        message = message, data = BuildFinished)
     taskEventsHandler.onBuildTaskFinish(finishParams)
   }
 
@@ -421,7 +406,7 @@ class BepServer(
   private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val label = Label.parse(event.id.actionCompleted.label)
     val payload = event.action
-    val stderrText =  when (payload.stderr.fileCase) {
+    val rawStderrText = when (payload.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
           val path = bazelPathsResolver.resolve(payload.stderr)
@@ -442,6 +427,8 @@ class BepServer(
       }
       else -> { "" }
     }
+    // with `--color=yes` the compiler output has color codes, which the diagnostic parsers and the Build window do not expect
+    val stderrText = AnsiEscapeCodes.strip(rawStderrText)
     val eventReported = processActionDiagnosticText(stderrText, label, parentId, payload.success)
     if ((!eventReported)&&(!payload.success)) {
       // A build step failed, but we could not report any details about the error. At least report the failure of the build action

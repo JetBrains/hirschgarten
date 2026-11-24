@@ -27,7 +27,6 @@ import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
-import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -37,7 +36,7 @@ import kotlin.io.path.Path
 open class BuildServerMock(
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
-  private val testResult: TestResult? = null,
+  private val testResult: RunResult? = null,
   private val workspaceDirectoriesResult: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(listOf(), listOf()),
   private val analysisDebugResult: AnalysisDebugResult? = null,
   private val aspectSyncProject: AspectSyncProject? = null,
@@ -58,7 +57,7 @@ open class BuildServerMock(
 
   override suspend fun buildTargetRun(runParams: RunParams): RunResult = wrapInFuture(runResult)
 
-  override suspend fun buildTargetTest(testParams: TestParams): TestResult = wrapInFuture(testResult)
+  override suspend fun buildTargetTest(testParams: TestParams): RunResult = wrapInFuture(testResult)
 
   override suspend fun workspaceDirectories(repoMapping: RepoMapping, taskId: TaskId): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
 

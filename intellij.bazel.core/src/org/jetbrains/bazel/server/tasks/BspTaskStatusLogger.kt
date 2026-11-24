@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelExtBundle
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.progress.TaskConsole
+import org.jetbrains.bazel.run.task.finishBuildConsoleTaskWithProperResult
 import org.jetbrains.bsp.protocol.TaskId
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
@@ -19,21 +20,7 @@ internal class BspTaskStatusLogger(
     taskDeferred
       .also { it.invokeOnCompletion { throwable -> catchBuildErrors(throwable) } }
       .await()
-      .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole) }
-
-  private fun finishBuildConsoleTaskWithProperResult(
-    status: BazelStatus,
-    bspBuildConsole: TaskConsole,
-  ) = when (status) {
-    BazelStatus.SUCCESS -> bspBuildConsole.finishTask(taskId, BazelPluginBundle.message("console.task.status.ok"))
-    BazelStatus.CANCEL -> bspBuildConsole.finishTask(taskId, BazelPluginBundle.message("console.task.status.cancelled"))
-    else ->
-      bspBuildConsole.finishTask(
-        taskId,
-        BazelPluginBundle.message("console.task.status.error"),
-        FailureResultImpl(),
-      )
-  }
+      .also { finishBuildConsoleTaskWithProperResult(taskId, it, bspBuildConsole) }
 
   private fun catchBuildErrors(exception: Throwable?) {
     if (exception == null) return

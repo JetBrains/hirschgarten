@@ -18,7 +18,6 @@ import org.jetbrains.bazel.run.commandLine.parseAsProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasBazelParams
 import org.jetbrains.bazel.run.state.HasProgramArguments
-import org.jetbrains.bazel.server.tasks.DefaultBuildTargetTask
 import org.jetbrains.bazel.server.tasks.ScriptPathBuildTargetTask
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import java.nio.file.Path
@@ -55,30 +54,21 @@ class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    // Skip for running with coverage, in which case SCRIPT_PATH_KEY is not set
-    val scriptPathRef: Ref<Path>? = environment.getCopyableUserData(SCRIPT_PATH_KEY)
+    val scriptPathRef: Ref<Path> = environment.getCopyableUserData(SCRIPT_PATH_KEY) ?: return true
     val runConfiguration = BazelRunConfiguration.get(environment)
     val isDebug = environment.executor is DefaultDebugExecutor
     val project = environment.project
-    val scriptPath = scriptPathRef?.let { ScriptPathBuildTargetTask.createTempScriptFile() }
+    val scriptPath = ScriptPathBuildTargetTask.createTempScriptFile()
     val status =
       try {
-        val buildTargetTask = if (scriptPath != null) {
-          val state = runConfiguration.handler?.state
-          val programArguments = parseAsProgramArguments((state as? HasProgramArguments)?.programArguments)
-          val additionalBazelParams = parseAsProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
-          ScriptPathBuildTargetTask(
-            scriptPath = scriptPath,
-            programArguments = programArguments,
-            additionalBazelParams = additionalBazelParams,
-          )
-        } else {
-          /**
-           * scriptPath is null when running tests without debug, which indicates that we should build but not pass --script_path
-           * because --script_path screws up test result caching, but we still want diagnostics if the build fails
-           */
-          DefaultBuildTargetTask
-        }
+        val state = runConfiguration.handler?.state
+        val programArguments = parseAsProgramArguments((state as? HasProgramArguments)?.programArguments)
+        val additionalBazelParams = parseAsProgramArguments((state as? HasBazelParams)?.additionalBazelParams)
+        val buildTargetTask = ScriptPathBuildTargetTask(
+          scriptPath = scriptPath,
+          programArguments = programArguments,
+          additionalBazelParams = additionalBazelParams,
+        )
         // runBlocking instead of runBlockingCancellable because before run tasks aren't cancellable
         runBlocking {
           runBuildTargetTask(
@@ -92,7 +82,7 @@ class ScriptPathBeforeRunTaskProvider : BeforeRunTaskProvider<Task>() {
         return false
       }
     if (status == BazelStatus.SUCCESS) {
-      scriptPathRef?.set(scriptPath)
+      scriptPathRef.set(scriptPath)
       return true
     } else {
       return false

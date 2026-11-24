@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.terminal.TerminalExecutionConsoleBuilder
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
@@ -14,11 +15,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
+import org.jetbrains.bazel.ui.console.startSessionWithoutProcess
 import java.io.IOException
 import java.util.concurrent.CancellationException
 
@@ -31,7 +34,13 @@ import java.util.concurrent.CancellationException
 class StarlarkDebugSessionManager(private val project: Project) : Disposable {
   internal val taskListener: StarlarkDebugTaskListener
 
-  private val console: ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+  private val console: ConsoleView =
+    if (BazelFeatureFlags.usePty) {
+      TerminalExecutionConsoleBuilder(project).build().also { it.startSessionWithoutProcess() }
+    }
+    else {
+      TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+    }
 
   private var jobToCancel: Job? = null // job to be cancelled when debug stops
   private var messenger: StarlarkDebugMessenger? = null
@@ -41,7 +50,7 @@ class StarlarkDebugSessionManager(private val project: Project) : Disposable {
 
   init {
     Disposer.register(this, console)
-    taskListener = StarlarkDebugTaskListener(console)
+    taskListener = StarlarkDebugTaskListener(console, BazelFeatureFlags.usePty)
   }
 
   private fun startDebuggingProcess(session: XDebugSession, connector: StarlarkSocketConnector): StarlarkDebugProcess =

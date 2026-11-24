@@ -55,7 +55,8 @@ open class BazelTestCommandLineState(
         additionalBazelParams = parseAsProgramArguments(state.additionalBazelParams),
         streamTestOutput = false,
       )
-    return server.buildTargetTest(transformTestParams(params)).exitCode
+    val testParams = transformTestParams(params)
+    return withBuildConsoleTask(testParams.taskId) { server.buildTargetTest(testParams) }
   }
 
   companion object {

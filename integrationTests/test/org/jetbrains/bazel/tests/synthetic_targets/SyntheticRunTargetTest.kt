@@ -11,8 +11,6 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import org.jetbrains.bazel.data.IdeaBazelCases
-import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.base.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.base.checkIdeaLogForExceptions
 import org.jetbrains.bazel.base.execute
@@ -20,6 +18,9 @@ import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.withBazelFeatureFlag
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.data.IdeaBazelCases
+import org.jetbrains.bazel.data.simpleBazelProject
+import org.jetbrains.bazel.tests.ui.waitForConsoleText
 import org.junit.jupiter.api.Test
 import org.opentest4j.MultipleFailuresError
 import kotlin.time.Duration.Companion.minutes
@@ -141,7 +142,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
   }
 
   private fun IdeaFrameUI.assertOutConsoleContains(text: String) {
-    x("//div[@class='ConsoleViewImpl']").waitContainsText(text, timeout = 2.minutes)
+    waitForConsoleText(text, timeout = 2.minutes)
   }
 
   private data class SyntheticRunScenario(

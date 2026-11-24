@@ -15,6 +15,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.debugFlags
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.progress.ConsoleService
+import org.jetbrains.bazel.progress.ShowConsole
 import org.jetbrains.bazel.progress.TaskConsole
 import org.jetbrains.bazel.run.task.BazelBuildTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
@@ -54,49 +55,62 @@ suspend fun runBuildTargetTask(
       val taskGroupId = TaskGroupId("build-" + Random.nextBytes(8).toHexString())
       val taskId = taskGroupId.task("build-${project.name}-${Random.nextBytes(8).toHexString()}")
       project.connection.runWithServer(taskId) { server ->
-        coroutineScope {
-          val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
-
-          val taskListener = BazelBuildTaskListener(bspBuildConsole)
-          BazelTaskEventsService.getInstance(project).saveListener(taskGroupId, taskListener)
-
-          try {
-            bspBuildConsole.startTask(
-              taskId = taskId,
-              title = BazelPluginBundle.message("console.task.build.title"),
-              message = when (targetIds.size) {
-                0 -> BazelPluginBundle.message("console.task.build.no.targets")
-                1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
-                else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
-              },
-              cancelAction = { this@coroutineScope.cancel() },
-              redoAction = customRedoAction ?: {
-                runBuildTargetTask(targetIds, project, isDebug, buildTargetTask)
-                Unit
-              },
-            )
-
-            val buildDeferred = async { buildTargetTask.build(server, targetIds, bspBuildConsole, taskId, debugFlags) }
-            return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, taskId).getStatus()
+        val buildConsole = ConsoleService.getInstance(project).buildConsole
+        BazelTaskEventsService.getInstance(project).saveListener(taskGroupId, BazelBuildTaskListener(buildConsole))
+        val status = try {
+          val redoAction = customRedoAction ?: {
+            runBuildTargetTask(targetIds, project, isDebug, buildTargetTask)
+            Unit
           }
-          finally {
-            BazelTaskEventsService.getInstance(project).removeListener(taskGroupId)
-          }
-        }.also {
-          // asyncRefresh() refreshes the whole VFS, which includes all projects that have ever been opened in the IDE, not just the current one.
-          // That can lead to long UI freezes, which is why asyncRefresh() is now deprecated in IJ platform.
-          // On the other hand, BazelOutputFileHardLinks handles VFS refresh granularly:
-          // only on project sync, and only for changed Bazel outputs that are used in the current project.
-          if (!server.outFileHardLinks.allHardLinksCreatedSuccessfully) {
-            VirtualFileManager.getInstance().asyncRefresh()
+          runBuildConsoleTask(project, taskId, targetIds, redoAction = redoAction) {
+            buildTargetTask.build(server, targetIds, buildConsole, taskId, debugFlags)
           }
         }
+        finally {
+          BazelTaskEventsService.getInstance(project).removeListener(taskGroupId)
+        }
+        // asyncRefresh() refreshes the whole VFS, which includes all projects that have ever been opened in the IDE, not just the current one.
+        // That can lead to long UI freezes, which is why asyncRefresh() is now deprecated in IJ platform.
+        // On the other hand, BazelOutFileHardLinks handles VFS refresh granularly:
+        // only on project sync, and only for changed Bazel outputs that are used in the current project.
+        if (!server.outFileHardLinks.allHardLinksCreatedSuccessfully) {
+          VirtualFileManager.getInstance().asyncRefresh()
+        }
+        status
       }
     }
   }
   finally {
     BazelBuildInvocationCollector.logFinished(project)
   }
+}
+
+/**
+ * Shows [build] as a task of [taskId] in the build console, and finishes the task with the status that [build] returns.
+ * [build] must run Bazel with [taskId], so that the diagnostics of the build go to this task.
+ */
+internal suspend fun runBuildConsoleTask(
+  project: Project,
+  taskId: TaskId,
+  targetIds: List<Label>,
+  showConsole: ShowConsole = ShowConsole.ALWAYS,
+  redoAction: (suspend () -> Unit)? = null,
+  build: suspend () -> BazelStatus,
+): BazelStatus = coroutineScope {
+  val buildConsole = ConsoleService.getInstance(project).buildConsole
+  buildConsole.startTask(
+    taskId = taskId,
+    title = BazelPluginBundle.message("console.task.build.title"),
+    message = when (targetIds.size) {
+      0 -> BazelPluginBundle.message("console.task.build.no.targets")
+      1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
+      else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
+    },
+    cancelAction = { this@coroutineScope.cancel() },
+    redoAction = redoAction,
+    showConsole = showConsole,
+  )
+  BspTaskStatusLogger(async { build() }, buildConsole, taskId).getStatus()
 }
 
 @ApiStatus.Internal
