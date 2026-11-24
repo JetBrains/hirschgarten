@@ -75,7 +75,7 @@ internal class StarlarkFileUsageSearcher : QueryExecutorBase<PsiReference, Searc
     val buildFile = generateSequence(dir) { it.parent }.firstNotNullOfOrNull(::findBuildFile) ?: return
     if (!scope.contains(buildFile)) return
     val starlarkFile = buildFile.findPsiFile(file.project) as? StarlarkFile ?: return
-    val _ = starlarkFile.descendantsOfType<StarlarkCallExpression>()
+    starlarkFile.descendantsOfType<StarlarkCallExpression>()
       .mapNotNull { it.asGlobCallOrNull() }
       .filter { it.matcher()?.match(file.virtualFile) == true }
       .mapNotNull { it.calledExpression.reference }
