@@ -10,6 +10,7 @@ import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.elements.ActionButtonUi
+import com.intellij.driver.sdk.ui.components.elements.JBTerminalPanelUiComponent
 import com.intellij.driver.sdk.ui.components.elements.JTreeUiComponent
 import com.intellij.driver.sdk.ui.components.elements.popup
 import com.intellij.driver.sdk.ui.components.elements.tree
@@ -185,23 +186,39 @@ private val RUN_CONSOLE_TIMEOUT = 3.minutes
 
 /**
  * Waits until a console in the IDE frame shows a line that contains [text].
+ * A run of Bazel with a PTY shows its output in a terminal, and a debug run in a plain console. The wait reads both.
  *
  * A Bazel run first builds its target in the Build tool window, and its console appears only when the run starts.
  * So the wait covers the build, and it looks up the consoles again on each poll.
+ *
+ * A failed build brings the Build tool window to the front, which hides the run console.
+ * With [showRunToolWindow], each poll brings the Run tool window to the front again.
  */
-fun IdeaFrameUI.waitForConsoleText(text: String, timeout: Duration = RUN_CONSOLE_TIMEOUT) {
+fun IdeaFrameUI.waitForConsoleText(text: String, timeout: Duration = RUN_CONSOLE_TIMEOUT, showRunToolWindow: Boolean = false) {
   waitFor(
     message = "A console shows '$text'",
     timeout = timeout,
     interval = 1.seconds,
-    errorMessage = { lines -> "No console shows '$text'. The last console lines: ${lines.takeLast(10)}" },
+    errorMessage = { lines -> "No console shows '$text'. The last console lines: ${lines.takeLast(10).map { it.takeLast(500) }}" },
     getter = {
-      xx("//div[@class='ConsoleViewImpl']").list().flatMap { console ->
-        runCatching { console.getAllTexts().map { it.text } }.getOrDefault(emptyList())
+      if (showRunToolWindow && !leftToolWindowToolbar.runButton.isToolWindowVisible()) {
+        leftToolWindowToolbar.runButton.open()
       }
+      consoleTexts()
     },
     checker = { lines -> lines.any { text in it } },
   )
+}
+
+/** The lines of each plain console, and the whole text of each terminal, which has no line breaks. */
+private fun IdeaFrameUI.consoleTexts(): List<String> {
+  val consoleLines = xx("//div[@class='ConsoleViewImpl']").list().flatMap { console ->
+    runCatching { console.getAllTexts().map { it.text } }.getOrDefault(emptyList())
+  }
+  val terminalTexts = xx(JBTerminalPanelUiComponent::class.java) { byClass("JBTerminalPanel") }.list().mapNotNull { terminal ->
+    runCatching { terminal.text }.getOrNull()
+  }
+  return consoleLines + terminalTexts
 }
 
 private data class DebuggerPauseState(

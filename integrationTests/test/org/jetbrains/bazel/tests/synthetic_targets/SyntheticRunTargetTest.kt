@@ -20,6 +20,7 @@ import org.jetbrains.bazel.base.syncBazelProject
 import org.jetbrains.bazel.base.withBazelFeatureFlag
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.tests.ui.waitForConsoleText
 import org.junit.jupiter.api.Test
 import org.opentest4j.MultipleFailuresError
 import kotlin.time.Duration.Companion.minutes
@@ -141,7 +142,7 @@ class SyntheticRunTargetTest : IdeStarterBaseProjectTest() {
   }
 
   private fun IdeaFrameUI.assertOutConsoleContains(text: String) {
-    x("//div[@class='ConsoleViewImpl']").waitContainsText(text, timeout = 2.minutes)
+    waitForConsoleText(text, timeout = 2.minutes)
   }
 
   private data class SyntheticRunScenario(

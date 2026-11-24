@@ -527,7 +527,7 @@ class ProjectViewCombinedTest : IdeStarterCombinedBaseTest() {
         step("Run and check the flag values that won") {
           x { byAccessibleName("Run 'FlagPrecedence'") }.click()
           runToolWindow {
-            consoleView.waitContainsText("Flag precedence: a=build_flags b=run_configuration", timeout = 3.minutes)
+            waitForConsoleText("Flag precedence: a=build_flags b=run_configuration", timeout = 3.minutes)
           }
         }
         step("Debug and check the flag values that won") {

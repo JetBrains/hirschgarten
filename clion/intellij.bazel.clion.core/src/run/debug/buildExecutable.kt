@@ -5,7 +5,9 @@ import com.intellij.aspect.lib.INTELLIJ_CC_DEBUG_ASPECT
 import com.intellij.aspect.lib.OutputGroups
 import com.intellij.aspect.lib.readTargetFromFile
 import com.intellij.build.events.MessageEvent
+import com.intellij.execution.CantRunException
 import com.intellij.execution.ExecutionException
+import com.intellij.openapi.diagnostic.ControlFlowException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
@@ -28,6 +30,8 @@ import org.jetbrains.bsp.protocol.RunParams
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+
+internal class CcDebugBuildFailedException : CantRunException.CustomProcessedCantRunException(), ControlFlowException
 
 internal class CcDebugBuildResult(
   val executable: ExecutableInfo,
@@ -83,11 +87,11 @@ internal suspend fun buildExecutable(): CcDebugBuildResult {
 
       saveAllFiles()
       val result = server.buildTargetRun(params)
-      result.statusCode to result.infoFiles
+      result.buildStatus to result.infoFiles
     }
 
     if (status != BazelStatus.SUCCESS) {
-      throw ExecutionException(BazelCLionCoreBundle.message("debug.error.script.generate.failed", status))
+      throw CcDebugBuildFailedException()
     }
 
     val executableInfo = withContext(Dispatchers.IO) {

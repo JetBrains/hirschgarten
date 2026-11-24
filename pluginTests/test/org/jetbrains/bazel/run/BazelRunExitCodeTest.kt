@@ -8,6 +8,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.runInEdtAndGet
 import com.intellij.testFramework.runInEdtAndWait
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
@@ -17,7 +18,6 @@ import org.jetbrains.bazel.test.framework.testproject.testBazelProjectFixture
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskGroupId
-import org.jetbrains.bsp.protocol.TestResult
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,13 +28,13 @@ class BazelRunExitCodeTest {
 
   @Test
   fun `run configuration reports the exit code of a failed bazel run`() {
-    testBazel.buildServer(BuildServerMock(runResult = RunResult(taskId = TaskGroupId.EMPTY.task("run"), exitCode = 1, stdout = null)))
+    testBazel.buildServer(BuildServerMock(runResult = RunResult(taskId = TaskGroupId.EMPTY.task("run"), exitCode = 1, buildStatus = BazelStatus.SUCCESS)))
     assertEquals(1, exitCode("GenericRunHandlerProvider", "//app:bin"))
   }
 
   @Test
   fun `test configuration reports the exit code of failed tests`() {
-    testBazel.buildServer(BuildServerMock(testResult = TestResult(exitCode = 3)))
+    testBazel.buildServer(BuildServerMock(testResult = RunResult(taskId = TaskGroupId.EMPTY.task("test"), exitCode = 3, buildStatus = BazelStatus.SUCCESS)))
     assertEquals(3, exitCode("GenericTestHandlerProvider", "//app:test"))
   }
 

@@ -27,7 +27,7 @@ class RunJvmCommandLineExitCodeTest {
   }
 }
 
-internal class MockBazelProcessHandler(project: Project) : BazelProcessHandler(project, CompletableDeferred(0)) {
+internal class MockBazelProcessHandler(project: Project) : BazelProcessHandler(project, CompletableDeferred(0), usePty = false) {
   var latestText: String = ""
 
   override fun notifyTextAvailable(text: String, outputType: Key<*>) {

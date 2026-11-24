@@ -2,7 +2,6 @@ package org.jetbrains.bsp.protocol
 
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bazel.label.Label
 
 @ApiStatus.Internal
 data class TaskFinishParams(
@@ -16,11 +15,8 @@ data class TaskFinishParams(
 @ApiStatus.Internal
 sealed interface TaskFinishData
 
+/**
+ * Only needed for `bazel run`/`test`. Normal `bazel build` knows it's started & finished even without BEP, simply when the Bazel command exits.
+ */
 @ApiStatus.Internal
-data class CompileReport(
-  val target: Label,
-  val errors: Int,
-  val warnings: Int,
-  val time: Long? = null,
-  val noOp: Boolean? = null,
-) : TaskFinishData
+data object BuildFinished : TaskFinishData

@@ -15,7 +15,7 @@ internal class StarlarkDebugConfigurationState(
   val futureProxy = CompletableDeferred<Int>()
 
   override fun startProcess(): BazelProcessHandler =
-    BazelProcessHandler(project, futureProxy).apply {
+    BazelProcessHandler(project, futureProxy, usePty = false).apply {
       startNotify()
     }
 }

@@ -31,8 +31,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.terminal.TerminalExecutionConsoleBuilder
 import com.intellij.util.causeChain
-import com.jediterm.core.util.TermSize
-import com.jediterm.terminal.TtyConnector
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -153,31 +151,7 @@ abstract class BaseTaskConsole(
     Disposer.register(contentDescriptor, consoleDelegate)
     Disposer.register(taskView as Disposable, contentDescriptor)
 
-    // TerminalExecutionConsoleBuilder expects a ProcessHandler, so we provide a stub because we handle process interaction in the server.
-    // See https://github.com/bazelbuild/intellij/pull/7001/files
-    val ttyConnector = object : TtyConnector, Disposable {
-      init {
-        Disposer.register(contentDescriptor, this)
-      }
-
-      private var connected: Boolean = true
-      override fun dispose() {
-        connected = false
-      }
-
-      override fun read(buf: CharArray?, offset: Int, length: Int): Int = 0
-      override fun write(bytes: ByteArray?) = Unit
-      override fun write(string: String?) = Unit
-      override fun isConnected(): Boolean = connected
-      override fun waitFor(): Int = 0
-      override fun ready(): Boolean = true
-      override fun getName(): String = ""
-      override fun close() = Unit
-      override fun resize(termSize: TermSize) = Unit
-    }
-
-    consoleDelegate.terminalWidget.createTerminalSession(ttyConnector)
-    consoleDelegate.terminalWidget.start()
+    consoleDelegate.startSessionWithoutProcess()
     taskDescriptor.withContentDescriptor { contentDescriptor }
   }
 

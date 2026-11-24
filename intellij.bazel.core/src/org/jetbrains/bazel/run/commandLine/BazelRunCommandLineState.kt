@@ -10,8 +10,8 @@ import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.server.BazelServerFacade
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bsp.protocol.RunParams
 
 @ApiStatus.Internal
@@ -40,6 +40,6 @@ class BazelRunCommandLineState(environment: ExecutionEnvironment, private val ru
         additionalBazelParams = parseAsProgramArguments(runState.additionalBazelParams),
         pidDeferred = pidDeferred,
       )
-    return server.buildTargetRun(runParams).exitCode
+    return withBuildConsoleTask(runParams.taskId) { server.buildTargetRun(runParams) }
   }
 }

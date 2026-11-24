@@ -31,7 +31,6 @@ import org.jetbrains.bazel.data.simpleBazelProject
 import org.jetbrains.bazel.tests.combined.IdeStarterCombinedBaseTest
 import org.jetbrains.bazel.tests.ui.clickRunGutterOnLine
 import org.jetbrains.bazel.tests.ui.clickTestGutterOnLine
-import org.jetbrains.bazel.tests.ui.consoleView
 import org.jetbrains.bazel.tests.ui.setAutoOpenProjectIfPresent
 import org.jetbrains.bazel.tests.ui.verifyAvailableRunGutterActions
 import org.jetbrains.bazel.tests.ui.verifyTestStatus
@@ -153,14 +152,14 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
 
         step("Check that \$PROJECT_DIR$ macro is expanded correctly") {
           val moduleBazelPath = checkNotNull(singleProject().getBasePath()) + "/MODULE.bazel"
-          consoleView.waitContainsText("MODULE.bazel from envs: $moduleBazelPath", timeout = 5.seconds)
-          consoleView.waitContainsText("Args: [-moduleBazelLocation=$moduleBazelPath", timeout = 5.seconds)
+          waitForConsoleText("MODULE.bazel from envs: $moduleBazelPath", timeout = 5.seconds)
+          waitForConsoleText("Args: [-moduleBazelLocation=$moduleBazelPath", timeout = 5.seconds)
         }
 
         step("Check that parent environment variables are passed to run targets (BAZEL-2761)") {
           // IDE receives HOME from System.getProperty("user.home") via IdeStarterBaseProjectTest.patchPathVariable()
           val homeValue = System.getProperty("user.home")
-          consoleView.waitContainsText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds)
+          waitForConsoleText("PARENT_ENV_HOME=$homeValue", timeout = 5.seconds)
         }
       }
     }
@@ -300,7 +299,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             bazelFlags += " --foo=\"foo value\""
             runButton.click()
           }
-          waitForConsoleText("ERROR: --foo=foo value :: Unrecognized option: --foo=foo value")
+          waitForConsoleText("ERROR: --foo=foo value :: Unrecognized option: --foo=foo value", showRunToolWindow = true)
           runConfigurationsPopup {
             list().clickItem("Edit Configurations", fullMatch = false)
           }
@@ -308,7 +307,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
             bazelFlags = bazelFlags.replace("--foo=\"foo value\"", "--bar='bar value'")
             runButton.click()
           }
-          waitForConsoleText("ERROR: --bar=bar value :: Unrecognized option: --bar=bar value")
+          waitForConsoleText("ERROR: --bar=bar value :: Unrecognized option: --bar=bar value", showRunToolWindow = true)
         }
         finally {
           // Restore even when a check above fails. Otherwise the later tests run "Bazel run :main" with an unknown flag.
@@ -379,7 +378,7 @@ class ImportRunConfigurationsSyncHookTest : IdeStarterCombinedBaseTest() {
           waitForBazelBuildBeforeProfilerUi("//:main")
           waitContainsText("Stop Recording and Show Results")
           waitContainsText("CPU")
-          consoleView.waitContainsText("The result is", timeout = 3.minutes)
+          waitForConsoleText("The result is", timeout = 3.minutes)
           waitForProfilerDataReadyBubbleAppearAndClose()
 
           takeScreenshot("beforeClickingOnGutter")

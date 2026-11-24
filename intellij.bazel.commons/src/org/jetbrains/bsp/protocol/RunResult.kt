@@ -7,11 +7,14 @@ import java.nio.file.Path
 @ApiStatus.Internal
 data class RunResult(
   val taskId: TaskId,
+  /**
+   * Exit code of the whole program run.
+   * If the build wasn't successful, it's one of Bazel output codes and can be parsed to [buildStatus].
+   * Otherwise, it can be any exit code that the underlying binary outputs, so it has to be an [Int].
+   */
   val exitCode: Int,
-  val stdout: String?,
   /** the text proto files of the `intellij-info` output group */
   val infoFiles: Set<Path> = emptySet(),
-) {
-  val statusCode: BazelStatus
-    get() = BazelStatus.fromExitCode(exitCode)
-}
+  /** The result of the Bazel build that always precedes a run.  */
+  val buildStatus: BazelStatus,
+)

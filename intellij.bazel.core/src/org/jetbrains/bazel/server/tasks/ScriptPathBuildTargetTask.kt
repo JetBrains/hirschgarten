@@ -33,7 +33,7 @@ class ScriptPathBuildTargetTask(
       additionalBazelParams = scriptPathParams(scriptPath) + debugFlags + additionalBazelParams,
       checkVisibility = true,
     )
-    return server.buildTargetRun(params).statusCode
+    return server.buildTargetRun(params).buildStatus
   }
 
   companion object {

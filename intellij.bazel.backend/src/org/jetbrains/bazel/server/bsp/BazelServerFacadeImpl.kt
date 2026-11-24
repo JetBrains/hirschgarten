@@ -35,7 +35,6 @@ import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestParams
-import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetPhasedParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
@@ -88,7 +87,7 @@ class BazelServerFacadeImpl(
 
   override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = executeService.analysisDebug(params)
 
-  override suspend fun buildTargetTest(params: TestParams): TestResult = executeService.test(params)
+  override suspend fun buildTargetTest(params: TestParams): RunResult = executeService.test(params)
 
   override suspend fun buildTargetRun(params: RunParams): RunResult = executeService.run(params)
 
