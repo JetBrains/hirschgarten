@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import com.intellij.aspect.lib.OutputGroups
 import org.jetbrains.bazel.bazelrunner.ResolvedModulesAndWarning
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.BazelRelease
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.commons.orFallbackVersion
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
@@ -21,6 +23,7 @@ import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.RunParams
@@ -52,6 +55,8 @@ open class BuildServerMock(
 
   override suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject =
     wrapInFuture(phasedSyncProjectResult)
+
+  override suspend fun materializeExtraSyncOutputs(taskId: TaskId, targetsSpec: TargetCollection, outputGroups: List<OutputGroups>, outputFiles: List<OutputLocation>) {}
 
   override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 

@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.server
 
+import com.intellij.aspect.lib.OutputGroups
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.bazelrunner.ResolvedModulesAndWarning
 import org.jetbrains.bazel.commons.BazelInfo
 import org.jetbrains.bazel.commons.BazelPathsResolver
 import org.jetbrains.bazel.commons.RepoMapping
+import org.jetbrains.bazel.commons.TargetCollection
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.projectview.ProjectView
 import org.jetbrains.bazel.server.model.AspectSyncProject
@@ -15,6 +17,7 @@ import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
+import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationParser
 import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.RunParams
@@ -54,6 +57,9 @@ interface BazelServerFacade {
 
   @ApiStatus.Internal
   suspend fun workspaceBuildPhasedTargets(params: WorkspaceBuildTargetPhasedParams): PhasedSyncProject
+
+  @ApiStatus.Internal
+  suspend fun materializeExtraSyncOutputs(taskId: TaskId, targetsSpec: TargetCollection, outputGroups: List<OutputGroups>, outputFiles: List<OutputLocation>)
 
   @ApiStatus.Internal
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
