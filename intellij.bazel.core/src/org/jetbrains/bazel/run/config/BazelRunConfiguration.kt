@@ -30,7 +30,6 @@ import org.jetbrains.bazel.run.synthetic.SyntheticRunTaskMarker
 import org.jetbrains.bazel.run.test.BazelTestConsoleProperties
 import org.jetbrains.bazel.target.getTargetInfo
 import org.jetbrains.bazel.target.targetStorage
-import org.jetbrains.bsp.protocol.id
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 @ApiStatus.Internal
@@ -45,6 +44,10 @@ class BazelRunConfiguration internal constructor(
 
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
+
+  /** Target text from the editor, exactly as typed. Regenerated from the targets when the configuration loads at project open. */
+  var targetListString: String = ""
+    private set
 
   var doVisibilityCheck: Boolean = true
     private set
@@ -79,18 +82,32 @@ class BazelRunConfiguration internal constructor(
       }
     if (providers.size > 1) {
       throw RuntimeConfigurationError(
-        message("runconfig.bazel.errors.multiple.platform.targets", providers.joinToString(", ") { it.id }),
+        message("runconfig.bazel.errors.multiple.platform.targets", providers.joinToString(", ") { it.providedRunHandlerName }),
       )
     }
   }
 
   fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
     if (newTargets == targets) return
+    targetListString = TargetListParser.createString(newTargets)
+    updateTargetsAndHandler(newTargets, runHandlerProvider)
+  }
+
+  fun updateTargets(newTargetListString: String, runHandlerProvider: RunHandlerProvider? = null) {
+    if (newTargetListString == targetListString) return
+    val newTargets = TargetListParser.parseString(newTargetListString)
+    targetListString = newTargetListString
+    if (newTargets != targets) {
+      updateTargetsAndHandler(newTargets, runHandlerProvider)
+    }
+  }
+
+  private fun updateTargetsAndHandler(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider?) {
     targets = newTargets
     if (newTargets.isEmpty()) return
-    // `updateTargets` is called by the editor on each change. It must not fail, because it will spam with errors while editing
+    // `updateHandler` might be called by the editor on each change. It must not fail, because it will spam with errors while editing
     // `RunHandlerProvider.getRunHandlerProviderOrNull` is used as a workaround
-    val provider = runHandlerProvider ?: findForcedHandlerProvider() ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, newTargets)
+    val provider = runHandlerProvider ?: findForcedHandlerProvider() ?: RunHandlerProvider.getRunHandlerProviderOrNull(project, targets)
     if (provider == null) return
     updateHandlerIfDifferentProvider(provider)
   }
@@ -111,6 +128,7 @@ class BazelRunConfiguration internal constructor(
 
   fun updateRunProvider(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider) {
     targets = newTargets
+    targetListString = TargetListParser.createString(newTargets)
     updateHandler(runHandlerProvider)
   }
 
@@ -171,6 +189,7 @@ class BazelRunConfiguration internal constructor(
     }
 
     this.targets = targets.map { Label.parse(it) }
+    targetListString = TargetListParser.createString(this.targets)
     forcedHandlerProviderId = bspElement.getAttributeValue(FORCED_HANDLER_PROVIDER_ATTR)
 
     // It should be possible to load the configuration before the project is synchronized,
@@ -267,7 +286,7 @@ class BazelRunConfiguration internal constructor(
     private val logger: Logger = logger<BazelRunConfiguration>()
 
     // Used in BazelRerunFailedTestsAction
-    public val BAZEL_RUN_CONFIGURATION_KEY = Key.create<BazelRunConfiguration>("BAZEL_RUN_CONFIGURATION_KEY")
+    val BAZEL_RUN_CONFIGURATION_KEY: Key<BazelRunConfiguration?> = Key.create<BazelRunConfiguration>("BAZEL_RUN_CONFIGURATION_KEY")
 
     fun get(environment: ExecutionEnvironment): BazelRunConfiguration =
       environment.getUserData(BAZEL_RUN_CONFIGURATION_KEY) ?: environment.runProfile as BazelRunConfiguration

@@ -62,6 +62,8 @@ class BazelRunConfigurationEditor(
     add(TargetsFragment(project))
   }
 
+  fun getTargetsFragment(): TargetsFragment = fragments.filterIsInstance<TargetsFragment>().single()
+
   /** Updates the run handlers on offer for the targets of [configuration]. The other fragments keep their state. */
   fun resetRunHandlerFragment(configuration: BazelRunConfiguration) {
     fragments.filterIsInstance<RunHandlerFragment>().forEach { it.resetFrom(configuration) }
