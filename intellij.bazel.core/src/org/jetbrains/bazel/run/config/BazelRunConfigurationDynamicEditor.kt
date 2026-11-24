@@ -60,9 +60,12 @@ internal class BazelRunConfigurationDynamicEditor(
     delegate.applyEditorTo(s)
     if (s.handlerProvider != delegateHandlerProvider) {
       val focusedFragmentId = delegate.findFocusedFragmentId()
+      val targetsEditorState = delegate.getTargetsFragment().getTextFieldState()
       val settingsCopy = runnerAndConfigurationSettings?.clone()
       settingsCopy?.let { delegate.applyEditorTo(it) }
       recreateDelegate(s.clone() as BazelRunConfiguration, settingsCopy)
+      // after editor regeneration, so we want to call the getter each time
+      delegate.getTargetsFragment().restoreTextFieldState(targetsEditorState)
       focusedFragmentId?.let { delegate.focusFragment(it) }
     } else if (s.targets != delegateTargets) {
       // The user is in the middle of an edit of the targets, so the targets field must stay.

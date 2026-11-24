@@ -5,7 +5,9 @@ import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorLabeledComponent
+import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.util.textCompletion.TextFieldWithCompletion
 import org.jetbrains.annotations.ApiStatus
@@ -18,16 +20,16 @@ import org.jetbrains.bazel.target.targetStorage
 class TargetsFragment(
   private val targetsField: TextFieldWithCompletion,
 ) : SettingsEditorFragment<BazelRunConfiguration, SettingsEditorLabeledComponent<TextFieldWithCompletion>>(
-    "bsp.target.fragment",
-    BazelPluginBundle.message("runconfig.targets.name"),
-    BazelPluginBundle.message("runconfig.targets.group"),
-    SettingsEditorLabeledComponent(BazelPluginBundle.message("runconfig.targets.name"), targetsField),
-    /* priority = */ 0,
-    SettingsEditorFragmentType.EDITOR,
-    { configuration, component -> component.component.text = configuration.targets.joinToString(" ") { it.toString() } },
-    { configuration, component -> configuration.updateTargets(parseTargets(component.component.text)) },
-    { true },
-  ) {
+  "bsp.target.fragment",
+  BazelPluginBundle.message("runconfig.targets.name"),
+  BazelPluginBundle.message("runconfig.targets.group"),
+  SettingsEditorLabeledComponent(BazelPluginBundle.message("runconfig.targets.name"), targetsField),
+  /* priority = */ 0,
+  SettingsEditorFragmentType.EDITOR,
+  ::resetEditorFromSettings,
+  ::applyEditorToSettings,
+  { true },
+) {
   constructor(project: Project) : this(createTargetsField(project))
 
   init {
@@ -36,7 +38,28 @@ class TargetsFragment(
   }
 
   val targets: List<Label>
-    get() = targetsField.text.split(" ").mapNotNull { Label.parseOrNull(it.trim().ifEmpty { null }) }
+    get() =
+      try {
+        TargetListParser.parseString(targetsField.text).filter { it.toString().isNotEmpty() }
+      } catch (_: IllegalArgumentException) {
+        emptyList()
+      }
+
+  fun getTextFieldState(): TextFieldState? {
+    val editor = targetsField.editor ?: return null
+    return TextFieldState(
+      editor.caretModel.offset,
+      TextRange(editor.selectionModel.selectionStart, editor.selectionModel.selectionEnd),
+    )
+  }
+
+  fun restoreTextFieldState(state: TextFieldState?) {
+    if (state == null) return
+    targetsField.setCaretPosition(state.caretOffset)
+    targetsField.select(state.selection)
+  }
+
+  data class TextFieldState(val caretOffset: Int, val selection: TextRange)
 
   @Suppress("SplitModeApiUsage")
   fun addTargetsListener(listener: () -> Unit) {
@@ -44,6 +67,28 @@ class TargetsFragment(
       object : DocumentListener {
         override fun documentChanged(event: DocumentEvent) = listener()
       },
+    )
+  }
+}
+
+private fun resetEditorFromSettings(
+  configuration: BazelRunConfiguration,
+  component: SettingsEditorLabeledComponent<TextFieldWithCompletion>
+) {
+  component.component.text = configuration.targetListString
+}
+
+private fun applyEditorToSettings(
+  configuration: BazelRunConfiguration,
+  component: SettingsEditorLabeledComponent<TextFieldWithCompletion>
+) {
+  try {
+    configuration.updateTargets(component.component.text)
+  } catch (e: IllegalArgumentException) {
+    throw ConfigurationException(
+      BazelPluginBundle.message("runconfig.bazel.errors.invalid.targets"),
+      e,
+      ConfigurationException.getDefaultTitle(),
     )
   }
 }
@@ -66,14 +111,3 @@ private fun createTargetsField(project: Project): TextFieldWithCompletion {
     /* showHint = */ true,
   )
 }
-
-private fun parseTargets(text: String): List<Label> =
-  if (text.isNotBlank()) {
-    text
-      .trim()
-      .split(" ")
-      .map(Label::parse)
-  }
-  else {
-    emptyList()
-  }
