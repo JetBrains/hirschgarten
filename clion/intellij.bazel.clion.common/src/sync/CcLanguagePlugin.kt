@@ -92,6 +92,7 @@ private suspend fun mapToolchainIdeInfo(
     cOption = StringsCollection.of(info.cOptionList),
     cCompiler = parser.parseExecrootPath(info.cCompiler),
     cppCompiler = parser.parseExecrootPath(info.cppCompiler),
+    allFiles = info.allFilesList.map {parser.parse(it)},
     builtInIncludeDirectories = OutputLocationCollectionBuilder.buildExecroot(info.builtInIncludeDirectoryList, parser),
     sysroot = info.sysroot.takeIf { it.isNotEmpty() }?.let { parser.parseExecrootPath(it) },
     cEnvironment = info.cEnvironmentMap.toMap(),
