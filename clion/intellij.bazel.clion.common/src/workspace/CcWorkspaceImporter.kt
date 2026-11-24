@@ -35,6 +35,9 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   private var configurations: List<CcResolveConfiguration> = emptyList()
   private var toolchain2Compiler: Map<WorkspaceTargetKey, CcCompilerInfo> = emptyMap()
 
+  /** The sync has no C/C++ target to import, but the model of a previous sync is still there. */
+  private var clearPreviousModel = false
+
   override val importerName: @NlsContexts.ProgressTitle String
     get() = BazelCLionCommonBundle.message("cc.workspace.importer.name")
 
@@ -56,7 +59,11 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
 
   private suspend fun onWorkspaceApply(snapshot: WorkspaceSnapshot, phase: WorkspaceImporterPhase.WorkspaceApply, taskId: TaskId): WorkspaceImporterResult {
     val target2Toolchain = subtask(snapshot, "cc.import.task.toolchain.map", taskId) { buildToolchainMap() }
-    if (target2Toolchain.isEmpty()) return WorkspaceImporterResult.Abort
+    if (target2Toolchain.isEmpty()) {
+      clearPreviousModel = OCWorkspaceImpl.getInstanceImpl(context.project).getConfigurations(CC_CLIENT_KEY).isNotEmpty()
+      return if (clearPreviousModel) WorkspaceImporterResult.Success else WorkspaceImporterResult.Abort
+    }
+
     val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings() }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
 
@@ -70,6 +77,11 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   }
 
   private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId): WorkspaceImporterResult {
+    if (clearPreviousModel) {
+      clearWorkspaceModel()
+      return WorkspaceImporterResult.Success
+    }
+
     if (findCcWorkspaceModuleId(context.project) == null) {
       LOG.error("CC workspace module is absent, dropping ${configurations.size} configuration(s)")
       return WorkspaceImporterResult.Abort
@@ -93,6 +105,17 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
     }
 
     return WorkspaceImporterResult.Success
+  }
+
+  private suspend fun clearWorkspaceModel() {
+    val workspace = OCWorkspaceImpl.getInstanceImpl(context.project).getModifiableModel(CC_CLIENT_KEY, clear = true)
+    try {
+      workspace.preCommit()
+      workspace.commitAndContribute()
+    }
+    finally {
+      Disposer.dispose(workspace)
+    }
   }
 
   private suspend fun <T> subtask(
