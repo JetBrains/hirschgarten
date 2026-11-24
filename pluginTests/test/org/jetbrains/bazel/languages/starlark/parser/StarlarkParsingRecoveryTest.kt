@@ -164,6 +164,9 @@ class StarlarkParsingRecoveryTest {
   fun testReturnWithUnexpectedToken() = parsing.doTest(true)
 
   @Test
+  fun testSemicolonAtLineStart() = parsing.doTest(true)
+
+  @Test
   fun testSliceWithComma() = parsing.doTest(true)
 
   @Test

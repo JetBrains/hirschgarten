@@ -137,7 +137,9 @@ private statement_recover ::= !(<<atLineStart>> | STATEMENT_BREAK | DEDENT | ';'
 
 // Simple statements
 
-private simple_line ::= simple_statement (';' simple_statement)* (';' STATEMENT_BREAK?)?
+private simple_line ::= simple_statement (statement_separator simple_statement)* (statement_separator STATEMENT_BREAK?)?
+// The statement end before it consumes a line break, so a ';' on the next line must not continue the line.
+private statement_separator ::= <<atSameLine>> ';'
 private simple_statement ::=
     pass_statement
   | break_statement
