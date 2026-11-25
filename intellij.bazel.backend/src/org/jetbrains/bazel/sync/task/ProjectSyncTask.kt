@@ -60,6 +60,7 @@ import org.jetbrains.bazel.sync.projectStructure.ProjectModelApplicationTask
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncStatusService
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceEnvironmentCapabilities
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceSnapshot
@@ -407,6 +408,7 @@ class ProjectSyncTask(
             outputParser = server.outputParser,
             outFileHardLinks = server.outFileHardLinks,
             bazelInfo = server.bazelInfo,
+            WorkspaceEnvironmentCapabilities(supportSdkTable = true)
           )
           importerHelper.invoke(progressReporter, workspaceSnapshot, taskId)
 

@@ -117,12 +117,14 @@ internal class JavaBazelWorkspaceImporter(val context: WorkspaceImporterContext)
   }
 
   suspend fun onPostProcessing(snapshot: WorkspaceSnapshot): WorkspaceImporterResult {
-    SdkUtils.cleanUpInvalidJdks(context.project)
-    uniqueJavaHomes.forEach {
-      SdkUtils.addJdkIfNeeded(
-        projectName = context.project.bazelProjectName,
-        javaHome = it,
-      )
+    if (context.capabilities.supportSdkTable) {
+      SdkUtils.cleanUpInvalidJdks(context.project)
+      uniqueJavaHomes.forEach {
+        SdkUtils.addJdkIfNeeded(
+          projectName = context.project.bazelProjectName,
+          javaHome = it,
+        )
+      }
     }
 
     JavacConfiguration.getOptions(context.project, JavacConfiguration::class.java).ADDITIONAL_OPTIONS_OVERRIDE =

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync
 
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.commons.RepoMapping
 import org.jetbrains.bazel.commons.RepoMappingDisabled
 import org.jetbrains.bazel.config.BazelBackendBundle
@@ -20,7 +21,8 @@ import org.jetbrains.bazel.sync.workspace.snapshot.toIncompleteSnapshot
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetSelector
 import kotlin.io.path.relativeToOrNull
 
-internal class SyncWorkspaceUpdater(private val project: Project) {
+@ApiStatus.Internal
+class SyncWorkspaceUpdater(private val project: Project) {
   suspend fun update(requested: ProjectSyncScope, previous: WorkspaceSnapshot, context: SyncWorkspaceContext): SyncWorkspaceUpdate {
     val scope = effectiveScope(context, previous, requested)
     return when (scope) {
@@ -231,7 +233,8 @@ internal class SyncWorkspaceUpdater(private val project: Project) {
   }
 }
 
-internal data class SyncWorkspaceUpdate(
+@ApiStatus.Internal
+data class SyncWorkspaceUpdate(
   val scope: ProjectSyncScope,
   val status: SyncWorkspaceStatus,
   val snapshot: WorkspaceSnapshot,

@@ -59,6 +59,7 @@ import org.jetbrains.bazel.python.lang.PythonBuildTarget
 import org.jetbrains.bazel.sync.BazelOutFileHardLinks
 import org.jetbrains.bazel.sync.workspace.BazelResolvedWorkspace
 import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
+import org.jetbrains.bazel.sync.workspace.importer.WorkspaceEnvironmentCapabilities
 import org.jetbrains.bazel.sync.workspace.importer.WorkspaceImporterHelper
 import org.jetbrains.bazel.sync.workspace.mapper.normal.DefaultBazelOutputFileHardLinks
 import org.jetbrains.bazel.sync.workspace.snapshot.OutputLocationCollectionBuilder
@@ -1061,6 +1062,7 @@ class PythonProjectSyncTest {
         outputParser = buildServerMock.outputParser,
         outFileHardLinks = buildServerMock.outFileHardLinks,
         bazelInfo = buildServerMock.bazelInfo,
+        WorkspaceEnvironmentCapabilities(supportSdkTable = true)
       )
       helper.invoke(reporter, snapshot, TaskGroupId.EMPTY.task("test"))
       if (runPostProcessing) {
