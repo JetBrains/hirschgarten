@@ -202,9 +202,11 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   }
 
   private suspend fun onPostProcessing(snapshot: WorkspaceSnapshot, taskId: TaskId) {
-    calculateAndAddGoSdk(snapshot, context.project, taskId)
-    GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
-    GoExternalLibraryManager.getInstance(context.project).update()
+    if (context.capabilities.supportSdkTable) {
+      calculateAndAddGoSdk(snapshot, context.project, taskId)
+      GoWrongSdkConfigurationNotificationProvider.disableNotification(context.project)
+      GoExternalLibraryManager.getInstance(context.project).update()
+    }
   }
 
   private suspend fun calculateAndAddGoSdk(
@@ -217,10 +219,8 @@ internal class GoWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
   ) {
     goTargets
       .values
-      .firstNotNullOfOrNull { goTarget ->
-        goTarget.sdkHomePath
-          ?.let { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
-      }
+      .asSequence()
+      .findGoSdkHome { context.outputResolver.resolve(it, snapshot.repoMapping.getLocalRepositories()) }
       .let { it ?: GoSdkUtil.suggestSdkDirectory()?.toNioPathOrNull() }
       ?.let { path -> GoSdk.fromHomePath(path.toString()) }
       ?.setAsUsed(project)
