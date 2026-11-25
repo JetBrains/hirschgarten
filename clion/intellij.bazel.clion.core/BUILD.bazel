@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -80,11 +81,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.clion.core` end
 
 ### auto-generated section `iml intellij.bazel.clion.core` start
-exports_files(
-    [
-        "intellij.bazel.clion.core.iml",
-        "resources/intellij.bazel.clion.core.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.clion.core",
+    descriptors = ["resources/intellij.bazel.clion.core.xml"],
+    target = "bazel-clion-core",
 )
 ### auto-generated section `iml intellij.bazel.clion.core` end

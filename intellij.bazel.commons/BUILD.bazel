@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -52,11 +53,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.commons` end
 
 ### auto-generated section `iml intellij.bazel.commons` start
-exports_files(
-    [
-        "intellij.bazel.commons.iml",
-        "resources/intellij.bazel.commons.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.commons",
+    descriptors = ["resources/intellij.bazel.commons.xml"],
+    target = "commons",
 )
 ### auto-generated section `iml intellij.bazel.commons` end

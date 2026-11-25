@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//build:tests-options.bzl", "jps_test")
 load("@community//plugins/kotlin:kotlin_test_dependencies.bzl", "all_test_dep_targets")
 load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
@@ -115,10 +116,8 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.pluginTests.clion` end
 
 ### auto-generated section `iml intellij.bazel.pluginTests.clion` start
-exports_files(
-    [
-        "intellij.bazel.pluginTests.clion.iml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.pluginTests.clion",
+    target = "pluginTests.clion_test_lib",
 )
 ### auto-generated section `iml intellij.bazel.pluginTests.clion` end

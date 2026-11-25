@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -45,11 +46,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.kotlin.projectWizard` end
 
 ### auto-generated section `iml intellij.bazel.kotlin.projectWizard` start
-exports_files(
-    [
-        "intellij.bazel.kotlin.projectWizard.iml",
-        "resources/intellij.bazel.kotlin.projectWizard.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.kotlin.projectWizard",
+    descriptors = ["resources/intellij.bazel.kotlin.projectWizard.xml"],
+    target = "bazel-kotlin-projectWizard",
 )
 ### auto-generated section `iml intellij.bazel.kotlin.projectWizard` end

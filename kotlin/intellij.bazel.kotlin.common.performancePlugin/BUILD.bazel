@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -80,11 +81,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.kotlin.common.performancePlugin` end
 
 ### auto-generated section `iml intellij.bazel.kotlin.common.performancePlugin` start
-exports_files(
-    [
-        "intellij.bazel.kotlin.common.performancePlugin.iml",
-        "resources/intellij.bazel.kotlin.common.performancePlugin.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.kotlin.common.performancePlugin",
+    descriptors = ["resources/intellij.bazel.kotlin.common.performancePlugin.xml"],
+    target = "bazel-kotlin-common-performancePlugin",
 )
 ### auto-generated section `iml intellij.bazel.kotlin.common.performancePlugin` end

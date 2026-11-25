@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -49,11 +50,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.java.coverage` end
 
 ### auto-generated section `iml intellij.bazel.java.coverage` start
-exports_files(
-    [
-        "intellij.bazel.java.coverage.iml",
-        "resources/intellij.bazel.java.coverage.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.java.coverage",
+    descriptors = ["resources/intellij.bazel.java.coverage.xml"],
+    target = "bazel-java-coverage",
 )
 ### auto-generated section `iml intellij.bazel.java.coverage` end

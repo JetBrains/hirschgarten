@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -76,11 +77,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.java.sync` end
 
 ### auto-generated section `iml intellij.bazel.java.sync` start
-exports_files(
-    [
-        "intellij.bazel.java.sync.iml",
-        "resources/intellij.bazel.java.sync.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.java.sync",
+    descriptors = ["resources/intellij.bazel.java.sync.xml"],
+    target = "bazel-java-sync",
 )
 ### auto-generated section `iml intellij.bazel.java.sync` end

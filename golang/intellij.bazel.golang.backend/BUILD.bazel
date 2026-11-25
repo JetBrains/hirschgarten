@@ -1,3 +1,4 @@
+load("@community//build:jps_module.bzl", "jps_module")
 load("@community//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
 load("@rules_jvm//:jvm.bzl", "jvm_library")
 
@@ -49,11 +50,9 @@ jvm_library(
 ### auto-generated section `build intellij.bazel.golang.backend` end
 
 ### auto-generated section `iml intellij.bazel.golang.backend` start
-exports_files(
-    [
-        "intellij.bazel.golang.backend.iml",
-        "resources/intellij.bazel.golang.backend.xml",
-    ],
-    visibility = ["//visibility:public"],
+jps_module(
+    name = "intellij.bazel.golang.backend",
+    descriptors = ["resources/intellij.bazel.golang.backend.xml"],
+    target = "bazel-golang-backend",
 )
 ### auto-generated section `iml intellij.bazel.golang.backend` end
