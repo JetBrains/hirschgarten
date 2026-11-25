@@ -6,6 +6,7 @@ import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.mainToolbar
 import com.intellij.driver.sdk.ui.components.common.toolwindows.debugToolWindow
 import com.intellij.driver.sdk.ui.components.common.toolwindows.runToolWindow
 import com.intellij.driver.sdk.ui.components.elements.popup
@@ -528,6 +529,8 @@ class ProjectViewCombinedTest : IdeStarterCombinedBaseTest() {
           runToolWindow {
             waitForConsoleText("Flag precedence: a=build_flags b=run_configuration", timeout = 3.minutes)
           }
+          // the main toolbar moves its buttons when the run ends, and a click on a moving button is lost
+          mainToolbar.stopButton.waitNotFound()
         }
         step("Debug and check the flag values that won") {
           x { byAccessibleName("Debug 'FlagPrecedence'") }.click()
