@@ -41,7 +41,20 @@ data class CcCompilerInfo(
 
 @ApiStatus.Internal
 context(ctx: CcImportContext)
-suspend fun buildCompilerSettings(outputRequests: ToolOutputRequests): Map<WorkspaceTargetKey, CcCompilerInfo> = coroutineScope {
+suspend fun requestMissingCompilers(outputRequests: ToolOutputRequests) = coroutineScope {
+  for (target in ctx.snapshot.targets.allTargets()) {
+    val toolchainInfo = target.extractData<CcToolchainBuildTarget>() ?: continue
+    val cCompilePresent = ctx.resolveOutputLocation(toolchainInfo.cCompiler)?.exists() ?: false
+    val cppCompilePresent = ctx.resolveOutputLocation(toolchainInfo.cppCompiler)?.exists() ?: false
+    if (!(cCompilePresent&&cppCompilePresent)) {
+      outputRequests.request(OutputGroups.CC_TOOLS, toolchainInfo.allFiles)
+    }
+  }
+}
+
+@ApiStatus.Internal
+context(ctx: CcImportContext)
+suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = coroutineScope {
   val result = mutableMapOf<WorkspaceTargetKey, CcCompilerInfo>()
 
   val compilerResolver = CcCompilerResolver(ctx)
@@ -61,10 +74,6 @@ suspend fun buildCompilerSettings(outputRequests: ToolOutputRequests): Map<Works
 
     val cCompiler = compilerResolver.resolve(toolchainInfo.cCompiler, toolEnvironment) ?: continue
     val cppCompiler = compilerResolver.resolve(toolchainInfo.cppCompiler, toolEnvironment) ?: continue
-
-    if ((!cCompiler.path.exists()) || (!cppCompiler.path.exists())) {
-      outputRequests.request(OutputGroups.CC_TOOLS, toolchainInfo.allFiles)
-    }
 
     val compilerInfo = CcCompilerInfo(
       cCompiler = cCompiler.path,
