@@ -47,8 +47,8 @@ interface CcImportContext {
  * project, and a configuration makes its files project code.
  */
 @ApiStatus.Internal
-fun CcImportContext.importedTargets(): Sequence<BuildTarget> =
-  snapshot.targets.allTargets().filter { it.isWorkspace(snapshot.repoMapping) }
+fun WorkspaceSnapshot.importedTargets(): Sequence<BuildTarget> =
+  targets.allTargets().filter { it.isWorkspace(repoMapping) }
 
 private class CcImportContextImpl(
   private val ctx: WorkspaceImporterContext,

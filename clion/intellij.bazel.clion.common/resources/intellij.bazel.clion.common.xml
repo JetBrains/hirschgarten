@@ -48,6 +48,7 @@
     <targetKindProvider implementation="org.jetbrains.bazel.clion.sync.CcTargetKindProvider"/>
     <languagePlugin implementation="org.jetbrains.bazel.clion.sync.CcLanguagePlugin"/>
     <syncWorkspaceImporterFactory implementation="org.jetbrains.bazel.clion.workspace.CcWorkspaceImporter$Factory"/>
+    <targetsToBuildProvider implementation="org.jetbrains.bazel.clion.workspace.CcTargetsToBuildProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="cidr">
