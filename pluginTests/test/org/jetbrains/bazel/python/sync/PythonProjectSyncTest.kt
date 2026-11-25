@@ -24,7 +24,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
-import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
@@ -38,7 +37,6 @@ import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import com.jetbrains.python.sdk.PythonSdkUtil
-import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -154,10 +152,7 @@ class PythonProjectSyncTest {
     runPythonImporter(pythonTestTargets.workspaceSnapshot, diff)
 
     // then
-    val actualModuleEntities =
-      diff.entities(ModuleEntity::class.java)
-        .toList()
-        .filter { it.type == ModuleTypeId(PYTHON_MODULE_ID) }
+    val actualModuleEntities = diff.entities(ModuleEntity::class.java).toList()
     logger.info("Checking for project ${testBazel.project.name}")
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
     // The importer sets the interpreter through the Python project after the modules exist, so the diff has no SDK.
@@ -1162,9 +1157,7 @@ class PythonProjectSyncTest {
           name = target.key.label.formatAsModuleName(testBazel.project),
           entitySource = BazelProjectEntitySource,
           dependencies = moduleDependencies + ModuleSourceDependency,
-        ) {
-          type = ModuleTypeId(PYTHON_MODULE_ID)
-        },
+        ),
     )
   }
 

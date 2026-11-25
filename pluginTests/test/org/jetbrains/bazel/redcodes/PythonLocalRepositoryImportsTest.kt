@@ -33,11 +33,11 @@ class PythonLocalRepositoryImportsTest {
   @Test
   fun testHighlighting(): Unit = timeoutRunBlocking(timeout = 5.minutes) {
     dumpStructure() shouldBe """
-      |app.main [PYTHON_MODULE]
+      |app.main [null]
       |  source root app/main.py [python-source]
-      |local_lib.plain [PYTHON_MODULE]
+      |local_lib.plain [null]
       |  source root libs/local_lib/plain/pkg2/other.py [python-source]
-      |local_lib.with_imports [PYTHON_MODULE]
+      |local_lib.with_imports [null]
       |  source root libs/local_lib/src [python-source]
       |resolve index name of libs/local_lib/src/pkg/mod.py: pkg.mod
       |resolve index name of libs/local_lib/plain/pkg2/other.py: plain.pkg2.other
