@@ -17,7 +17,6 @@ import org.jetbrains.bazel.fixtures.CcProjectBuilder
 import org.jetbrains.bazel.fixtures.ccProject
 import org.jetbrains.bazel.fixtures.withTestImportContext
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.sync.workspace.importer.ToolOutputRequestsCollector
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfiguration
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationId
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceConfigurationSummary
@@ -533,11 +532,10 @@ class CcEquivalenceClassesTest {
     bazelInfo: BazelInfo = CC_TEST_BAZEL_INFO,
     declare: CcProjectBuilder.() -> Unit,
   ): List<CcResolveConfiguration> = timeoutRunBlocking {
-    val outputRequest = ToolOutputRequestsCollector()
     val snapshot = ccProject(bazelInfo = bazelInfo, declare = declare).copy(configurations = configurations)
     val (ctx, result) = withTestImportContext(snapshot, project = project) {
       val target2Toolchain = buildToolchainMap()
-      val toolchain2Compiler = buildCompilerSettings(outputRequest)
+      val toolchain2Compiler = buildCompilerSettings()
 
       buildEquivalenceClasses(target2Toolchain.mapValues { toolchain2Compiler[it.value] })
     }

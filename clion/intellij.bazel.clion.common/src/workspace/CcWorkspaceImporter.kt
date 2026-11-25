@@ -43,28 +43,29 @@ internal class CcWorkspaceImporter(val context: WorkspaceImporterContext) : Baze
 
     return when (phase) {
       is WorkspaceImporterPhase.Initialize -> onInitialize(snapshot, phase, taskId)
-      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(phase)
+      is WorkspaceImporterPhase.WorkspaceApply -> onWorkspaceApply(snapshot, phase, taskId)
       is WorkspaceImporterPhase.PostProcessing -> onPostProcessing(snapshot, taskId)
       else -> WorkspaceImporterResult.Success
     }
   }
 
   private suspend fun onInitialize(snapshot: WorkspaceSnapshot, phase: WorkspaceImporterPhase.Initialize, taskId: TaskId): WorkspaceImporterResult {
+    subtask(snapshot, "cc.import.task.toolchain.request", taskId) { requestMissingCompilers(phase.toolOutputRequests)}
+    return WorkspaceImporterResult.Success
+  }
+
+  private suspend fun onWorkspaceApply(snapshot: WorkspaceSnapshot, phase: WorkspaceImporterPhase.WorkspaceApply, taskId: TaskId): WorkspaceImporterResult {
     val target2Toolchain = subtask(snapshot, "cc.import.task.toolchain.map", taskId) { buildToolchainMap() }
     if (target2Toolchain.isEmpty()) return WorkspaceImporterResult.Abort
-
-    val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings(phase.toolOutputRequests) }
+    val toolchain2Compiler = subtask(snapshot, "cc.import.task.compiler.settings", taskId) { buildCompilerSettings() }
     val target2Compiler = target2Toolchain.mapValues { toolchain2Compiler[it.value] }
 
     this.configurations = subtask(snapshot, "cc.import.task.equivalence.classes", taskId) { buildEquivalenceClasses(target2Compiler) }
     this.toolchain2Compiler = toolchain2Compiler
 
-    return WorkspaceImporterResult.Success
-  }
-
-  private fun onWorkspaceApply(phase: WorkspaceImporterPhase.WorkspaceApply): WorkspaceImporterResult {
     addCcWorkspaceModule(phase.builder, phase.entitySource)
     addCcCompilerInfoEntities(phase.builder, phase.entitySource, toolchain2Compiler)
+
     return WorkspaceImporterResult.Success
   }
 
