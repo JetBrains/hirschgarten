@@ -66,7 +66,7 @@ CC_TEST_DEPS = [
     "@community//platform/util:util-ui",
     "@community//platform/editor-ui-api:editor-ui",
     "//CIDR/clion-test-google",
-    "//CIDR/clion-test-catch",
+    "//CIDR/clion-test-catch/core",
     "@community//platform/scratch/plugin",
     "//CIDR/cidr-lang-base",
     "@community//platform/bazel-runfiles",
@@ -87,6 +87,7 @@ CC_TEST_RUNTIME_DEPS = [
     "@community//plugins/yaml/plugin",
     "//CIDR/clion-test-google/nova",
     "//CIDR/clion-test-catch/nova",
+    "//CIDR/clion-test-catch",
 ]
 
 def _check_compile_deps(owner, deps):
