@@ -27,7 +27,7 @@ jvm_library(
     deps = [
         # do not sort,
         "@lib//:kotlin-stdlib",
-        "//CIDR/clion-test-google",
+        "//CIDR/clion-test-google/core",
         "//plugins/bazel/clion/intellij.bazel.clion.core:bazel-clion-core",
         "@community//platform/smRunner",
         "@community//platform/core-api:core",

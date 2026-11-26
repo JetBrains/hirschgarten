@@ -74,9 +74,10 @@
     <orderEntry type="module" module-name="intellij.json.plugin" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.yaml.plugin" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.test.google.nova" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.test.google" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.clion.test.google.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.clion.test.catch.nova" scope="RUNTIME" />
     <orderEntry type="module" module-name="intellij.clion.test.catch" scope="RUNTIME" />
-    <orderEntry type="module" module-name="intellij.clion.test.google" scope="TEST" />
     <orderEntry type="module" module-name="intellij.clion.test.catch.core" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.scratch.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.cidr.lang.base" scope="TEST" />

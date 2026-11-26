@@ -65,7 +65,7 @@ CC_TEST_DEPS = [
     "@community//platform/core-ui",
     "@community//platform/util:util-ui",
     "@community//platform/editor-ui-api:editor-ui",
-    "//CIDR/clion-test-google",
+    "//CIDR/clion-test-google/core",
     "//CIDR/clion-test-catch/core",
     "@community//platform/scratch/plugin",
     "//CIDR/cidr-lang-base",
@@ -86,6 +86,7 @@ CC_TEST_RUNTIME_DEPS = [
     "@community//json/plugin",
     "@community//plugins/yaml/plugin",
     "//CIDR/clion-test-google/nova",
+    "//CIDR/clion-test-google",
     "//CIDR/clion-test-catch/nova",
     "//CIDR/clion-test-catch",
 ]
