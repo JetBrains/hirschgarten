@@ -31,8 +31,7 @@ class JavaPythonSameTargetNamingTest {
 
       modules shouldBe mapOf(
         "mixed.shared-jvm" to ModuleTypeId("JAVA_MODULE"),
-        // A Python module has no module type: its interpreter makes it a Python project.
-        "mixed.shared-python" to null,
+        "mixed.shared-python" to ModuleTypeId("PYTHON_MODULE"),
       )
     }
   }

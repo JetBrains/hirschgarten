@@ -37,10 +37,10 @@ class PythonExternalImportsRootTest {
       |java.main [JAVA_MODULE]
       |  content root java/Main.java
       |    source root java/Main.java [java-source] packageMatchesDirectory=false
-      |py.tool [null]
+      |py.tool [PYTHON_MODULE]
       |  content root py/tool.py
       |    source root py/tool.py [python-source]
-      |py_repo.lib [null]
+      |py_repo.lib [PYTHON_MODULE]
       |  content root py_repo
       |    source root py_repo [python-source]
     """.trimMargin()

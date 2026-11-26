@@ -27,6 +27,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.EntitySource
@@ -36,6 +37,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.python.sdk.backend.PythonInterpreter
 import com.jetbrains.python.PythonBinary
 import com.jetbrains.python.errorProcessing.PyResult
+import com.jetbrains.python.sdk.internal.PYTHON_MODULE_ID
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.commons.BazelPathsResolver
@@ -92,6 +94,7 @@ import kotlin.io.path.pathString
 
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
+private val PYTHON_MODULE_TYPE = ModuleTypeId(PYTHON_MODULE_ID)
 private val NAME_PRODUCER = NameProducer(id = "python")
 
 internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContext) : BazelWorkspaceImporter {
@@ -438,6 +441,7 @@ internal class BazelPythonWorkspaceImporter(val context: WorkspaceImporterContex
         dependencies = allDependencies,
         entitySource = entitySource,
       ) {
+        this.type = PYTHON_MODULE_TYPE
         this.contentRoots = contentRoots
         this.bazelModuleExtension = BazelModuleExtensionEntity(
           _targetKey = WorkspaceModelTargetKey.of(target.key),
