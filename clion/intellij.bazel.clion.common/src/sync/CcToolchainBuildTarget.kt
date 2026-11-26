@@ -17,7 +17,7 @@ data class CcToolchainBuildTarget(
   val sysroot: OutputLocation?,
   val cEnvironment: Map<String, String>,
   val cppEnvironment: Map<String, String>,
-  val xcodeInfo: XcodeInfo?,
+  val xcodeInfo: OutputLocation?,
 ) : BuildTargetData {
 
   data class XcodeInfo(

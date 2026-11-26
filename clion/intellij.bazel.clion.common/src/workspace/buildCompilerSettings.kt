@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.clion.workspace
 
 import com.intellij.aspect.lib.OutputGroups
+import com.intellij.aspect.lib.readEnvFromFile
 import com.jetbrains.cidr.lang.toolchains.CidrToolEnvironment
 import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import kotlinx.coroutines.coroutineScope
@@ -11,6 +12,7 @@ import org.jetbrains.bazel.sync.workspace.importer.ToolOutputRequests
 import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.OutputLocation
 import org.jetbrains.bsp.protocol.OutputLocationCollection
+import org.jetbrains.bsp.protocol.OutputLocationResolver
 import org.jetbrains.bsp.protocol.extractData
 import java.io.IOException
 import java.nio.file.Path
@@ -49,6 +51,12 @@ suspend fun requestMissingCompilers(outputRequests: ToolOutputRequests) = corout
     if (!(cCompilePresent&&cppCompilePresent)) {
       outputRequests.request(OutputGroups.CC_TOOLS, toolchainInfo.allFiles)
     }
+    toolchainInfo.xcodeInfo?.let {
+      val xCodeInfoFilePresentOrNotNeeded = ctx.resolveOutputLocation(it)?.exists() ?: true
+      if (!xCodeInfoFilePresentOrNotNeeded) {
+        outputRequests.request(OutputGroups.CC_TOOLS, listOf(it))
+      }
+    }
   }
 }
 
@@ -62,12 +70,13 @@ suspend fun buildCompilerSettings(): Map<WorkspaceTargetKey, CcCompilerInfo> = c
 
   for (target in ctx.snapshot.targets.allTargets()) {
     val toolchainInfo = target.extractData<CcToolchainBuildTarget>() ?: continue
-    val placeholders = executionRootPlaceholders + createXcodePlaceholders(toolchainInfo.xcodeInfo)
+    val xcode = mapXcodeIdeInfo(toolchainInfo, ctx.outputResolver)
+    val placeholders = executionRootPlaceholders + createXcodePlaceholders(xcode)
 
     val environment = createEnvironment(
       toolchainInfo.cEnvironment,
       toolchainInfo.cppEnvironment,
-      createXcodeEnvironment(toolchainInfo)
+      createXcodeEnvironment(xcode)
     )
 
     val toolEnvironment = createToolEnvironment(environment)
@@ -116,12 +125,12 @@ private fun resolveProcSelfCwd(value: String): String {
   return resolved.toString()
 }
 
-private fun createXcodeEnvironment(info: CcToolchainBuildTarget): Map<String, String> {
-  if (info.xcodeInfo == null) return emptyMap()
+private fun createXcodeEnvironment(info: CcToolchainBuildTarget.XcodeInfo?): Map<String, String> {
+  if (info == null) return emptyMap()
 
   return mapOf(
-    "DEVELOPER_DIR" to info.xcodeInfo.developerDir,
-    "SDKROOT" to info.xcodeInfo.sdkRoot,
+    "DEVELOPER_DIR" to info.developerDir,
+    "SDKROOT" to info.sdkRoot,
   )
 }
 
@@ -154,4 +163,21 @@ private fun expandPlaceholders(options: List<String>, placeholders: Map<String, 
   return options.map { option ->
     placeholders.entries.fold(option) { result, (placeholder, value) -> result.replace(placeholder, value) }
   }
+}
+
+@ApiStatus.Internal
+fun mapXcodeIdeInfo(
+  info:  CcToolchainBuildTarget,
+  resolver: OutputLocationResolver,
+): CcToolchainBuildTarget.XcodeInfo? {
+  if (info.xcodeInfo == null) return null
+
+  val path = resolver.resolve(info.xcodeInfo) ?: return null
+  val environment = readEnvFromFile(path) ?: return null
+
+  return CcToolchainBuildTarget.XcodeInfo(
+    developerDir = environment["DEVELOPER_DIR"] ?: "",
+    sdkRoot = environment["SDKROOT"] ?: "",
+    xcodeVersion = environment["XCODE_VERSION_OVERRIDE"] ?: "",
+  )
 }

@@ -30,7 +30,9 @@ import org.jetbrains.bsp.protocol.OutputLocationCollection
 import org.jetbrains.bsp.protocol.OutputLocationParserWithoutHardlink
 import org.jetbrains.bsp.protocol.StringsCollection
 import org.jetbrains.bsp.protocol.extractData
+import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.writeText
 
 /**
  * Declares a small C and C++ target graph and builds a [WorkspaceSnapshot] from it.
@@ -274,7 +276,7 @@ internal class CcToolchainBuilder {
   private var cppCompiler: String = "/usr/bin/g++"
   private var compilerKind: OCCompilerKind = GCCCompilerKind
   private var sysroot: String? = null
-  private var xcodeInfo: CcToolchainBuildTarget.XcodeInfo? = null
+  private var xcodeInfo: OutputLocation? = null
 
   private val cOptions = mutableListOf<String>()
   private val cppOptions = mutableListOf<String>()
@@ -307,7 +309,9 @@ internal class CcToolchainBuilder {
   }
 
   fun xcodeInfo(developerDir: String, sdkRoot: String, xcodeVersion: String = "") {
-    xcodeInfo = CcToolchainBuildTarget.XcodeInfo(developerDir = developerDir, sdkRoot = sdkRoot, xcodeVersion = xcodeVersion)
+    val fakeXCodeInfoFile = Files.createTempFile("xcode.", "info")
+    fakeXCodeInfoFile.writeText("DEVELOPER_DIR=${developerDir}\u0000SDKROOT=${sdkRoot}\u0000XCODE_VERSION_OVERRIDE=${xcodeVersion}\u0000")
+    xcodeInfo = OutputLocation.Host(fakeXCodeInfoFile.toString())
   }
 
   fun cOptions(vararg options: String) {

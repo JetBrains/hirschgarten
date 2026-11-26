@@ -13,6 +13,7 @@ import org.jetbrains.bazel.assertions.findCompiler
 import org.jetbrains.bazel.assertions.findCompilerSetting
 import org.jetbrains.bazel.assertions.findTarget
 import org.jetbrains.bazel.assertions.findToolchain
+import org.jetbrains.bazel.assertions.mapXcodeInfo
 import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.fixtures.CcTestApplication
 import org.jetbrains.bazel.fixtures.clionBazelProjectFixture
@@ -99,7 +100,7 @@ abstract class CcLocalToolchainTest(override val bazelVersion: String) : BazelVe
       .extractData<CcToolchainBuildTarget>()
       .assertNotNull()
 
-    val xcodeInfo = toolchain.xcodeInfo.assertNotNull()
+    val xcodeInfo = project.mapXcodeInfo(toolchain).assertNotNull()
     assertThat(xcodeInfo.developerDir).startsWith("/").doesNotContain("__BAZEL_XCODE_")
     assertThat(xcodeInfo.sdkRoot).startsWith("/").doesNotContain("__BAZEL_XCODE_")
 

@@ -3,12 +3,13 @@ package org.jetbrains.bazel.assertions
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.bazel.clion.sync.CcToolchainBuildTarget
 import org.jetbrains.bazel.clion.workspace.CcCompilerInfo
 import org.jetbrains.bazel.clion.workspace.CcTargetUtils
-import org.jetbrains.bazel.clion.workspace.findTargetToolchain
+import org.jetbrains.bazel.clion.workspace.mapXcodeIdeInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.sync.workspace.DefaultOutputLocationResolver
 import org.jetbrains.bazel.sync.workspace.persistence.WorkspaceSnapshotService
-import org.jetbrains.bazel.sync.workspace.snapshot.WorkspaceTargetKey
 import org.jetbrains.bsp.protocol.BuildTarget
 
 internal suspend fun Project.findTargets(label: Label): List<BuildTarget> {
@@ -46,4 +47,10 @@ internal suspend fun Project.findToolchain(target: BuildTarget): BuildTarget? {
 internal suspend fun Project.findCompiler(target: BuildTarget): CcCompilerInfo? {
   val snapshot = service<WorkspaceSnapshotService>().currentSnapshot()
   return CcTargetUtils.findCompiler(this, snapshot, target)
+}
+
+internal suspend fun Project.mapXcodeInfo(toolchain: CcToolchainBuildTarget): CcToolchainBuildTarget.XcodeInfo? {
+  val snapshot = service<WorkspaceSnapshotService>().currentSnapshot()
+  val resolver = DefaultOutputLocationResolver.createExecrootResolving(snapshot.bazelInfo)
+  return mapXcodeIdeInfo(toolchain, resolver)
 }
