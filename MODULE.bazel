@@ -49,6 +49,7 @@ maven.install(
         "net.java.dev.jna:jna:5.19.1",
         "org.jetbrains.pty4j:pty4j:0.13.12",
         "org.assertj:assertj-core:4.0.0-M1",
+        "org.jetbrains:jetCheck:0.3.0",
     ],
     excluded_artifacts = [
         "org.jetbrains.kotlin:kotlin-stdlib",
@@ -122,18 +123,17 @@ java_import(
 
 SDK_263_BASE_VERSION = "263.8311"
 
-SDK_263_INTELLIJ_REPO_VERSION = SDK_263_BASE_VERSION + ".4"
+SDK_263_INTELLIJ_REPO_VERSION = SDK_263_BASE_VERSION + ".30"
 
-SDK_263_INTELLIJ_VERSION = SDK_263_BASE_VERSION + ".4-EAP-CANDIDATE"
+SDK_263_INTELLIJ_VERSION = SDK_263_BASE_VERSION + ".30-EAP-CANDIDATE"
 
-# The Marketplace has no 263.8311 builds of DevKit, PythonCore, Go and protoeditor yet
-SDK_263_MARKETPLACE_VERSION = "263.7307.112"
+SDK_263_MARKETPLACE_VERSION = SDK_263_INTELLIJ_REPO_VERSION
 
 SDK_263_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
 
 IC_263_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s.zip" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_VERSION, SDK_263_INTELLIJ_VERSION)
 
-IC_263_SHA = "e38b1dc1e31c4d8f2112e4c4dd99327571fc9418b25190788bfe390ea9bfc5ce"
+IC_263_SHA = "96952777780020ff207de5fbd12fa71c63eac6ae2a55a93fc0e8e1704b68f84c"
 
 http_archive(
     name = "intellij_ce_2026_3",
@@ -144,7 +144,7 @@ http_archive(
 
 IC_263_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIU/%s/ideaIU-%s-sources.jar" % (SDK_263_INTELLIJ_REPOSITORY, SDK_263_INTELLIJ_VERSION, SDK_263_INTELLIJ_VERSION)
 
-IC_263_SOURCES_SHA = "a315772a96afba0520d3d15c31d99351cdbc7f0e77ce473f48c07536d783cd39"
+IC_263_SOURCES_SHA = "e2cf76db18ac2d1eddaaada658230ba9db8fc5c223384681abeec09d19391f44"
 
 http_jar(
     name = "intellij_ce_2026_3_sources",
@@ -156,7 +156,7 @@ DEVKIT_263_VERSION = SDK_263_MARKETPLACE_VERSION
 
 DEVKIT_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_263_VERSION, DEVKIT_263_VERSION)
 
-DEVKIT_263_SHA = "0a3678fc9c596dce135d9306fd701f951f897723e26bc6b7ca665acc3b5e5fcf"
+DEVKIT_263_SHA = "9f1dabc5600acce9bdaff17eae904d9f0398585d1bb162fdc0e4c84527562dd3"
 
 http_archive(
     name = "devkit_2026_3",
@@ -167,7 +167,7 @@ http_archive(
 
 PYTHON_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_263_MARKETPLACE_VERSION, SDK_263_MARKETPLACE_VERSION)
 
-PYTHON_PLUGIN_263_SHA = "73bf24a049941bec8657d2f910b51cc670f4940e0fa7e71f833c89a3f8a504a2"
+PYTHON_PLUGIN_263_SHA = "b561414dfa1f84f7c1d6e2ff9224c05d3c72a4a56852e6c8497d2041274f0da2"
 
 http_archive(
     name = "python_2026_3",
@@ -178,7 +178,7 @@ http_archive(
 
 GO_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_263_MARKETPLACE_VERSION, SDK_263_MARKETPLACE_VERSION)
 
-GO_PLUGIN_263_SHA = "4b0b6ad7637147a25442fe38a7a24ddec417f3a604a562ca332218b9865b0b28"
+GO_PLUGIN_263_SHA = "73c99dd285b5d9174d412f99cb1519e74942edb472232be92d41faca67281964"
 
 http_archive(
     name = "go_2026_3",
@@ -331,11 +331,11 @@ http_jar(
     url = TERMINAL_COMPLETION_PLUGIN_263_URL,
 )
 
-PROTOEDIT_PLUGIN_263_VERSION = "263.7307.101"
+PROTOEDIT_PLUGIN_263_VERSION = SDK_263_MARKETPLACE_VERSION
 
 PROTOEDIT_PLUGIN_263_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/idea.plugin.protoeditor/%s/idea.plugin.protoeditor-%s.zip" % (PROTOEDIT_PLUGIN_263_VERSION, PROTOEDIT_PLUGIN_263_VERSION)
 
-PROTOEDIT_PLUGIN_263_SHA = "2443b797128f556e0a0a293f1e83d5c7cb6224e6903759b80a21ded1740cb707"
+PROTOEDIT_PLUGIN_263_SHA = "e55a02d8f868b5134bdc4cd1e32d11e984a2408b8ff71b98ec368014a11cc03d"
 
 http_archive(
     name = "protoedit_2026_3",

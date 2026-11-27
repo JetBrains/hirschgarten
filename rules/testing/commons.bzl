@@ -108,4 +108,5 @@ TEST_DEPS = KOTEST_DEPS + JUNIT_DEPS + INTELLIJ_DEPS + [
     "@maven//:org_jetbrains_kotlin_kotlin_test",
     "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     "@maven//:org_assertj_assertj_core",
+    "@maven//:org_jetbrains_jetCheck",
 ]
