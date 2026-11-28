@@ -31,6 +31,7 @@ import org.jetbrains.bazel.sync.findExecutableInPath
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.copyTo
@@ -39,6 +40,8 @@ import kotlin.io.path.exists
 import kotlin.io.path.isExecutable
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
+import kotlin.io.path.readLines
+import kotlin.io.path.writeLines
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -107,8 +110,13 @@ class PerformanceTest : IdeStarterBaseProjectTest() {
   }
 }
 
+/** Below this usable disk space the prefetch is skipped, so that it cannot leave the IDE without disk space to start */
+private const val PREFETCH_MIN_USABLE_DISK_GB = 40L
+
 /**
- * Fetches the external repositories of the project before the IDE starts, so that the measured sync does not download them.
+ * Fetches the external repositories that the sync needs before the IDE starts, so that the measured sync does not download them.
+ * `build --nobuild` loads and analyzes the project view targets for the host platform only, as the sync does.
+ * `fetch --all` also downloaded the repositories of all other platforms and filled the agent disk.
  * Bazel runs in the project root, so it reads the generated `user.bazelrc` and fills the output base and the repository cache of the IDE.
  * The prefetch is best effort: after a failure or a timeout, the sync fetches the rest.
  */
@@ -124,15 +132,26 @@ private fun prefetchBazelDependencies(context: IDETestContext) {
     val timeout = (System.getProperty("bazel.ide.starter.test.prefetch.timeout.seconds")?.toIntOrNull() ?: 3600).seconds
     val projectRoot = with(BazelProjectConfigurer) { context.resolvedBazelProjectHome }
     try {
-      val log = context.paths.testHome.resolve("log").createDirectories().resolve("bazel-prefetch.log")
+      val usableDiskGbBefore = usableDiskGb(projectRoot)
+      if (usableDiskGbBefore < PREFETCH_MIN_USABLE_DISK_GB) {
+        println("Bazel prefetch skipped: $usableDiskGbBefore GB of disk is usable, the prefetch needs $PREFETCH_MIN_USABLE_DISK_GB GB")
+        return@ThrowableRunnable
+      }
+      val logDir = context.paths.testHome.resolve("log").createDirectories()
+      val log = logDir.resolve("bazel-prefetch.log")
+      val targetPatternFile = logDir.resolve("bazel-prefetch-targets.txt").writeLines(projectViewTargets(projectRoot))
       val (exitCode, duration) = measureTimedValue {
         runBazel(
           bazel, projectRoot, environment, log, timeout,
-          "fetch", "--all", "--keep_going", "--loading_phase_threads=$threads", "--http_max_parallel_downloads=$threads",
+          "build", "--nobuild", "--keep_going", "--target_pattern_file=$targetPatternFile", "--experimental_convenience_symlinks=ignore",
+          "--loading_phase_threads=$threads", "--http_max_parallel_downloads=$threads",
           "--curses=no", "--color=no", "--show_progress_rate_limit=30",
         )
       }
-      println("Bazel prefetch with $bazel ${exitCode?.let { "exited with code $it" } ?: "timed out"} after $duration, output: $log")
+      println(
+        "Bazel prefetch with $bazel ${exitCode?.let { "exited with code $it" } ?: "timed out"} after $duration, " +
+        "usable disk $usableDiskGbBefore GB before and ${usableDiskGb(projectRoot)} GB after, output: $log"
+      )
       // The measured sync starts a new Bazel server, as it does without the prefetch
       if (runBazel(bazel, projectRoot, environment, log, 5.minutes, "shutdown") == null) {
         println("Bazel shutdown after the prefetch timed out")
@@ -142,6 +161,21 @@ private fun prefetchBazelDependencies(context: IDETestContext) {
       println("Bazel prefetch failed: $e")
     }
   })
+}
+
+private fun usableDiskGb(path: Path): Long = Files.getFileStore(path).usableSpace / (1L shl 30)
+
+/** The `targets` section of `projectview.bazelproject`, which the sync builds; `//...` when the project view has no targets. */
+private fun projectViewTargets(projectRoot: Path): List<String> {
+  val projectView = projectRoot.resolve("projectview.bazelproject")
+  if (!projectView.exists()) return listOf("//...")
+  val targets = projectView.readLines()
+    .dropWhile { it.trimEnd() != "targets:" }
+    .drop(1)
+    .takeWhile { it.isBlank() || it.first().isWhitespace() || it.startsWith("#") }
+    .map { it.substringBefore("#").trim() }
+    .filter { it.isNotEmpty() }
+  return targets.ifEmpty { listOf("//...") }
 }
 
 /**
